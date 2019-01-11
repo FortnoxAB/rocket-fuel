@@ -1,0 +1,5 @@
+.idea/**
+dev.example.yml
+.DS_Store
+**.iml
+target/
