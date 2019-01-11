@@ -9,18 +9,27 @@ import java.util.List;
 
 
 /**
- * Retrives questions from the database
+ * Manages users questions.
  *
  */
 @Path("/users/{userId}/questions")
 public interface QuestionResource {
 
+    /**
+     * Returns all questions for a given user
+     */
     @GET
     Observable<List<Question>> getQuestions(@PathParam("userId") long userId, CollectionOptions collectionOptions);
 
+    /**
+     * Adds a question and links it to the given userId.
+     */
     @POST
     Observable<Void> postQuestion(@PathParam("userId") long userId, Question question);
 
+    /**
+     * Updates the question with the given questionId
+     */
     @PUT
     @Path("{questionId}")
     Observable<Question> updateQuestion(@PathParam("userId") long userId, Question question);
