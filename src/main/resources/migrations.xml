@@ -1,0 +1,14 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+<changeSet author="liquibase-docs" id="create-question-table">
+    <createTable catalogName="cat"
+                 remarks="A String"
+                 schemaName="public"
+                 tableName="person"
+                     tablespace="A String">
+        <column name="address" type="varchar(255)"/>
+    </createTable>
+</changeSet>
+</databaseChangeLog>
