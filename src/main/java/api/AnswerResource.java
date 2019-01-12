@@ -19,7 +19,7 @@ public interface AnswerResource {
      * @return answers for a question
      */
     @GET
-    Observable<Answer> getAnswers(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
+    Observable<List<Answer>> getAnswers(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
 
     /**
      * Creates a answer for a given question

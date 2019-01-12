@@ -32,6 +32,6 @@ public interface QuestionResource {
      */
     @PUT
     @Path("{questionId}")
-    Observable<Question> updateQuestion(@PathParam("userId") long userId, Question question);
+    Observable<Question> updateQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId, Question question);
 
 }

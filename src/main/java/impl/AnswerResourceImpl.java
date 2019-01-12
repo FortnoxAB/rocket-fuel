@@ -8,6 +8,8 @@ import impl.dao.QuestionDao;
 import rx.Observable;
 import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 
+import java.util.List;
+
 public class AnswerResourceImpl implements AnswerResource {
 
     private final DaoTransactions daoTransactions;
@@ -24,8 +26,8 @@ public class AnswerResourceImpl implements AnswerResource {
 
 
     @Override
-    public Observable<Answer> getAnswers(long userId, long questionId) {
-        return answerDao.getAnswers(userId,questionId);
+    public Observable<List<Answer>> getAnswers(long userId, long questionId) {
+        return answerDao.getAnswers(userId,questionId).toList();
     }
 
     @Override

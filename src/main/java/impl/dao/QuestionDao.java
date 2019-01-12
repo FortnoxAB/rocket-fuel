@@ -15,7 +15,10 @@ public interface QuestionDao {
     @Update("INSERT INTO public.question (question, title, bounty, votes, created_at, user_id) VALUES(:question.question, :question.title, 0, 0, NOW(), :userId)")
     Observable<Void> addQuestion(long userId, Question question);
 
-    Observable<Integer> updateQuestion(Question question);
+    @Update("UPDATE question " +
+            "SET question=:question.question, title=:question.title, votes=:question.votes " +
+            "WHERE question.id=:questionId AND question.user_id=:userId")
+    Observable<Integer> updateQuestion(long userId, long questionId, Question question);
 
     @Query("SELECT id, question, title, bounty, votes, created_at, user_id FROM question WHERE id = :id")
     Observable<Question> getQuestion(long id);

@@ -24,8 +24,8 @@ public interface AnswerDao {
     Observable<Void> createAnswer(long userId, long questionId, Answer answer);
 
 
-    @Update("UPDATE answer\n" +
-            "SET answer.answer=':answer.answer', title=:answer.title, votes=:answer.votes, accepted=:answer.accepted\n" +
-            "WHERE answer.id=:answerId AND question_id=:questionId")
+    @Update("UPDATE answer " +
+            "SET answer=:answer.answer, title=:answer.title, votes=:answer.votes, accepted=:answer.accepted " +
+            "WHERE answer.id=:answerId AND question_id=:questionId AND answer.user_id=:userId")
     Observable<Void> updateAnswer(long userId, long questionId, long answerId, Answer answer);
 }

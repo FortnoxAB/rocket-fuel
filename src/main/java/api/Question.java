@@ -2,12 +2,9 @@ package api;
 
 public class Question extends Post {
 
-
-
     private String question;
 
     private Integer bounty;
-
 
     public String getQuestion() {
         return question;
