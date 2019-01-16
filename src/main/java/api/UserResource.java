@@ -6,7 +6,7 @@ import se.fortnox.reactivewizard.CollectionOptions;
 import javax.ws.rs.*;
 import java.util.List;
 
-@Path("user")
+@Path("/api/user")
 public interface UserResource {
 
     @POST

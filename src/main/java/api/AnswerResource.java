@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Manages answers for questions
  */
-@Path("users/{userId}/questions/{questionId}/answers")
+@Path("/api/users/{userId}/questions/{questionId}/answers")
 public interface AnswerResource {
 
     /**

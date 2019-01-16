@@ -12,7 +12,7 @@ import java.util.List;
  * Manages users questions.
  *
  */
-@Path("/users/{userId}/questions")
+@Path("/api/users/{userId}/questions")
 public interface QuestionResource {
 
     /**
