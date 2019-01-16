@@ -21,15 +21,10 @@ public class QuestionResourceImpl implements QuestionResource {
 
 
     private final QuestionDao questionDao;
-    private final AnswerDao answerDao;
-    private final DaoTransactions daoTransactions;
-    private final UserDao userDao;
+
     @Inject
-    public QuestionResourceImpl(QuestionDao questionDao, AnswerDao answerDao, DaoTransactions daoTransactions, UserDao userDao) {
+    public QuestionResourceImpl(QuestionDao questionDao) {
         this.questionDao = questionDao;
-        this.answerDao = answerDao;
-        this.daoTransactions = daoTransactions;
-        this.userDao = userDao;
     }
 
     public Observable<List<Question>> getQuestions(long userId, CollectionOptions collectionOptions) {
