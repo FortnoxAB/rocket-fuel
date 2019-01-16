@@ -1,15 +1,16 @@
 package api;
 
 import rx.Observable;
-import se.fortnox.reactivewizard.CollectionOptions;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import java.util.List;
 
 @Path("questions")
 public interface QuestionSearchResource {
 
     @GET
-    Observable<List<Question>> getQuestions(CollectionOptions collectionOptions);
+    Observable<List<Question>> getQuestionsBySearchQuery(@QueryParam("search") @NotNull String searchQuery);
 }
