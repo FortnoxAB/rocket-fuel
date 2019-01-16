@@ -6,6 +6,16 @@ public class Question extends Post {
 
     private Integer bounty;
 
+    public boolean answerAccepted;
+
+    public boolean isAnswerAccepted() {
+        return answerAccepted;
+    }
+
+    public void setAnswerAccepted(boolean answerAccepted) {
+        this.answerAccepted = answerAccepted;
+    }
+
     public String getQuestion() {
         return question;
     }

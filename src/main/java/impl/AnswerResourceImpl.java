@@ -5,10 +5,14 @@ import api.AnswerResource;
 import com.google.inject.Inject;
 import impl.dao.AnswerDao;
 import impl.dao.QuestionDao;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Observable;
 import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
+import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.util.List;
+
+import static rx.Observable.error;
 
 public class AnswerResourceImpl implements AnswerResource {
 
@@ -18,7 +22,6 @@ public class AnswerResourceImpl implements AnswerResource {
 
     @Inject
     public AnswerResourceImpl(QuestionDao questionDao, AnswerDao answerDao, DaoTransactions daoTransactions) {
-
         this.questionDao = questionDao;
         this.answerDao = answerDao;
         this.daoTransactions = daoTransactions;
@@ -45,6 +48,7 @@ public class AnswerResourceImpl implements AnswerResource {
         Observable<Integer> markQuestionAsAnswered = this.questionDao.markAsAnswered(questionId);
         Observable<Integer> markAnswerAsAnswered =  this.answerDao.markAsAnswered(answerId);
         this.daoTransactions.createTransaction(markQuestionAsAnswered, markAnswerAsAnswered);
-        return this.daoTransactions.executeTransaction(markQuestionAsAnswered, markAnswerAsAnswered);
+        return this.daoTransactions.executeTransaction(markQuestionAsAnswered, markAnswerAsAnswered)
+                .onErrorResumeNext((e) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR," Failed to mark question as answered", e)));
     }
 }
