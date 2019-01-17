@@ -6,9 +6,13 @@
 
     <groupId>se.fortnox</groupId>
     <artifactId>rocket-fuel</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-
-
+    <modules>
+        <module>api</module>
+        <module>impl</module>
+        <module>spec</module>
+    </modules>
     <properties>
         <slf4j.version>1.7.22</slf4j.version>
         <reactivewizard.version>1.0.0-SNAPSHOT</reactivewizard.version>
@@ -61,42 +65,5 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.0</version>
-            <configuration>
-                <source>1.8</source>
-                <target>1.8</target>
-                <compilerArgument>-parameters</compilerArgument>
-            </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <finalName>rocket-fuel-fatjar</finalName>
-                    <appendAssemblyId>false</appendAssemblyId>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>se.fortnox.reactivewizard.Main</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+
 </project>

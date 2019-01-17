@@ -1,4 +1,4 @@
-package impl.dao;
+package dao;
 
 import api.Question;
 import rx.Observable;

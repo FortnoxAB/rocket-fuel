@@ -3,13 +3,10 @@ package impl;
 import api.Question;
 import api.QuestionResource;
 import com.google.inject.Inject;
-import impl.dao.AnswerDao;
-import impl.dao.QuestionDao;
-import impl.dao.UserDao;
+import dao.QuestionDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Observable;
 import se.fortnox.reactivewizard.CollectionOptions;
-import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 

@@ -1,12 +1,10 @@
-package impl.dao;
+package dao;
 
 
 import api.Answer;
 import rx.Observable;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
-
-import java.util.List;
 
 public interface AnswerDao {
 

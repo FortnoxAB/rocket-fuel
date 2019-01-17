@@ -1,10 +1,11 @@
 package impl;
 
+
 import api.Question;
 import api.QuestionSearchResource;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import impl.dao.QuestionSearchDao;
+import dao.QuestionSearchDao;
 import rx.Observable;
 
 import java.util.List;
