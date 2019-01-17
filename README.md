@@ -1,7 +1,7 @@
 # Rocket Fuel ( still under development )
 Question/answer platform to share knowledge
 
-This backend is built with Reactive wizard, a open source platform for building efficent fast applications in Java. The frontend is built with react and talks with the backend though a REST api. 
+This backend is built with Reactive wizard, see https://github.com/FortnoxAB/reactive-wizard. Reactive Wizard project makes it easy to build performant and scalable web applications that harness the power of RxNetty (i.e., RxJava and Netty). The frontend is built with react and talks with the backend though a REST api. 
 
 The application's main goal is to share knowledge inside an organisation. One may find a lot of information on google, stack overflow etc. But typically an organisation has a lot of internal knowledge, that everyone needs to learn. Historically a lot of tools have been used to aid this problem (Confluence etc.). The problem is that this documentation has typically been hard to find and hard to maintain. Rocket fuel solves this problem by integrating with Slack, a tool used by many organisations. With the help of the slack integration, questions and answers can be added to rocket fuel by integrating it to the workflow people are used to. 
 
@@ -15,5 +15,17 @@ A thread is started in slack, the rocket fuel bot detects that a question has be
 
 ### The normal way
 A user can add a question to rocket fuel directly in the ui, and then wait for anyone to answer it, this is very similar to how it works on stack overflow. 
+
+
+### contribution
+
+Feel free to contribute to rocket fuel. Create a issue, when the issue is accepted, create a fork and create a pull request. 
+
+#### Running in intellij
+
+Import the project as a maven project. Intellij will probably fix this for you. To be able to run the application from intellij, you need to go to build , Preferences -> execution, deployment > compiler  > java compiler and type "-parameters" in the text box labeled "additional command line parameters". Then rebuild the project. Now you can add a run configuration. Add a application configuration. In the text field labeled "Main class" type "se.fortnox.reactivewizard.Main". In the text field labeled "Program arguments", type "db-migrate config.yml". The working directory should point to the impl module ( use the browse functionality).    
+
+### compiling with maven
+run maven clean package in the root folder. It will execute all the tests and generate a fat jar for you, that you can execute with java -jar.
 
 
