@@ -1,5 +1,5 @@
 # Rocket Fuel ( still under development )
-Question/answer platform to share knowledge
+Rocket fuel is a question/answer platform that you deploy with docker wherever you want. Its main goal is to spread knowledge.
 
 This backend is built with Reactive wizard, see https://github.com/FortnoxAB/reactive-wizard. Reactive Wizard project makes it easy to build performant and scalable web applications that harness the power of RxNetty (i.e., RxJava and Netty). The frontend is built with react and talks with the backend though a REST api. 
 
@@ -17,7 +17,7 @@ A thread is started in slack, the rocket fuel bot detects that a question has be
 A user can add a question to rocket fuel directly in the ui, and then wait for anyone to answer it, this is very similar to how it works on stack overflow. 
 
 
-### contribution
+### Contribution
 
 Feel free to contribute to rocket fuel. Create a issue, when the issue is accepted, create a fork and create a pull request. 
 
@@ -25,7 +25,7 @@ Feel free to contribute to rocket fuel. Create a issue, when the issue is accept
 
 Import the project as a maven project. Intellij will probably fix this for you. To be able to run the application from intellij, you need to go to build , Preferences -> execution, deployment > compiler  > java compiler and type "-parameters" in the text box labeled "additional command line parameters". Then rebuild the project. Now you can add a run configuration. Add a application configuration. In the text field labeled "Main class" type "se.fortnox.reactivewizard.Main". In the text field labeled "Program arguments", type "db-migrate config.yml". The working directory should point to the impl module ( use the browse functionality).    
 
-### compiling with maven
+#### Compiling with maven
 run maven clean package in the root folder. It will execute all the tests and generate a fat jar for you, that you can execute with java -jar.
 
 
