@@ -10,7 +10,7 @@
 		<fileSet>
 			<includes>
 				<include>src/index.html</include>
-				<include>build/*.*</include>
+				<include>dist/*.*</include>
 			</includes>
 			<outputDirectory>/</outputDirectory>
 		</fileSet>

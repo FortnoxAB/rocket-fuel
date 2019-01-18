@@ -22,8 +22,8 @@
 						<phase>package</phase>
 						<configuration>
 							<target>
-								<delete dir="build"/>
-								<mkdir dir="build"/>
+								<delete dir="dist"/>
+								<mkdir dir="dist"/>
 								<condition property="npm_executable" value="npm.cmd">
 									<os family="windows"/>
 								</condition>

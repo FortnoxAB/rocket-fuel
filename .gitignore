@@ -4,3 +4,5 @@ dev.example.yml
 **.iml
 target/
 ui/build/
+node_modules/
+dist/
