@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>rocket-fuel</artifactId>
+		<groupId>se.fortnox</groupId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>ui</artifactId>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<inherited>false</inherited>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<delete dir="build"/>
+								<mkdir dir="build"/>
+								<condition property="npm_executable" value="npm.cmd">
+									<os family="windows"/>
+								</condition>
+								<condition property="npm_executable" value="npm">
+									<os family="unix"/>
+								</condition>
+								<condition property="run_line" value="run prodwindows">
+									<os family="windows"/>
+								</condition>
+								<condition property="run_line" value="run build">
+									<os family="unix"/>
+								</condition>
+								<exec dir="${project.basedir}" executable="${npm_executable}"
+								      failonerror="true">
+									<arg line="install"/>
+								</exec>
+								<exec dir="${project.basedir}" executable="${npm_executable}"
+								      failonerror="true">
+									<arg line="${run_line}"/>
+								</exec>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<inherited>false</inherited>
+				<version>2.5.4</version>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<configuration>
+							<descriptors>
+								<descriptor>ui-assembly.xml</descriptor>
+							</descriptors>
+							<archive>
+								<addMavenDescriptor>false</addMavenDescriptor>
+							</archive>
+						</configuration>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

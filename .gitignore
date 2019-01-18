@@ -3,3 +3,4 @@ dev.example.yml
 .DS_Store
 **.iml
 target/
+ui/build/

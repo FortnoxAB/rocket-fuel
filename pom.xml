@@ -12,6 +12,7 @@
         <module>api</module>
         <module>impl</module>
         <module>spec</module>
+        <module>ui</module>
     </modules>
     <properties>
         <slf4j.version>1.7.22</slf4j.version>
