@@ -1,11 +1,10 @@
  package api;
 
-import rx.Observable;
-import se.fortnox.reactivewizard.CollectionOptions;
+ import rx.Observable;
+ import se.fortnox.reactivewizard.CollectionOptions;
 
-import javax.ws.rs.*;
-
-import java.util.List;
+ import javax.ws.rs.*;
+ import java.util.List;
 
 
 /**
@@ -21,9 +20,13 @@ public interface QuestionResource {
     @GET
     Observable<List<Question>> getQuestions(@PathParam("userId") long userId, CollectionOptions collectionOptions);
 
-    /**
-     * Adds a question and links it to the given userId.
-     */
+    @GET
+    Observable<Question> getQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
+
+
+        /**
+         * Adds a question and links it to the given userId.
+         */
     @POST
     Observable<Void> postQuestion(@PathParam("userId") long userId, Question question);
 

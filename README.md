@@ -28,4 +28,4 @@ Import the project as a maven project. Intellij will probably fix this for you. 
 #### Compiling with maven
 run maven clean package in the root folder. It will execute all the tests and generate a fat jar for you, that you can execute with java -jar.
 
-
+The tests inside the spec module requires docker and at least two gigabytes of free space. The reason is that a postgres container is used to test the sql queries.

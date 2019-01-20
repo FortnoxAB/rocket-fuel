@@ -18,8 +18,8 @@ public class UserResourceImpl implements UserResource {
     }
 
     @Override
-    public Observable<Void> createUser(long userId, User user) {
-        return this.userDao.upsertUser(userId, user);
+    public Observable<Integer> createUser(User user) {
+        return this.userDao.insertUser(user);
     }
 
     @Override

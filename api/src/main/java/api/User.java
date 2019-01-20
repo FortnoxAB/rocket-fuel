@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class User {
 
-    private String id;
+    private Long id;
 
     private String email;
 
@@ -13,7 +13,7 @@ public class User {
     @JsonIgnore
     private String vendorId;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
@@ -25,7 +25,7 @@ public class User {
         this.vendorId = vendorId;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
