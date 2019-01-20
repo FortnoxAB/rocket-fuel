@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
-public class QuestionsTest {
+public class QuestionResourceTest {
 
     private static QuestionResource questionResource;
     private static UserResource userResource;

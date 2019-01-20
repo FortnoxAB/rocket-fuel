@@ -5,7 +5,7 @@ public class Answer extends Post {
 
     private String answer;
 
-    private Boolean accepted;
+    private boolean accepted;
 
     public String getAnswer() {
         return answer;
@@ -16,11 +16,11 @@ public class Answer extends Post {
     }
 
 
-    public Boolean getAccepted() {
+    public boolean isAccepted() {
         return accepted;
     }
 
-    public void setAccepted(Boolean accepted) {
+    public void setAccepted(boolean accepted) {
         this.accepted = accepted;
     }
 
