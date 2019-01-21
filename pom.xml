@@ -13,6 +13,7 @@
         <module>impl</module>
         <module>spec</module>
         <module>ui</module>
+        <module>auth</module>
     </modules>
     <properties>
         <slf4j.version>1.7.22</slf4j.version>
