@@ -30,7 +30,7 @@
 								<condition property="npm_executable" value="npm">
 									<os family="unix"/>
 								</condition>
-								<condition property="run_line" value="run prodwindows">
+								<condition property="run_line" value="run build">
 									<os family="windows"/>
 								</condition>
 								<condition property="run_line" value="run build">
