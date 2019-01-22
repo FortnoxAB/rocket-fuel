@@ -1,0 +1,29 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:latest
+    container_name: production_nginx
+    volumes:
+      - ./site.nginx:/etc/nginx/conf.d/site.conf
+      - ./localhost.crt:/etc/nginx/localhost.crt
+      - ./localhost.key:/etc/nginx/localhost.key
+    ports:
+      - 8443:443
+
+  authproxy:
+    image: magnusp/authproxy:latest
+    container_name: authproxy
+    ports:
+      - 3000
+
+  backend:
+    image: fnx/rocketfuel:latest
+    container_name: rocketfuel
+    ports:
+      - 8080
+
+  storage:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=rocket-fuel

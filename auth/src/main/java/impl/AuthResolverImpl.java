@@ -61,8 +61,7 @@ public class AuthResolverImpl implements AuthResolver {
             resolveToken = just(possibleAuthorization.get());
         } else {
             // Authorize cookie, set authorization
-            resolveToken = HttpClient.newClient(new InetSocketAddress("localhost", 3000))
-                    .unsafeSecure()
+            resolveToken = HttpClient.newClient(new InetSocketAddress("authproxy", 3000))
                     .createGet("/verify")
                     .addCookie(new DefaultCookie("connect.sid", possibleCookieValue.get()))
                     .flatMap(response -> {

@@ -6,3 +6,5 @@ target/
 ui/build/
 node_modules/
 dist/
+localhost.crt
+localhost.key

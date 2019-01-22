@@ -11,7 +11,7 @@
 
 	<artifactId>ui</artifactId>
 
-	<build>
+	<!--<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -75,5 +75,5 @@
 				</executions>
 			</plugin>
 		</plugins>
-	</build>
+	</build>-->
 </project>
