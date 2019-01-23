@@ -11,7 +11,7 @@
 
 	<artifactId>ui</artifactId>
 
-	<build>
+	<!--<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -30,7 +30,7 @@
 								<condition property="npm_executable" value="npm">
 									<os family="unix"/>
 								</condition>
-								<condition property="run_line" value="run prodwindows">
+								<condition property="run_line" value="run build">
 									<os family="windows"/>
 								</condition>
 								<condition property="run_line" value="run build">
@@ -75,5 +75,5 @@
 				</executions>
 			</plugin>
 		</plugins>
-	</build>
+	</build>-->
 </project>

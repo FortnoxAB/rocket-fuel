@@ -1,11 +1,14 @@
 package impl;
 
+import api.Auth;
 import api.User;
 import api.UserResource;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.UserDao;
 import rx.Observable;
+
+import static rx.Observable.just;
 
 @Singleton
 public class UserResourceImpl implements UserResource {
@@ -15,6 +18,11 @@ public class UserResourceImpl implements UserResource {
     @Inject
     public UserResourceImpl(UserDao userDao) {
         this.userDao = userDao;
+    }
+
+    @Override
+    public Observable<String> getCurrent(Auth auth) {
+        return just(Long.valueOf(auth.getUserId()).toString());
     }
 
     @Override

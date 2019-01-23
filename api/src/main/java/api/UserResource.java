@@ -11,6 +11,8 @@
 @Path("/api/user")
 public interface UserResource {
 
+    @GET
+    Observable<String> getCurrent(Auth auth);
     /**
      * Creates a user
      * @param user user that will be created/updated.

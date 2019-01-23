@@ -1,26 +1,30 @@
 package impl;
 
 import api.Auth;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.Claim;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.reactivex.netty.protocol.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.JaxRsRequest;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
+import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.Optional;
 
 import static rx.Observable.error;
-import static se.fortnox.reactivewizard.util.rx.FirstThen.first;
+import static rx.Observable.just;
 
 /**
  * When a resource method has a {@link Auth} in the signature, this parameter resolver will try
  * to bind the parameter to an auth instance, that can be used inside of the method for getting valuable information
  * about the signed in user.
- *
  */
 @Singleton
 public class AuthResolverImpl implements AuthResolver {
@@ -61,13 +65,60 @@ public class AuthResolverImpl implements AuthResolver {
      * @return Auth for the user
      */
     private Observable<Auth> resolveAuth(JaxRsRequest request) {
-        Optional<String> possibleAuthorization = Optional.ofNullable(request.getHeader(AUTHORIZATION_HEADER));
-        if(!possibleAuthorization.isPresent()) {
-            return UNAUTHORIZED;
+        Optional<String> possibleAuthorization = Optional.ofNullable(request.getHeader("Authorization"));
+        Optional<String> possibleCookieValue = Optional.ofNullable(request.getCookieValue("connect.sid"));
+        if (!possibleAuthorization.isPresent() && !possibleCookieValue.isPresent()) {
+            LOG.info("unauthorized request");
+            return error(new WebException(HttpResponseStatus.UNAUTHORIZED));
         }
+        Observable<String> resolveToken = getToken(possibleAuthorization, possibleCookieValue);
+        return toBeReplacedByJWtVerifier(resolveToken);
 
-        return jwtAuthenticator.getAuth(possibleAuthorization.get())
-                .flatMap(auth -> first(userResource.upsertUser(auth.getEmail())).thenReturn(auth));
+    }
+
+    private Observable<String> getToken(Optional<String> possibleAuthorization, Optional<String> possibleCookieValue) {
+        // Authorize cookie, set authorization
+        return possibleAuthorization
+                .map(Observable::just).orElseGet(() -> resolveTokenFromAuthService(possibleCookieValue.get()));
+    }
+
+    private static Observable<Auth> toBeReplacedByJWtVerifier(Observable<String> resolveToken) {
+        return resolveToken
+                .onErrorResumeNext(throwable -> {
+                    if (throwable instanceof WebException) {
+                        return just("123");
+                    }
+                    return error(throwable);
+                })
+                .map(s -> {
+                    // TODO: this must be changed to a jwt parser and we need to make sure the caller is a valid caller.
+                    // TODO: expiration must  be taken in consideration.
+                    Auth auth;
+                    try {
+                        long userId = Long.parseLong(s);
+                        auth = new AuthImpl("",null);
+                        auth.setUserId(userId);
+                    } catch (NumberFormatException ignored) {
+                        Claim sub = JWT.decode(s).getClaim("sub");
+                        String subValue = sub.asString();
+                        // Resolve subValue to userId somehow
+                        auth = new AuthImpl("",null);
+                        auth.setUserId(-1);
+                    }
+                    return auth;
+                });
+    }
+
+    private static Observable<String> resolveTokenFromAuthService(String possibleCookieValue) {
+        return HttpClient.newClient(new InetSocketAddress("authproxy", 3000))
+                .createGet("/verify")
+                .addCookie(new DefaultCookie("connect.sid", possibleCookieValue))
+                .flatMap(response -> {
+                    if (response.getStatus().equals(HttpResponseStatus.UNAUTHORIZED)) {
+                        return error(new WebException(HttpResponseStatus.UNAUTHORIZED));
+                    }
+                    return just(response.getHeader("Authorization"));
+                });
     }
 
 }
