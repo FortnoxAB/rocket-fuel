@@ -1,0 +1,75 @@
+.thread, .answer {
+	display: flex;
+	border-bottom: 1px solid @primary-color;
+	padding-bottom: 20px;
+	margin-bottom: 20px;
+
+	.post-sidebar {
+		color: @gray-light;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 0 20px;
+		border-right: 1px solid @gray-light-more;
+
+		.vote {
+			cursor: pointer;
+			font-size: 1.7em;
+
+			&:hover {
+				color: @gray;
+			}
+		}
+
+		div {
+			font-size: 1.3em;
+			justify-content: center;
+			align-items: center;
+			padding: 5px 0;
+		}
+
+		.accepted {
+			color: @notification-success;
+		}
+		.unaccepted {
+			cursor: pointer;
+			color: @gray-light-more;
+
+			&:hover {
+				color: @gray-light;
+			}
+		}
+	}
+
+	.post-body {
+		display: flex;
+		flex-direction: column;
+		white-space: pre-line;
+
+		h3 {
+			color: @primary-color;
+			font-weight: 700;
+		}
+
+		> div {
+			padding: 0 20px;
+		}
+
+		.post-footer {
+			line-height: 2em;
+			font-size: .8em;
+			padding: 20px;
+		}
+	}
+}
+
+.answer {
+	background-color: @text-color-light;
+	padding: 10px 0;
+	border: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+
+	&.accepted {
+		background-color: lighten(@notification-success, 40%);
+	}
+}

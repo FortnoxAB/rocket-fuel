@@ -1,0 +1,85 @@
+.input-wrap {
+	position: relative;
+
+	&.error {
+		input {
+			border-color: @notification-error;
+			border-bottom: none;
+		}
+	}
+
+	.error-message {
+		font-size: 10px;
+		margin: 0;
+		padding: 3px;
+		color: .contrast-color (@notification-error)[@value];
+		background-color: @notification-error;
+	}
+
+	.label {
+		display: block;
+		margin: 12px 0 5px 0;
+	}
+
+	.field-auto-complete {
+		margin-top: 2px;
+		z-index: 2;
+		position: absolute;
+		color: @text-color-dark;
+		background-color: @background-color;
+		width: 100%;
+		list-style: none;
+		border: 1px solid @gray-light-more;
+		box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+
+		li {
+			padding: 10px;
+			cursor: pointer;
+
+			&:not(:last-child) {
+				border-bottom: 1px solid @gray-light-more;
+			}
+
+			&:hover {
+				background-color: @gray-light-more;
+			}
+		}
+	}
+
+	input, textarea {
+		height: auto;
+		vertical-align: middle;
+		font-size: 16px;
+		font-family: @default-font;
+		padding: 10px;
+		transition: .2s;
+		width: 100%;
+		background-color: @text-color-light;
+		border: 1px solid @gray-light;
+		color: .contrast-color (@text-color-light)[@value];
+		outline: none;
+		resize: none;
+
+		&::placeholder {
+			color: @gray-light;
+		}
+
+		&:focus {
+			box-shadow: 0 0 1px 2px fade(@primary-color, 50%);
+		}
+	}
+}
+
+.lg {
+	label {
+		font-size: 20px;
+	}
+
+	input, textarea {
+		font-size: 30px;
+	}
+
+	input {
+		height: 60px;
+	}
+}

@@ -1,0 +1,84 @@
+.header {
+	flex-shrink: 0;
+	height: @header-height;
+	width: 100%;
+	background-color: @primary-color;
+	margin-bottom: 20px;
+	color: .contrast-color(@primary-color)[@value];
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+
+	.title-space {
+		display: flex;
+		justify-content: space-between;
+
+		.title {
+			padding: 10px 20px;
+			font-size: 2em;
+			font-weight: 300;
+		}
+
+		.user {
+			padding: 10px 20px;
+		}
+	}
+
+	ul.menu {
+		display: flex;
+
+		li a {
+			display: block;
+			text-decoration: none;
+			padding: 10px 20px;
+			border-bottom: 2px solid transparent;
+			color: fade(.contrast-color (@background-color-alternative)[@value], 70%);
+
+			&:hover, &.active {
+				color: .contrast-color (@background-color-alternative)[@value];
+				border-color: .contrast-color (@background-color-alternative)[@value];
+			}
+		}
+	}
+}
+
+@userbar-height: 40px;
+
+.userbar {
+	color: .contrast-color (darken(@primary-color, 5%))[@value];
+	align-items: center;
+	justify-content: flex-end;
+	padding: 0 10px;
+	display: flex;
+	background-color: darken(@primary-color, 5%);
+	position: fixed;
+	height: @userbar-height;
+	width: calc(~'100%' - @sidebar-width);
+
+	.coins {
+		color: .contrast-color (darken(@primary-color, 5%))[@value];
+	}
+}
+
+.userbar-placeholder {
+	display: block;
+	height: @userbar-height;
+	width: 1px;
+}
+
+.menu {
+	background-color: @gray-light-more;
+	display: flex;
+	flex-direction: row;
+
+	a {
+		color: @gray-dark;
+		padding: 10px 20px;
+		text-decoration: none;
+
+		&:hover {
+			color: @gray-dark-more;
+			text-decoration: none;
+		}
+	}
+}

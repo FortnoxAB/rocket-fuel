@@ -1,0 +1,57 @@
+.button {
+	margin-top: 10px;
+	transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+	border: 0;
+	padding: 10px 15px;
+	background-color: @gray;
+	color: .contrast-color (@gray)[@value];
+	display: inline-block;
+	cursor: pointer;
+
+	&:hover {
+		box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+		background-color: darken(@gray, 5%);
+		z-index: 1;
+		position: relative;
+	}
+
+	&.primary {
+		background-color: @primary-color;
+		color: .contrast-color (@primary-color)[@value];
+
+		&:hover {
+			box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+			background-color: darken(@primary-color, 5%);
+		}
+	}
+
+	&.secondary {
+		background-color: @secondary-color;
+		color: .contrast-color (@secondary-color)[@value];
+
+		&:hover {
+			box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+			background-color: darken(@secondary-color, 5%);
+		}
+	}
+
+	&.error {
+		background-color: @notification-error;
+		color: .contrast-color (@notification-error)[@value];
+
+		&:hover {
+			box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+			background-color: darken(@notification-error, 5%);
+		}
+	}
+
+	&.success {
+		background-color: @notification-success;
+		color: .contrast-color (@notification-success)[@value];
+
+		&:hover {
+			box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+			background-color: darken(@notification-success, 5%);
+		}
+	}
+}
