@@ -28,7 +28,7 @@ public interface QuestionResource {
          * Adds a question and links it to the given userId.
          */
     @POST
-    Observable<Void> postQuestion(@PathParam("userId") long userId, Question question);
+    Observable<Void> postQuestion(Auth auth, @PathParam("userId") long userId, Question question);
 
     /**
      * Updates the question with the given questionId

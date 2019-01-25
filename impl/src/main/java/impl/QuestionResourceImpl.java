@@ -1,5 +1,6 @@
 package impl;
 
+import api.Auth;
 import api.Question;
 import api.QuestionResource;
 import com.google.inject.Inject;
@@ -38,7 +39,7 @@ public class QuestionResourceImpl implements QuestionResource {
 
 
     @Override
-    public Observable<Void> postQuestion(long userId, Question question) {
+    public Observable<Void> postQuestion(Auth auth, long userId, Question question) {
         return this.questionDao
                 .addQuestion(userId, question)
                 .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add question to database",throwable)));

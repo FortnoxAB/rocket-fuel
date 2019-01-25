@@ -52,7 +52,6 @@ public class TestSetup {
                 bind(ConfigFactory.class).toInstance(configFactory);
                 ServerConfig serverConfig = configFactory.get(ServerConfig.class);
                 serverConfig.setEnabled(false);
-
                 bind(ServerConfig.class).toInstance(serverConfig);
             }
         };
