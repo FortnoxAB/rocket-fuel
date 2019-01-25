@@ -32,11 +32,11 @@ public class AuthResolverImpl implements AuthResolver {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String COOKIE_CONNECT_SID = "connect.sid";
 
-    private final JwtParser jwtAuthenticator;
+    private final JwtParser jwtParser;
 
     @Inject
-    public AuthResolverImpl(JwtParser jwtAuthenticator) {
-        this.jwtAuthenticator = jwtAuthenticator;
+    public AuthResolverImpl(JwtParser jwtParser) {
+        this.jwtParser = jwtParser;
     }
 
     /**
@@ -75,7 +75,7 @@ public class AuthResolverImpl implements AuthResolver {
             token = resolveTokenFromAuthService(possibleCookieValue.get());
         }
         return token
-            .flatMap(jwtAuthenticator::getAuth)
+            .flatMap(jwtParser::getAuth)
             .doOnError((e) -> LOG.error("failed to get token"));
 
     }
