@@ -10,8 +10,4 @@ import java.time.OffsetDateTime;
  */
 public class AuthImpl extends Auth {
 
-
-    public AuthImpl(String s, OffsetDateTime offsetDateTime) {
-        super();
-    }
 }

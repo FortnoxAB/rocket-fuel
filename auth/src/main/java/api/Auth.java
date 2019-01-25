@@ -10,6 +10,8 @@ import java.time.OffsetDateTime;
     private long userId;
     private String email;
     private OffsetDateTime expires;
+    private String name;
+    private String picture;
 
     public void setUserId(long userId) {
         this.userId = userId;
@@ -33,5 +35,21 @@ import java.time.OffsetDateTime;
 
     public OffsetDateTime getExpires() {
         return expires;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
+    public String getPicture() {
+        return picture;
     }
 }

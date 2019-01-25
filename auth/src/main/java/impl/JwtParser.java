@@ -1,6 +1,7 @@
 package impl;
 
 import api.Auth;
+import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.inject.Inject;
@@ -17,14 +18,18 @@ import java.util.Optional;
 import static rx.Observable.error;
 import static rx.Observable.just;
 
-public class JwtAuthenticator {
+public class JwtParser {
 
-    public static final String CLAIM_EMAIL = "email";
-    private final JwtVerifier jwtVerifier;
+    private static final String CLAIM_EMAIL          = "email";
+    private static final String CLAIM_NAME           = "name";
+    private static final String CLAIM_EMAIL_VERIFIED = "email_verified";
+    private static final String CLAIM_PICTURE        = "picture";
+
+    private final DateProvider dateProvider;
 
     @Inject
-    public JwtAuthenticator(JwtVerifier jwtVerifier) {
-        this.jwtVerifier = jwtVerifier;
+    public JwtParser(DateProvider dateProvider) {
+        this.dateProvider = dateProvider;
     }
 
     /**
@@ -35,27 +40,33 @@ public class JwtAuthenticator {
      * @return auth for the given user.
      */
     public Observable<Auth> getAuth(String authorizationHeader) {
-        final Optional<DecodedJWT> decodedJWT = jwtVerifier.verifyAndDecode(authorizationHeader);
+        final Optional<DecodedJWT> decodedJWT = Optional.of(JWT.decode(authorizationHeader));
         if (!decodedJWT.isPresent()) {
             return error(new WebException(HttpResponseStatus.UNAUTHORIZED));
         }
 
         final DecodedJWT jwt = decodedJWT.get();
-        Optional<String> email = getEmail(jwt.getClaims());
+
+        Claim email = jwt.getClaim(CLAIM_EMAIL);
+        Claim name = jwt.getClaim(CLAIM_NAME);
+        Claim emailVerified = jwt.getClaim(CLAIM_EMAIL_VERIFIED);
+        Claim picture = jwt.getClaim(CLAIM_PICTURE);
         Optional<OffsetDateTime> expires = getExpiration(jwt);
-        if(!email.isPresent() || !expires.isPresent()) {
+
+        if(email.isNull() || name.isNull() || emailVerified.isNull() || !expires.isPresent()) {
             return error(new WebException(HttpResponseStatus.UNAUTHORIZED));
         }
 
-        return just(new AuthImpl(email.get(),expires.get()));
-    }
-
-    private static Optional<String> getEmail(Map<String, Claim> claims) {
-        Claim emailAddress = claims.get(CLAIM_EMAIL);
-        if (!emailAddress.isNull()) {
-            return Optional.empty();
+        if(expires.get().isBefore(dateProvider.getOffsetDateTime())){
+            return error(new WebException(HttpResponseStatus.UNAUTHORIZED));
         }
-        return Optional.of(emailAddress.asString());
+
+        Auth auth = new AuthImpl();
+        auth.setEmail(email.asString());
+        auth.setName(name.asString());
+        auth.setExpires(expires.get());
+        auth.setPicture(picture.asString());
+        return just(auth);
     }
 
     private static Optional<OffsetDateTime> getExpiration(DecodedJWT jwt) {

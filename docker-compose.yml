@@ -18,6 +18,8 @@ services:
 
   backend:
     image: fnx/rocketfuel:latest
+    depends_on: 
+      - storage
     container_name: rocketfuel
     ports:
       - 8080
