@@ -13,7 +13,6 @@ import se.fortnox.reactivewizard.jaxrs.JaxRsRequest;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.net.InetSocketAddress;
-import java.util.Objects;
 import java.util.Optional;
 
 import static rx.Observable.error;
@@ -31,12 +30,15 @@ public class AuthResolverImpl implements AuthResolver {
     private static final Observable<Auth> UNAUTHORIZED = error(new WebException(HttpResponseStatus.UNAUTHORIZED, FAILURE_TO_AUTHENTICATE_REQUEST));
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String COOKIE_CONNECT_SID = "connect.sid";
+    private static final String COOKIE_USER = "application.user";
 
     private final JwtParser jwtParser;
+    private AuthDao authDao;
 
     @Inject
-    public AuthResolverImpl(JwtParser jwtParser) {
+    public AuthResolverImpl(JwtParser jwtParser, AuthDao authDao) {
         this.jwtParser = jwtParser;
+        this.authDao = authDao;
     }
 
     /**
@@ -58,32 +60,72 @@ public class AuthResolverImpl implements AuthResolver {
 
     /**
      * Resolves an auth through a JWT instance.
+     *
      * @param request the current request
      * @return Auth for the user
      */
     private Observable<Auth> resolveAuth(JaxRsRequest request) {
         Optional<String> possibleAuthorization = Optional.ofNullable(request.getHeader(AUTHORIZATION_HEADER));
         Optional<String> possibleCookieValue = Optional.ofNullable(request.getCookieValue(COOKIE_CONNECT_SID));
+        Optional<String> possibleUserCookie = Optional.ofNullable(request.getCookieValue(COOKIE_USER));
+
         if (!possibleAuthorization.isPresent() && !possibleCookieValue.isPresent()) {
             LOG.info("unauthorized request");
             return error(new WebException(HttpResponseStatus.UNAUTHORIZED));
         }
         final Observable<String> token;
-        if(possibleAuthorization.isPresent()) {
+        if (possibleAuthorization.isPresent()) {
             token = just(possibleAuthorization.get());
         } else {
             token = resolveTokenFromAuthService(possibleCookieValue.get());
         }
+        // TODO: we need to set the cookie if no exists
         return token
-            .flatMap(jwtParser::getAuth)
-            .doOnError((e) -> LOG.error("failed to get token"));
-
+                .flatMap(jwtParser::getAuth)
+                .flatMap((auth) ->
+                        possibleUserCookie.map(this::getUserIdFromCookie).orElse(this.getUserIdFromDatabase(auth.getEmail()))
+                        .map(userId -> {
+                            auth.setUserId(userId);
+                            return auth;
+                        }
+                ))
+                .doOnError((e) -> LOG.error("failed to construct auth from jwt", e));
     }
 
-    private static Observable<String> resolveTokenFromAuthService(String possibleCookieValue) {
+    /**
+     * Will load the user from the cookie, this is used for all requests that have been looked up in the database.
+     * THis is the prefered way. Getting the information from the database is more resource consuming.
+     * @param possibleUserCookie
+     * @return
+     */
+    private Observable<Long> getUserIdFromCookie(String possibleUserCookie) {
+        return jwtParser.getUserId(possibleUserCookie);
+    }
+
+    /**
+     * Will load the user from the database. The method will only be invoked the first time, when the user has no cookie.
+     * If the user does not exist, we will create the user.
+     *
+     * @param email for the user we want to get from the database
+     * @return userId mapping for the email.
+     */
+    private Observable<Long> getUserIdFromDatabase(String email) {
+        LOG.info("fetching userId from the database");
+        return authDao.getUserId(email);
+    }
+
+
+    /**
+     * Resolves token from auth service. We should create a resource that we inject instead, add config for the uri as well.
+     *
+     * @param cookie a cookie that will sent to auth service to resolve a token.
+     * @return a token that maps against the cookie.
+     */
+    @Deprecated
+    private static Observable<String> resolveTokenFromAuthService(String cookie) {
         return HttpClient.newClient(new InetSocketAddress("authproxy", 3000))
                 .createGet("/verify")
-                .addCookie(new DefaultCookie(COOKIE_CONNECT_SID, possibleCookieValue))
+                .addCookie(new DefaultCookie(COOKIE_CONNECT_SID, cookie))
                 .flatMap(response -> {
                     if (response.getStatus().equals(HttpResponseStatus.UNAUTHORIZED)) {
                         return error(new WebException(HttpResponseStatus.UNAUTHORIZED));

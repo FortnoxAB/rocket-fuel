@@ -1,5 +1,6 @@
 package impl;
 
+import api.Auth;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Assert;
 import org.junit.Before;
@@ -9,6 +10,10 @@ import org.mockito.Mockito;
 import se.fortnox.reactivewizard.jaxrs.JaxRsRequest;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static rx.Observable.just;
 
 public class AuthResolverImplTest {
@@ -17,43 +22,65 @@ public class AuthResolverImplTest {
 
 	private AuthResolver authResolver;
 
+	private AuthDao authDao;
+
 	@Before
 	public void beforeEach() {
-
-		jwtParser = Mockito.mock(JwtParser.class);
-		authResolver = new AuthResolverImpl(jwtParser);
+		authDao = mock(AuthDao.class);
+		jwtParser = mock(JwtParser.class);
+		authResolver = new AuthResolverImpl(jwtParser, authDao);
 	}
 
 	@Test
 	public void shouldReturnUnauthorizedIfBothAuthorizationAndCookieValueIsMissingInRequest() {
 
-		JaxRsRequest jaxRsRequest = Mockito.mock(JaxRsRequest.class);
-
-		Mockito.when(jaxRsRequest.getHeader("Authorization")).thenReturn(null);
-		Mockito.when(jaxRsRequest.getHeader("connect.sid")).thenReturn(null);
+		JaxRsRequest jaxRsRequest = mock(JaxRsRequest.class);
+		when(jaxRsRequest.getHeader("Authorization")).thenReturn(null);
+		when(jaxRsRequest.getHeader("connect.sid")).thenReturn(null);
 
 		try {
 			authResolver.resolve(jaxRsRequest).toBlocking().single();
 			Assert.fail("expected exception");
 		} catch(WebException expectedException)  {
-			Assert.assertEquals(HttpResponseStatus.UNAUTHORIZED, expectedException.getStatus());
+			assertEquals(HttpResponseStatus.UNAUTHORIZED, expectedException.getStatus());
 		}
 	}
 
 
 	@Test
-	public void shouldUseJwtTokenFoundInAuthorizationHeader() {
+	public void shouldUseJwtTokenFoundInAuthorizationHeaderAndFetchUserIdFromDao() {
 
-		JaxRsRequest jaxRsRequest = Mockito.mock(JaxRsRequest.class);
-
+		JaxRsRequest jaxRsRequest = mock(JaxRsRequest.class);
+		when(authDao.getUserId(anyString())).thenReturn(just(3l));
 		Mockito.when(jaxRsRequest.getHeader("Authorization")).thenReturn("myJwtToken");
-		Mockito.when(jaxRsRequest.getHeader("connect.sid")).thenReturn(null);
+		when(jaxRsRequest.getHeader("connect.sid")).thenReturn(null);
 
-		Mockito.when(jwtParser.getAuth(Matchers.anyString())).thenReturn(just(new AuthImpl()));
+		when(jwtParser.getAuth(Matchers.anyString())).thenReturn(just(new AuthImpl()));
 
-		authResolver.resolve(jaxRsRequest).toBlocking().single();
+		Auth auth = authResolver.resolve(jaxRsRequest).toBlocking().single();
 
 		Mockito.verify(jwtParser, Mockito.times(1)).getAuth("myJwtToken");
+		assertEquals(3, auth.getUserId());
+
+	}
+
+
+	@Test
+	public void shouldUseJwtTokenFoundInAuthorizationHeaderAndFetchUserIdFromCookie() {
+
+		JaxRsRequest jaxRsRequest = mock(JaxRsRequest.class);
+		when(authDao.getUserId(anyString())).thenReturn(just(3l));
+		Mockito.when(jaxRsRequest.getHeader("Authorization")).thenReturn("myJwtToken");
+		when(jaxRsRequest.getHeader("connect.sid")).thenReturn(null);
+		when(jaxRsRequest.getHeader("application.user")).thenReturn("3");
+
+
+		when(jwtParser.getAuth(Matchers.anyString())).thenReturn(just(new AuthImpl()));
+
+		Auth auth = authResolver.resolve(jaxRsRequest).toBlocking().single();
+
+		Mockito.verify(jwtParser, Mockito.times(1)).getAuth("myJwtToken");
+		assertEquals(3, auth.getUserId());
 	}
 
 
