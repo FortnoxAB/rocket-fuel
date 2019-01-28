@@ -9,6 +9,7 @@ import io.reactivex.netty.protocol.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import rx.functions.Func1;
 import se.fortnox.reactivewizard.jaxrs.JaxRsRequest;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
@@ -79,22 +80,31 @@ public class AuthResolverImpl implements AuthResolver {
         } else {
             token = resolveTokenFromAuthService(possibleCookieValue.get());
         }
-        // TODO: we need to set the cookie if no exists
+        // TODO: we need to set the cookie in the response if no exists ( we fetched from db )
         return token
                 .flatMap(jwtParser::getAuth)
-                .flatMap((auth) ->
-                        possibleUserCookie.map(this::getUserIdFromCookie).orElse(this.getUserIdFromDatabase(auth.getEmail()))
-                        .map(userId -> {
-                            auth.setUserId(userId);
-                            return auth;
-                        }
-                ))
+                .flatMap(appendUserId(possibleUserCookie))
                 .doOnError((e) -> LOG.error("failed to construct auth from jwt", e));
+    }
+
+    private Func1<Auth, Observable<? extends Auth>> appendUserId(Optional<String> possibleUserCookie) {
+        return (auth) -> {
+            final Observable<Long> userId;
+            if (possibleUserCookie.isPresent()) {
+                userId = getUserIdFromCookie(possibleUserCookie.get());
+            } else {
+                userId = getUserIdFromDatabase(auth.getEmail());
+            }
+           return userId.map(id -> {
+                auth.setUserId(id);
+                return auth;
+            });
+        };
     }
 
     /**
      * Will load the user from the cookie, this is used for all requests that have been looked up in the database.
-     * THis is the prefered way. Getting the information from the database is more resource consuming.
+     * This is the prefered way. Getting the information from the database is more resource consuming.
      * @param possibleUserCookie
      * @return
      */
