@@ -4,6 +4,7 @@
 
  import javax.validation.constraints.NotNull;
  import javax.ws.rs.GET;
+ import javax.ws.rs.HeaderParam;
  import javax.ws.rs.PUT;
  import javax.ws.rs.Path;
  import javax.ws.rs.PathParam;
@@ -38,5 +39,9 @@ public interface UserResource {
     @GET
     @Path("id/{userId}")
     Observable<User> getUserById(@PathParam("userId") long userId);
+
+    @GET
+    @Path("signIn")
+    Observable<ApplicationToken> generateToken(@HeaderParam("authorizationToken") @NotNull String authorizationToken);
 
 }
