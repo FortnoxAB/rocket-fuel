@@ -1,4 +1,4 @@
-package auth;
+package auth.application;
 
 import se.fortnox.reactivewizard.config.Config;
 
@@ -6,7 +6,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-@Config("ApplicationTokenConfig")
+
+@Config("applicationTokenConfig")
 public class ApplicationTokenConfig {
 
     @NotNull

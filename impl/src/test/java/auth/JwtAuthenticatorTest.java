@@ -1,6 +1,6 @@
 package auth;
 
-import api.Auth;
+import api.auth.Auth;
 import dates.DateProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Before;

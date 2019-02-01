@@ -1,7 +1,8 @@
 package auth;
 
-import api.Auth;
+import api.auth.Auth;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import se.fortnox.reactivewizard.jaxrs.params.ParamResolver;
 import se.fortnox.reactivewizard.jaxrs.params.ParamResolverFactory;
 
@@ -12,6 +13,7 @@ import java.lang.reflect.Parameter;
  * we can have more precise auth resolvers.
  *
  */
+@Singleton
 public class AuthResolverFactory implements ParamResolverFactory<Auth> {
 
     private final AuthResolver authResolver;

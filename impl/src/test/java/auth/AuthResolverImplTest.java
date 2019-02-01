@@ -1,6 +1,6 @@
 package auth;
 
-import api.Auth;
+import api.auth.Auth;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,7 +30,7 @@ public class AuthResolverImplTest {
 
 		JaxRsRequest jaxRsRequest = mock(JaxRsRequest.class);
 
-		when(jaxRsRequest.getCookieValue("application.user")).thenReturn(null);
+		when(jaxRsRequest.getCookieValue("application")).thenReturn(null);
 
 		try {
 			authResolver.resolve(jaxRsRequest).toBlocking().single();
@@ -44,7 +44,7 @@ public class AuthResolverImplTest {
 	public void shouldResolveAuthIfApplicationCookieIsPresent() {
 
 		JaxRsRequest jaxRsRequest = mock(JaxRsRequest.class);
-		when(jaxRsRequest.getCookieValue("application.user")).thenReturn("myJwtToken");
+		when(jaxRsRequest.getCookieValue("application")).thenReturn("myJwtToken");
 		Auth authToResolve = new Auth();
 		authToResolve.setUserId(3);
 		when(jwtAuthResolver.getAuth(anyString())).thenReturn(authToResolve);

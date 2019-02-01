@@ -1,8 +1,8 @@
 package impl;
 
-import api.Auth;
 import api.Question;
 import api.QuestionResource;
+import api.auth.Auth;
 import com.google.inject.Inject;
 import dao.QuestionDao;
 import io.netty.handler.codec.http.HttpResponseStatus;

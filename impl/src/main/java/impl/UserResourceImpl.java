@@ -1,10 +1,10 @@
 package impl;
 
-import api.ApplicationToken;
-import api.Auth;
 import api.User;
 import api.UserResource;
-import auth.OpenIdValidatorImpl;
+import api.auth.ApplicationToken;
+import api.auth.Auth;
+import auth.openid.OpenIdValidator;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.UserDao;
@@ -22,12 +22,12 @@ public class UserResourceImpl implements UserResource {
 
     private final UserDao userDao;
 
-    private final OpenIdValidatorImpl openIdValidator;
+    private final OpenIdValidator openIdValidator;
 
     private final ApplicationTokenCreator applicationTokenCreator;
 
     @Inject
-    public UserResourceImpl(UserDao userDao, ResponseHeaderHolder responseHeaderHolder, OpenIdValidatorImpl openIdValidator, ApplicationTokenCreator applicationTokenCreator) {
+    public UserResourceImpl(UserDao userDao, ResponseHeaderHolder responseHeaderHolder, OpenIdValidator openIdValidator, ApplicationTokenCreator applicationTokenCreator) {
         this.userDao = userDao;
         this.responseHeaderHolder = responseHeaderHolder;
         this.openIdValidator = openIdValidator;
@@ -56,7 +56,7 @@ public class UserResourceImpl implements UserResource {
 
     @Override
     public Observable<ApplicationToken> generateToken(@NotNull String openIdToken) {
-        final OpenIdValidatorImpl.ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
+        final OpenIdValidator.ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
         return userDao.getUserByEmail(validOpenId.email).map((user)-> {
             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
             addAsCookie(applicationToken);
@@ -66,7 +66,7 @@ public class UserResourceImpl implements UserResource {
     }
     private void addAsCookie(final ApplicationToken applicationToken) {
         responseHeaderHolder.addHeaders(applicationToken, new HashMap<String, Object>() {{
-            put("Set-Cookie", "applicationToken=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
+            put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
         }});
     }
 

@@ -1,8 +1,8 @@
-import api.Auth;
 import api.Question;
 import api.QuestionResource;
 import api.User;
 import api.UserResource;
+import api.auth.Auth;
 import org.junit.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import se.fortnox.reactivewizard.CollectionOptions;

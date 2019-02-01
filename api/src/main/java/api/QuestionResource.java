@@ -1,5 +1,6 @@
  package api;
 
+ import api.auth.Auth;
  import rx.Observable;
  import se.fortnox.reactivewizard.CollectionOptions;
 
@@ -24,9 +25,9 @@ public interface QuestionResource {
     Observable<Question> getQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
 
 
-        /**
-         * Adds a question and links it to the given userId.
-         */
+    /**
+     * Adds a question and links it to the given userId.
+     */
     @POST
     Observable<Void> postQuestion(Auth auth, @PathParam("userId") long userId, Question question);
 

@@ -1,4 +1,4 @@
-package api;
+package api.auth;
 
 import java.time.OffsetDateTime;
 

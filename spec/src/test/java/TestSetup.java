@@ -1,3 +1,4 @@
+import auth.application.ApplicationTokenConfig;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -49,6 +50,9 @@ public class TestSetup {
 
                 bind(String[].class).annotatedWith(Names.named("args"))
                         .toInstance(args);
+                ApplicationTokenConfig applicationTokenConfig = new ApplicationTokenConfig();
+                applicationTokenConfig.setSecret("the-test-secret-used-during-spec");
+                bind(ApplicationTokenConfig.class).toInstance(applicationTokenConfig);
                 bind(ConfigFactory.class).toInstance(configFactory);
                 ServerConfig serverConfig = configFactory.get(ServerConfig.class);
                 serverConfig.setEnabled(false);

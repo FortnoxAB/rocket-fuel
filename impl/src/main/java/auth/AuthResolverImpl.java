@@ -1,6 +1,6 @@
 package auth;
 
-import api.Auth;
+import api.auth.Auth;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -24,8 +24,7 @@ import static rx.Observable.just;
 public class AuthResolverImpl implements AuthResolver {
 	private static final Logger     LOG                             = LoggerFactory.getLogger(AuthResolverImpl.class);
 	private static final String     FAILURE_TO_AUTHENTICATE_REQUEST = "failure to authenticate request";
-	private static final Observable UNAUTHORIZED                    = error(new WebException(HttpResponseStatus.UNAUTHORIZED, FAILURE_TO_AUTHENTICATE_REQUEST));
-	private static final String     APPLICATION_COOKIE              = "application.user";
+	private static final String     APPLICATION_COOKIE              = "application";
 
 	private final JwtAuthResolver jwtAuthResolver;
 
@@ -47,7 +46,7 @@ public class AuthResolverImpl implements AuthResolver {
 			return resolveAuth(request);
 		} catch (Throwable e) {
 			LOG.warn("Unexpected error loading auth", e);
-			return UNAUTHORIZED;
+			return  error(new WebException(HttpResponseStatus.UNAUTHORIZED, FAILURE_TO_AUTHENTICATE_REQUEST));
 		}
 	}
 
@@ -63,7 +62,7 @@ public class AuthResolverImpl implements AuthResolver {
 		if (!possibleApplicationCookie.isPresent()) {
 			// for now, only allow login through cookie
 			LOG.info("unauthorized request, failed to determine caller");
-			return UNAUTHORIZED;
+			return  error(new WebException(HttpResponseStatus.UNAUTHORIZED, FAILURE_TO_AUTHENTICATE_REQUEST));
 		}
 
 		return just(possibleApplicationCookie
