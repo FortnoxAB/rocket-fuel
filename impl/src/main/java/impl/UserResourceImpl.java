@@ -1,10 +1,10 @@
 package impl;
 
-import api.ApplicationAuthenticator;
 import api.ApplicationToken;
 import api.Auth;
 import api.User;
 import api.UserResource;
+import auth.OpenIdValidatorImpl;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.UserDao;
@@ -22,13 +22,16 @@ public class UserResourceImpl implements UserResource {
 
     private final UserDao userDao;
 
-    private final ApplicationAuthenticator applicationAuthenticator;
+    private final OpenIdValidatorImpl openIdValidator;
+
+    private final ApplicationTokenCreator applicationTokenCreator;
 
     @Inject
-    public UserResourceImpl(UserDao userDao, ResponseHeaderHolder responseHeaderHolder, ApplicationAuthenticator applicationAuthenticator) {
+    public UserResourceImpl(UserDao userDao, ResponseHeaderHolder responseHeaderHolder, OpenIdValidatorImpl openIdValidator, ApplicationTokenCreator applicationTokenCreator) {
         this.userDao = userDao;
         this.responseHeaderHolder = responseHeaderHolder;
-        this.applicationAuthenticator = applicationAuthenticator;
+        this.openIdValidator = openIdValidator;
+        this.applicationTokenCreator = applicationTokenCreator;
     }
 
     @Override
@@ -53,14 +56,18 @@ public class UserResourceImpl implements UserResource {
 
     @Override
     public Observable<ApplicationToken> generateToken(@NotNull String openIdToken) {
-    	// get user by email ( how does one get
+        final OpenIdValidatorImpl.ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
+        return userDao.getUserByEmail(validOpenId.email).map((user)-> {
+            ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
+            addAsCookie(applicationToken);
+            return applicationToken;
+        });
 
-	   // applicationAuthenticator.validate(openIdToken);
-        ApplicationToken applicationToken = applicationAuthenticator.create(openIdToken, 2);
+    }
+    private void addAsCookie(final ApplicationToken applicationToken) {
         responseHeaderHolder.addHeaders(applicationToken, new HashMap<String, Object>() {{
             put("Set-Cookie", "applicationToken=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
         }});
-        return just(applicationToken);
     }
 
 }

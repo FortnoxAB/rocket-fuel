@@ -1,4 +1,4 @@
-package impl;
+package auth;
 
 import api.Auth;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -11,9 +11,7 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class AuthResolverImplTest {
 
@@ -47,7 +45,7 @@ public class AuthResolverImplTest {
 
 		JaxRsRequest jaxRsRequest = mock(JaxRsRequest.class);
 		when(jaxRsRequest.getCookieValue("application.user")).thenReturn("myJwtToken");
-		Auth authToResolve = new AuthImpl();
+		Auth authToResolve = new Auth();
 		authToResolve.setUserId(3);
 		when(jwtAuthResolver.getAuth(anyString())).thenReturn(authToResolve);
 		Auth auth = authResolver.resolve(jaxRsRequest).toBlocking().single();

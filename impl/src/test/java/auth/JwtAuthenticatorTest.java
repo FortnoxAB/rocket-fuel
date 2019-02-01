@@ -1,6 +1,7 @@
-package impl;
+package auth;
 
 import api.Auth;
+import dates.DateProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +17,7 @@ import static org.mockito.Mockito.when;
 public class JwtAuthenticatorTest {
 	private static final String JWT = "eyJhbGciOiJIUzI1NiIsImtpZCI6ImIxNWEyYjhmN2E2YjNmNmJjMDhiYzFjNTZhODg0MTBlMTQ2ZDAxZmQiLCJ0eXAiOiJKV1QifQ.eyJlbWFpbCI6ImplcHAzX2RyYWdvbnNsYXllckBmb3J0bm94LnNlIiwibmFtZSI6ImplcHAzIiwicGljdHVyZSI6InVybHRvcGljdHVyZSIsInVzZXJfaWQiOjEsImlhdCI6MTU0ODQxNzY0NywiZXhwIjoxNTQ4NDIxMjQ3fQ.yDPCbMe5ZPqNubrWBoJJytk3DqS5FiEVotirtj3wzNA";
 	private JwtAuthResolver jwtAuthResolver;
-	private DateProvider    dateProvider;
+	private DateProvider dateProvider;
 	@Before
 	public void beforeEach() {
 		dateProvider = mock(DateProvider.class);

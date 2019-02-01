@@ -1,21 +1,18 @@
-package impl;
+package auth;
 
 import api.Auth;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.inject.Inject;
+import dates.DateProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
-
-import static rx.Observable.error;
-import static rx.Observable.just;
 
 public class JwtAuthResolver {
 
@@ -53,7 +50,7 @@ public class JwtAuthResolver {
 			throw new WebException(HttpResponseStatus.UNAUTHORIZED);
 		}
 
-		Auth auth = new AuthImpl();
+		Auth auth = new Auth();
 		auth.setEmail(email.asString());
 		auth.setName(name.asString());
 		auth.setExpires(expires.get());

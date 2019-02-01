@@ -7,7 +7,9 @@ public class ApplicationToken {
 	public ApplicationToken() {
 		this.applicationToken = null;
 	}
-
+	public ApplicationToken(String applicationToken) {
+		this.applicationToken = applicationToken;
+	}
 	public String getApplicationToken() {
 		return applicationToken;
 	}

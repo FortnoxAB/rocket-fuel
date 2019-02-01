@@ -1,5 +1,4 @@
 import api.Auth;
-import org.mockito.Mock;
 
 public class MockAuth extends Auth {
 

@@ -1,4 +1,4 @@
-package impl;
+package auth;
 
 import api.Auth;
 import com.google.inject.Inject;

@@ -5,7 +5,7 @@ import java.time.OffsetDateTime;
 /**
  * An specification of an authorized user.
  */
- public abstract class Auth {
+ public class Auth {
 
     private long userId;
     private String email;

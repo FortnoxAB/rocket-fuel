@@ -1,4 +1,4 @@
-package impl;
+package auth;
 
 import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;

@@ -1,4 +1,4 @@
-package impl;
+package auth;
 
 import se.fortnox.reactivewizard.config.Config;
 

@@ -1,4 +1,4 @@
-package impl;
+package auth;
 
 import api.Auth;
 import se.fortnox.reactivewizard.jaxrs.params.ParamResolver;
