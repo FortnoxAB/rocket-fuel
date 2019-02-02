@@ -7,8 +7,6 @@ import se.fortnox.reactivewizard.db.Update;
 
 
 public interface UserDao {
-    //TODO add upsert, we need to add a unique constrain here.
-    Observable<Void> upsertUser(Long userId, User user);
 
     @Update("INSERT INTO public.\"user\" " +
             "(email, vendor_id, \"name\") " +

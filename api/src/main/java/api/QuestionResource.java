@@ -9,7 +9,9 @@
 
 
 /**
- * Manages users questions.
+ * Manages a users questions.
+ *
+ * A question is always linked to a {@link User} and may have {@link Answer}s connected to it.
  *
  */
 @Path("/api/users/{userId}/questions")
@@ -17,10 +19,16 @@ public interface QuestionResource {
 
     /**
      * Returns all questions for a given user
+     *
+     * Collection options can be used to limit the number questions returned to the client.
+     *
      */
     @GET
     Observable<List<Question>> getQuestions(@PathParam("userId") long userId, CollectionOptions collectionOptions);
 
+    /**
+     * Returns a specific question to the client
+     */
     @GET
     Observable<Question> getQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
 

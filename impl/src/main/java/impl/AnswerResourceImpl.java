@@ -27,7 +27,6 @@ public class AnswerResourceImpl implements AnswerResource {
         this.daoTransactions = daoTransactions;
     }
 
-
     @Override
     public Observable<List<Answer>> getAnswers(long userId, long questionId) {
         return answerDao.getAnswers(userId,questionId).toList();

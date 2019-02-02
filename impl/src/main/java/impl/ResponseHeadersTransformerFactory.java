@@ -11,6 +11,9 @@ import javax.inject.Singleton;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Makes it possible to append headers to a request.
+ */
 @Singleton
 public class ResponseHeadersTransformerFactory implements ResultTransformerFactory, ResponseHeaderHolder {
 

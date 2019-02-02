@@ -13,6 +13,11 @@ import java.util.Date;
 import static auth.application.ApplicationTokenClaims.USER_ID;
 import static auth.openid.OpenIdClaims.*;
 
+/**
+ * Handles creation of application tokens for the client.
+ *
+ * The application tokens are used by the clients to authenticate the user when accessing restricted endpoints.
+ */
 class ApplicationTokenCreator {
 
     private ApplicationTokenConfig applicationTokenConfig;
@@ -25,6 +30,15 @@ class ApplicationTokenCreator {
         this.dateProvider = dateProvider;
     }
 
+    /**
+     * Creates an applicationToken based on the openId token and a user id.
+     *
+     *
+     * @param openIdToken a openId token
+     * @param userId the userId that shall be connected to the information in the openId token.
+     * @return an applicationToken as a jwt containing combined information from both the application as well
+     * as the authorization process.
+     */
     ApplicationToken createApplicationToken(OpenIdValidator.ImmutableOpenIdToken openIdToken, long userId) {
 
         long epochMilli = dateProvider.getOffsetDateTime().plusHours(1).toInstant().toEpochMilli();

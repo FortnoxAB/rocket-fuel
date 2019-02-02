@@ -10,6 +10,12 @@
 @Path("/api/user")
 public interface UserResource {
 
+    /**
+     * returns the current signed in user.
+     *
+     * @param auth
+     * @return
+     */
     @GET
     Observable<String> getCurrent(Auth auth);
     /**
@@ -38,8 +44,17 @@ public interface UserResource {
     @Path("id/{userId}")
     Observable<User> getUserById(@PathParam("userId") long userId);
 
+    /**
+     * Returns a application token, that shall be used when the client uses endpoints
+     * that needs authentication. The token contains valuable information about the user.
+     *
+     * A cookie named application will be returned in the request, containing the token, so that
+     * further requests will be authenticated, if the client is a browser.
+     * @param authorizationToken a OpenId jwt token
+     * @return a application token as a jwt
+     */
     @GET
-    @Path("signIn")
+    @Path("authenticate")
     Observable<ApplicationToken> generateToken(@HeaderParam("authorizationToken") @NotNull String authorizationToken);
 
 }

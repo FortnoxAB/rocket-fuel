@@ -1,7 +1,11 @@
  package api;
 
 
-public abstract class Post {
+ /**
+  * A class that defines the shared attributes between a {@link Answer}
+  * or {@link Question}.
+  */
+ public abstract class Post {
 
     private String title;
 
