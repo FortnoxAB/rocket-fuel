@@ -9,12 +9,16 @@ import auth.openid.OpenIdValidator;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.UserDao;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
+
+import static rx.Observable.error;
 
 @Singleton
 public class UserResourceImpl implements UserResource {
@@ -39,7 +43,8 @@ public class UserResourceImpl implements UserResource {
 
     @Override
     public Observable<User> getCurrent(Auth auth) {
-        return userDao.getUserById(auth.getUserId());
+        return userDao.getUserById(auth.getUserId())
+                .switchIfEmpty(error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "current user not found")));
     }
 
     @Override
@@ -49,29 +54,23 @@ public class UserResourceImpl implements UserResource {
 
     @Override
     public Observable<User> getUserByEmail(String email) {
-        return this.userDao.getUserByEmail(email);
+        return this.userDao.getUserByEmail(email)
+                .switchIfEmpty(error(new WebException(HttpResponseStatus.NOT_FOUND)));
     }
 
     @Override
     public Observable<User> getUserById(long userId) {
-        return this.userDao.getUserById(userId);
+        return this.userDao.getUserById(userId)
+                .switchIfEmpty(error(new WebException(HttpResponseStatus.NOT_FOUND)));
     }
 
     @Override
     public Observable<ApplicationToken> generateToken(@NotNull String openIdToken) {
         final ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
         return userDao.getUserByEmail(validOpenId.email)
+                .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user")))
                 .single()
-                .onErrorResumeNext((t) -> {
-                    // insert the user to the db if not exist
-                    User user = new User();
-                    user.setName(validOpenId.name);
-                    user.setEmail(validOpenId.email);
-                    return userDao.insertUser(user).flatMap((ignore) -> userDao.getUserByEmail(validOpenId.email))
-                            .doOnError((throwable) -> {
-                                LOG.error("failed to add user to the database", throwable);
-                            });
-                })
+                .onErrorResumeNext((t) -> addUserToDatabase(validOpenId))
                 .map((user) -> {
             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
             addAsCookie(applicationToken);
@@ -79,6 +78,17 @@ public class UserResourceImpl implements UserResource {
         });
 
     }
+
+    private Observable<User> addUserToDatabase(ImmutableOpenIdToken validOpenId) {
+        User user = new User();
+        user.setName(validOpenId.name);
+        user.setEmail(validOpenId.email);
+        return userDao.insertUser(user).flatMap((ignore) -> userDao.getUserByEmail(validOpenId.email))
+                .doOnError((throwable) -> {
+                    LOG.error("failed to add user to the database", throwable);
+                });
+    }
+
     private void addAsCookie(final ApplicationToken applicationToken) {
         responseHeaderHolder.addHeaders(applicationToken, new HashMap<String, Object>() {{
             put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
