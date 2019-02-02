@@ -173,7 +173,7 @@ public class AnswerResourceTest {
         User user = new User();
         user.setEmail(generatedEmail);
         user.setName("Test Subject");
-        userResource.createUser(user).toBlocking().single();
+        userResource.createUser(null, user).toBlocking().single();
         return userResource.getUserByEmail(generatedEmail).toBlocking().single();
     }
 }

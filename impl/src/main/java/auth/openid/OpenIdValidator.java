@@ -15,18 +15,7 @@ public class OpenIdValidator {
 
 	private static final Logger LOG = LoggerFactory.getLogger(OpenIdValidator.class);
 
-	public class ImmutableOpenIdToken {
 
-		public final String name;
-		public final String email;
-		public final String picture;
-
-		ImmutableOpenIdToken(String name, String email, String picture) {
-			this.name = name;
-			this.email = email;
-			this.picture = picture;
-		}
-	}
 
 	public ImmutableOpenIdToken validate(@NotNull String openIdToken) {
 		final DecodedJWT decodedOpenId;

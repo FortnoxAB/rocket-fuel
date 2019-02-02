@@ -4,19 +4,22 @@ import api.User;
 import api.UserResource;
 import api.auth.ApplicationToken;
 import api.auth.Auth;
+import auth.openid.ImmutableOpenIdToken;
 import auth.openid.OpenIdValidator;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.UserDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 
-import static rx.Observable.just;
-
 @Singleton
 public class UserResourceImpl implements UserResource {
+
+    private final Logger LOG = LoggerFactory.getLogger(UserResourceImpl.class);
 
     private final ResponseHeaderHolder responseHeaderHolder;
 
@@ -35,12 +38,12 @@ public class UserResourceImpl implements UserResource {
     }
 
     @Override
-    public Observable<String> getCurrent(Auth auth) {
-        return just(Long.valueOf(auth.getUserId()).toString());
+    public Observable<User> getCurrent(Auth auth) {
+        return userDao.getUserById(auth.getUserId());
     }
 
     @Override
-    public Observable<Integer> createUser(User user) {
+    public Observable<Integer> createUser(Auth auth, User user) {
         return this.userDao.insertUser(user);
     }
 
@@ -56,8 +59,20 @@ public class UserResourceImpl implements UserResource {
 
     @Override
     public Observable<ApplicationToken> generateToken(@NotNull String openIdToken) {
-        final OpenIdValidator.ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
-        return userDao.getUserByEmail(validOpenId.email).map((user)-> {
+        final ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
+        return userDao.getUserByEmail(validOpenId.email)
+                .single()
+                .onErrorResumeNext((t) -> {
+                    // insert the user to the db if not exist
+                    User user = new User();
+                    user.setName(validOpenId.name);
+                    user.setEmail(validOpenId.email);
+                    return userDao.insertUser(user).flatMap((ignore) -> userDao.getUserByEmail(validOpenId.email))
+                            .doOnError((throwable) -> {
+                                LOG.error("failed to add user to the database", throwable);
+                            });
+                })
+                .map((user) -> {
             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
             addAsCookie(applicationToken);
             return applicationToken;

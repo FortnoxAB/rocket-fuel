@@ -2,7 +2,7 @@ package impl;
 
 import api.auth.ApplicationToken;
 import auth.application.ApplicationTokenConfig;
-import auth.openid.OpenIdValidator;
+import auth.openid.ImmutableOpenIdToken;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.inject.Inject;
@@ -18,7 +18,7 @@ import static auth.openid.OpenIdClaims.*;
  *
  * The application tokens are used by the clients to authenticate the user when accessing restricted endpoints.
  */
-class ApplicationTokenCreator {
+public class ApplicationTokenCreator {
 
     private ApplicationTokenConfig applicationTokenConfig;
 
@@ -39,7 +39,7 @@ class ApplicationTokenCreator {
      * @return an applicationToken as a jwt containing combined information from both the application as well
      * as the authorization process.
      */
-    ApplicationToken createApplicationToken(OpenIdValidator.ImmutableOpenIdToken openIdToken, long userId) {
+    ApplicationToken createApplicationToken(ImmutableOpenIdToken openIdToken, long userId) {
 
         long epochMilli = dateProvider.getOffsetDateTime().plusHours(1).toInstant().toEpochMilli();
         Date date = new Date(epochMilli);

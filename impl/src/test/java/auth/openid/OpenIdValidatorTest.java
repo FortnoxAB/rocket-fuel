@@ -18,7 +18,7 @@ public class OpenIdValidatorTest {
     @Test
     public void shouldValidateSimpleJWT() {
 
-       OpenIdValidator.ImmutableOpenIdToken token =  openIdValidator.validate(SIMPLE_JWT);
+        ImmutableOpenIdToken token = openIdValidator.validate(SIMPLE_JWT);
 
        assertEquals("jepp3",token.name);
        assertEquals("jepp3_dragonslayer@fortnox.se",token.email);

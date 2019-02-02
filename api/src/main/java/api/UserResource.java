@@ -16,15 +16,16 @@ public interface UserResource {
      * @param auth
      * @return
      */
+    @Path("me")
     @GET
-    Observable<String> getCurrent(Auth auth);
+    Observable<User> getCurrent(Auth auth);
     /**
      * Creates a user
      * @param user user that will be created/updated.
      * @return
      */
-    @PUT
-    Observable<Integer> createUser(User user);
+    @POST
+    Observable<Integer> createUser(Auth auth, User user);
 
     /**
      * Returns the user by email
