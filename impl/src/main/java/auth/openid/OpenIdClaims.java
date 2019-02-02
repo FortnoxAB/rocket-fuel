@@ -1,5 +1,8 @@
 package auth.openid;
 
+/**
+ * Contains all used claims from the openId jwt
+ */
 public abstract class OpenIdClaims {
 
     public static final String NAME = "name";

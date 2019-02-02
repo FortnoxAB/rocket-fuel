@@ -1,5 +1,8 @@
 package auth.openid;
 
+/**
+ * Represents a openId.
+ */
 public class ImmutableOpenIdToken {
 
     public final String name;
