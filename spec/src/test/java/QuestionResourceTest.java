@@ -169,7 +169,6 @@ public class QuestionResourceTest {
         User user = new User();
         user.setEmail(generatedEmail);
         user.setName("Test Subject");
-        user.setVendorId("vendorId");
         userResource.createUser(user).toBlocking().single();
         return userResource.getUserByEmail(generatedEmail).toBlocking().single();
     }

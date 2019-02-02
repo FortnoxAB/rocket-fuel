@@ -68,4 +68,8 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="drop-vendor-column" author="jesper">
+            <dropColumn columnName="vendor_id" tableName="user"/>
+    </changeSet>
 </databaseChangeLog>

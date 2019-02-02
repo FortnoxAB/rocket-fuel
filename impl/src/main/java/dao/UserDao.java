@@ -8,9 +8,9 @@ import se.fortnox.reactivewizard.db.Update;
 
 public interface UserDao {
 
-    @Update("INSERT INTO public.\"user\" " +
-            "(email, vendor_id, \"name\") " +
-            "VALUES(:user.email, :user.vendorId, :user.name);\n")
+    @Update("INSERT INTO \"user\" " +
+            "(email, \"name\") " +
+            "VALUES(:user.email, :user.name);\n")
     Observable<Integer> insertUser(User user);
 
     @Query(value = "SELECT * from \"user\" where email = :email", maxLimit = 1)
