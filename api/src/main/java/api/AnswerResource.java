@@ -1,16 +1,16 @@
  package api;
 
  import api.auth.Auth;
-import rx.Observable;
-import se.fortnox.reactivewizard.jaxrs.PATCH;
+ import rx.Observable;
+ import se.fortnox.reactivewizard.jaxrs.PATCH;
 
  import javax.ws.rs.*;
-import java.util.List;
+ import java.util.List;
 
 /**
  * Manages answers for questions
  */
-@Path("/api")
+@Path("/api/users/")
 public interface AnswerResource {
 
     /**
