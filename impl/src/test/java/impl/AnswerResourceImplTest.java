@@ -2,6 +2,7 @@ package impl;
 
 import api.Answer;
 import api.AnswerResource;
+import api.auth.Auth;
 import dao.AnswerDao;
 import dao.QuestionDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -51,9 +52,10 @@ public class AnswerResourceImplTest {
     public void shouldThrowInternalServerErrorIfCreateAnswerFails() {
         Answer answer = new Answer();
         when(answerDao.createAnswer(123, 123, answer)).thenReturn(Observable.error(new SQLException("poff")));
-
+        Auth auth = new Auth();
+        auth.setUserId(123);
         try {
-            answerResource.createAnswer(123, 123, answer).toBlocking().singleOrDefault(null);
+            answerResource.createAnswer(auth, 123, answer).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
@@ -66,9 +68,10 @@ public class AnswerResourceImplTest {
     public void shouldThrowInternalServerErrorIfUpdateAnswerFails() {
         Answer answer = new Answer();
         when(answerDao.updateAnswer(123, 123, 123, answer)).thenReturn(Observable.error(new SQLException("poff")));
-
+        Auth auth = new Auth();
+        auth.setUserId(123);
         try {
-            answerResource.updateAnswer(123, 123, 123, answer).toBlocking().singleOrDefault(null);
+            answerResource.updateAnswer(auth, 123, 123, answer).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
@@ -79,9 +82,10 @@ public class AnswerResourceImplTest {
     @Test
     public void shouldThrowInternalServerErrorIfMarkAsAnsweredFails() {
         when(daoTransactions.executeTransaction(any(), any())).thenReturn(Observable.error(new SQLException("poff")));
-
+        Auth auth = new Auth();
+        auth.setUserId(123);
         try {
-            answerResource.markAsAnswered(123, 123, 123).toBlocking().singleOrDefault(null);
+            answerResource.markAsAnswered(auth, 123, 123).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());

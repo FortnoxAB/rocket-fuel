@@ -2,6 +2,7 @@ package impl;
 
 import api.Answer;
 import api.AnswerResource;
+import api.auth.Auth;
 import com.google.inject.Inject;
 import dao.AnswerDao;
 import dao.QuestionDao;
@@ -35,22 +36,22 @@ public class AnswerResourceImpl implements AnswerResource {
     }
 
     @Override
-    public Observable<Void> createAnswer(long userId, long questionId, Answer answer) {
-        return answerDao.createAnswer(userId, questionId, answer)
+    public Observable<Void> createAnswer(Auth auth, long questionId, Answer answer) {
+        return answerDao.createAnswer(auth.getUserId(), questionId, answer)
                 .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to create answer", throwable)));
 
     }
 
     @Override
-    public Observable<Void> updateAnswer(long userId, long questionId, long answerId, Answer answer) {
-        return answerDao.updateAnswer(userId, questionId, answerId, answer)
+    public Observable<Void> updateAnswer(Auth auth, long questionId, long answerId, Answer answer) {
+        return answerDao.updateAnswer(auth.getUserId(), questionId, answerId, answer)
                 .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to update answer", throwable)));
     }
 
     @Override
-    public Observable<Void> markAsAnswered(long userId, long questionId, long answerId) {
-        Observable<Integer> markQuestionAsAnswered = this.questionDao.markAsAnswered(questionId);
-        Observable<Integer> markAnswerAsAnswered = this.answerDao.markAsAnswered(answerId);
+    public Observable<Void> markAsAnswered(Auth auth, long questionId, long answerId) {
+        Observable<Integer> markQuestionAsAnswered = this.questionDao.markAsAnswered(auth.getUserId(), questionId);
+        Observable<Integer> markAnswerAsAnswered = this.answerDao.markAsAnswered(auth.getUserId(), answerId);
         this.daoTransactions.createTransaction(markQuestionAsAnswered, markAnswerAsAnswered);
         return this.daoTransactions.executeTransaction(markQuestionAsAnswered, markAnswerAsAnswered)
                 .onErrorResumeNext((e) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to mark question as answered", e)));

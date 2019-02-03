@@ -1,4 +1,5 @@
 import api.*;
+import api.auth.Auth;
 import org.junit.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import se.fortnox.reactivewizard.CollectionOptions;
@@ -48,7 +49,8 @@ public class AnswerResourceTest {
         answer.setTitle("this is an answer title");
         answer.setAnswer("this is the body of the answer");
 
-        answerResource.createAnswer(createdUser.getId(), question.getId(), answer).toBlocking().singleOrDefault(null);
+        Auth auth = new MockAuth(createdUser.getId());
+        answerResource.createAnswer(auth, question.getId(), answer).toBlocking().singleOrDefault(null);
 
         Answer createdAnswer = getFirstAnswer(createdUser, question);
         assertFalse(createdAnswer.isAccepted());
@@ -67,8 +69,9 @@ public class AnswerResourceTest {
         Answer answer = new Answer();
         answer.setTitle("this is an answer title");
         answer.setAnswer("this is the body of the answer");
+        Auth auth = new MockAuth(createdUser.getId());
 
-        answerResource.createAnswer(createdUser.getId(), question.getId(), answer).toBlocking().singleOrDefault(null);
+        answerResource.createAnswer(auth, question.getId(), answer).toBlocking().singleOrDefault(null);
 
         Answer createdAnswer = getFirstAnswer(createdUser, question);
 
@@ -79,7 +82,7 @@ public class AnswerResourceTest {
         updatedAnswerInput.setAccepted(false);
 
 
-        answerResource.updateAnswer(createdUser.getId(), question.getId(), createdAnswer.getId(), updatedAnswerInput).toBlocking().singleOrDefault(null);
+        answerResource.updateAnswer(auth, question.getId(), createdAnswer.getId(), updatedAnswerInput).toBlocking().singleOrDefault(null);
 
         Answer updatedAnswer = getFirstAnswer(createdUser, question);
 
@@ -108,9 +111,8 @@ public class AnswerResourceTest {
         Answer answerForUserTwo = new Answer();
         answerForUserTwo.setTitle("this is an answer title");
         answerForUserTwo.setAnswer("this is the body of the answer");
-
-        answerResource.createAnswer(createdUser.getId(), question.getId(), answer).toBlocking().singleOrDefault(null);
-        answerResource.createAnswer(createdUserTwo.getId(), questionForUserTwo.getId(), answerForUserTwo).toBlocking().singleOrDefault(null);
+        answerResource.createAnswer(new MockAuth(createdUser.getId()), question.getId(), answer).toBlocking().singleOrDefault(null);
+        answerResource.createAnswer(new MockAuth(createdUserTwo.getId()), questionForUserTwo.getId(), answerForUserTwo).toBlocking().singleOrDefault(null);
 
         Answer createdAnswer = getFirstAnswer(createdUser, question);
         assertFalse(createdAnswer.isAccepted());
@@ -130,11 +132,11 @@ public class AnswerResourceTest {
         answer.setTitle("this is an answer title");
         answer.setAnswer("this is the body of the answer");
 
-        answerResource.createAnswer(createdUser.getId(), question.getId(), answer).toBlocking().singleOrDefault(null);
+        answerResource.createAnswer(new MockAuth(createdUser.getId()), question.getId(), answer).toBlocking().singleOrDefault(null);
 
         Answer createdAnswer = getFirstAnswer(createdUser, question);
 
-        answerResource.markAsAnswered(createdUser.getId(), question.getId(), createdAnswer.getId()).toBlocking().singleOrDefault(null);
+        answerResource.markAsAnswered(new MockAuth(createdUser.getId()), question.getId(), createdAnswer.getId()).toBlocking().singleOrDefault(null);
 
         Answer markedAsAccepted = getFirstAnswer(createdUser, question);
 

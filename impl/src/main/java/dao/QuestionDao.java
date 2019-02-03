@@ -24,6 +24,6 @@ public interface QuestionDao {
     Observable<Question> getQuestion(long userId, long questionId);
 
     @Update("UPDATE question " +
-            "SET answer_accepted=true WHERE question.id=:questionId")
-    Observable<Integer> markAsAnswered(long questionId);
+            "SET answer_accepted=true WHERE question.id=:questionId AND question.user_id=:userId")
+    Observable<Integer> markAsAnswered(long userId, long questionId);
 }
