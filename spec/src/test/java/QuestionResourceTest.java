@@ -55,7 +55,8 @@ public class QuestionResourceTest {
         question.setQuestion("my question");
 
         Auth mockAuth = new MockAuth(createdUser.getId());
-        questionResource.postQuestion(mockAuth, createdUser.getId(), question).toBlocking().singleOrDefault(null);
+        mockAuth.setUserId(createdUser.getId());
+        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
         // then the question should be returned when asking for the users questions
         List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
@@ -81,8 +82,8 @@ public class QuestionResourceTest {
         question.setVotes(3);
         question.setQuestion("my question");
         Auth mockAuth = new MockAuth(createdUser.getId());
-
-        questionResource.postQuestion(mockAuth, createdUser.getId(), question).toBlocking().singleOrDefault(null);
+        mockAuth.setUserId(createdUser.getId());
+        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
         List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
         assertEquals(1, questions.size());
 
@@ -109,14 +110,14 @@ public class QuestionResourceTest {
         question.setVotes(3);
         question.setQuestion("my question");
         Auth mockAuth = new MockAuth(createdUser.getId());
-
-        questionResource.postQuestion(mockAuth, createdUser.getId(), question).toBlocking().singleOrDefault(null);
+        mockAuth.setUserId(createdUser.getId());
+        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
         long newQuestionId = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single().get(0).getId();
         question.setBounty(400);
         question.setTitle("new title");
         question.setQuestion("new question body");
-        questionResource.updateQuestion(createdUser.getId(), newQuestionId,  question).toBlocking().singleOrDefault(null);
+        questionResource.updateQuestion(mockAuth, newQuestionId, question).toBlocking().singleOrDefault(null);
         List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
         assertEquals(1, questions.size());
 
@@ -150,9 +151,10 @@ public class QuestionResourceTest {
         questionForOtherUser.setVotes(3);
         questionForOtherUser.setQuestion("other users question");
 
-        Auth auth = new MockAuth(2);
-        questionResource.postQuestion(auth, ourUser.getId(), ourQuestion).toBlocking().singleOrDefault(null);
-        questionResource.postQuestion(auth, otherUser.getId(), questionForOtherUser).toBlocking().singleOrDefault(null);
+        Auth auth = new MockAuth(ourUser.getId());
+        questionResource.postQuestion(auth, ourQuestion).toBlocking().singleOrDefault(null);
+        Auth authOtherUser = new MockAuth(otherUser.getId());
+        questionResource.postQuestion(authOtherUser, questionForOtherUser).toBlocking().singleOrDefault(null);
 
         // then only questions for our user should be returned
         List<Question> questions = questionResource.getQuestions(ourUser.getId(), new CollectionOptions()).toBlocking().single();

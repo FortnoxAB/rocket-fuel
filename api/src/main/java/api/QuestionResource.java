@@ -14,7 +14,7 @@
  * A question is always linked to a {@link User} and may have {@link Answer}s connected to it.
  *
  */
-@Path("/api/users/{userId}/questions")
+@Path("/api/users/")
 public interface QuestionResource {
 
     /**
@@ -23,12 +23,14 @@ public interface QuestionResource {
      * Collection options can be used to limit the number questions returned to the client.
      *
      */
+    @Path("{userId}/questions")
     @GET
     Observable<List<Question>> getQuestions(@PathParam("userId") long userId, CollectionOptions collectionOptions);
 
     /**
      * Returns a specific question to the client
      */
+    @Path("{userId}/questions/{questionId}")
     @GET
     Observable<Question> getQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
 
@@ -36,14 +38,15 @@ public interface QuestionResource {
     /**
      * Adds a question and links it to the given userId.
      */
+    @Path("me/questions")
     @POST
-    Observable<Void> postQuestion(Auth auth, @PathParam("userId") long userId, Question question);
+    Observable<Void> postQuestion(Auth auth, Question question);
 
     /**
      * Updates the question with the given questionId
      */
     @PUT
-    @Path("{questionId}")
-    Observable<Question> updateQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId, Question question);
+    @Path("me/questions/{questionId}")
+    Observable<Question> updateQuestion(Auth auth, @PathParam("questionId") long questionId, Question question);
 
 }

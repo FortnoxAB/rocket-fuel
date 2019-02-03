@@ -68,7 +68,7 @@ public class UserResourceImpl implements UserResource {
     public Observable<ApplicationToken> generateToken(@NotNull String openIdToken) {
         final ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
         return userDao.getUserByEmail(validOpenId.email)
-                .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user")))
+                .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
                 .single()
                 .onErrorResumeNext((t) -> addUserToDatabase(validOpenId))
                 .map((user) -> {
@@ -84,9 +84,7 @@ public class UserResourceImpl implements UserResource {
         user.setName(validOpenId.name);
         user.setEmail(validOpenId.email);
         return userDao.insertUser(user).flatMap((ignore) -> userDao.getUserByEmail(validOpenId.email))
-                .doOnError((throwable) -> {
-                    LOG.error("failed to add user to the database", throwable);
-                });
+                .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add user to the database", t)));
     }
 
     private void addAsCookie(final ApplicationToken applicationToken) {

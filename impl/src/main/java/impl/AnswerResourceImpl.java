@@ -29,25 +29,30 @@ public class AnswerResourceImpl implements AnswerResource {
 
     @Override
     public Observable<List<Answer>> getAnswers(long userId, long questionId) {
-        return answerDao.getAnswers(userId,questionId).toList();
+        return answerDao.getAnswers(userId, questionId).toList()
+                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get answers from database", throwable)));
+
     }
 
     @Override
     public Observable<Void> createAnswer(long userId, long questionId, Answer answer) {
-        return answerDao.createAnswer(userId, questionId, answer);
+        return answerDao.createAnswer(userId, questionId, answer)
+                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to create answer", throwable)));
+
     }
 
     @Override
     public Observable<Void> updateAnswer(long userId, long questionId, long answerId, Answer answer) {
-        return answerDao.updateAnswer(userId, questionId, answerId, answer);
+        return answerDao.updateAnswer(userId, questionId, answerId, answer)
+                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to update answer", throwable)));
     }
 
     @Override
     public Observable<Void> markAsAnswered(long userId, long questionId, long answerId) {
         Observable<Integer> markQuestionAsAnswered = this.questionDao.markAsAnswered(questionId);
-        Observable<Integer> markAnswerAsAnswered =  this.answerDao.markAsAnswered(answerId);
+        Observable<Integer> markAnswerAsAnswered = this.answerDao.markAsAnswered(answerId);
         this.daoTransactions.createTransaction(markQuestionAsAnswered, markAnswerAsAnswered);
         return this.daoTransactions.executeTransaction(markQuestionAsAnswered, markAnswerAsAnswered)
-                .onErrorResumeNext((e) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR," Failed to mark question as answered", e)));
+                .onErrorResumeNext((e) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to mark question as answered", e)));
     }
 }
