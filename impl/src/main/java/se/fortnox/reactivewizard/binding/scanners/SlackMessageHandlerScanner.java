@@ -8,6 +8,12 @@ import slack.SlackMessageHandler;
 import java.util.HashSet;
 import java.util.Set;
 
+
+/**
+ * Scans classpath for classes implementing the SlackMessageHandler-Interface
+ *
+ * So creating and invoking the next handler will be as simple as creating the class and implementing the methods.
+ */
 @Singleton
 public class SlackMessageHandlerScanner extends AbstractClassScanner {
 

@@ -2,9 +2,12 @@ package slack;
 
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.rtm.RTMClient;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.subjects.PublishSubject;
 
@@ -13,11 +16,15 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static rx.Observable.concat;
+
 @Singleton
 /**
  * Message handler connecting through websocket to slack and receives events as strings.
  */
 public class SlackRTMClient {
+
+    private static Logger LOG = LoggerFactory.getLogger(SlackRTMClient.class);
 
     private       RTMClient                rtmClient;
     private final Set<SlackMessageHandler> messageHandlers;
@@ -30,21 +37,20 @@ public class SlackRTMClient {
         final JsonParser jsonParser = new JsonParser();
 
         PublishSubject<String> messageHandler = PublishSubject.create();
+
         messageHandler
-            .doOnNext(System.out::println)
             .map(message -> {
-                System.out.println(message);
+                LOG.info("Message received: " + message);
                 return jsonParser.parse(message).getAsJsonObject();
             })
-            .flatMap(messageAsJson -> Observable.concat(
-                    messageHandlers
-                        .stream()
-                        .filter(slackMessageHandler -> slackMessageHandler.shouldHandle(messageAsJson))
-                        .map(slackMessageHandler -> slackMessageHandler.handleMessage(messageAsJson))
-                        .collect(Collectors.toList())))
+            .flatMap(this::handleMessage)
             .retry()
             .subscribe();
 
+        connectClient(slackConfig, messageHandler);
+    }
+
+    private void connectClient(SlackConfig slackConfig, PublishSubject<String> messageHandler) {
         try {
 
             //Create websocket connection to slack
@@ -62,9 +68,23 @@ public class SlackRTMClient {
             rtmClient.addMessageHandler(messageHandler::onNext);
 
             rtmClient.connect();
-        } catch (IOException | DeploymentException | IllegalStateException ignore) {
-            //During tests the api-token is not available, so s
-            ignore.printStackTrace();
+        } catch (IOException | DeploymentException | IllegalStateException exception) {
+            //During tests the api-token is not available, so just ignoring and
+            LOG.error("Could not connect to slack: ", exception);
         }
+    }
+
+    /**
+     *
+     * Sends the incoming message to the handlers
+     *
+     */
+    private Observable<Void> handleMessage(JsonObject messageAsJson) {
+        return concat(
+                messageHandlers
+                    .stream()
+                    .filter(slackMessageHandler -> slackMessageHandler.shouldHandle(messageAsJson))
+                    .map(slackMessageHandler -> slackMessageHandler.handleMessage(messageAsJson))
+                    .collect(Collectors.toList()));
     }
 }

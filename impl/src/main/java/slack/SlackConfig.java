@@ -6,16 +6,16 @@ import javax.validation.constraints.NotNull;
 
 @Config("slack")
 public class SlackConfig {
-    @NotNull
     /**
      * To use when making ordinary api-requests
      */
+    @NotNull
     private String apiToken;
 
-    @NotNull
     /**
      * To use when connecting to websocket
      */
+    @NotNull
     private String botUserToken;
 
     public String getApiToken() {

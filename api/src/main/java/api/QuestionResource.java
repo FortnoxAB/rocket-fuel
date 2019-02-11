@@ -34,6 +34,9 @@ public interface QuestionResource {
     @GET
     Observable<Question> getQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
 
+    @GET
+    @Path("questions/{slackThreadId}")
+    Observable<Question> getQuestionBySlackThreadId(@PathParam("slackThreadId") String slackThreadId);
 
     /**
      * Adds a question and links it to the given userId.
@@ -49,7 +52,5 @@ public interface QuestionResource {
     @Path("me/questions/{questionId}")
     Observable<Question> updateQuestion(Auth auth, @PathParam("questionId") long questionId, Question question);
 
-    @GET
-    @Path("me/questions/{slackThreadId}")
-    Observable<Question> getQuestionBySlackThreadId(String slackThreadId);
+
 }
