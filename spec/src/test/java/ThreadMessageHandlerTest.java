@@ -82,7 +82,7 @@ public class ThreadMessageHandlerTest {
 
 
     @Test
-    public void testNewThreadGetsNewQuestionCreated() {
+    public void shouldCreateNewThreadWhenNewThreadIsCreatedInSlack() {
 
 
         //Given
