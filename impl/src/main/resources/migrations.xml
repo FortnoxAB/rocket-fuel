@@ -72,4 +72,12 @@
     <changeSet id="drop-vendor-column" author="jesper">
             <dropColumn columnName="vendor_id" tableName="user"/>
     </changeSet>
+
+    <changeSet id="add_slack_thread_id" author="jonas.fredin">
+        <addColumn tableName="question">
+            <column name="slack_thread_id" type="VARCHAR">
+                <constraints unique="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

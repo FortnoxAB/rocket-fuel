@@ -5,12 +5,15 @@ import api.UserResource;
 import api.auth.Auth;
 import org.junit.*;
 import org.testcontainers.containers.PostgreSQLContainer;
+import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.CollectionOptions;
+import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.util.List;
-import java.util.UUID;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+
 
 public class QuestionResourceTest {
 
@@ -44,15 +47,10 @@ public class QuestionResourceTest {
     @Test
     public void shouldBePossibleToAddQuestionToUserAndFetchIt() {
 
-        User createdUser = insertUser();
+        User createdUser = TestSetup.insertUser(userResource);
 
         // when question is inserted
-        Question question = new Question();
-        question.setAnswerAccepted(false);
-        question.setBounty(300);
-        question.setTitle("my question title");
-        question.setVotes(3);
-        question.setQuestion("my question");
+        Question question = TestSetup.getQuestion("my question title", "my question");
 
         Auth mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
@@ -72,16 +70,11 @@ public class QuestionResourceTest {
     @Test
     public void shouldBePossibleToGetQuestionById() {
 
-        User createdUser = insertUser();
+        User createdUser = TestSetup.insertUser(userResource);
 
         // when question is inserted
-        Question question = new Question();
-        question.setAnswerAccepted(false);
-        question.setBounty(300);
-        question.setTitle("my question title");
-        question.setVotes(3);
-        question.setQuestion("my question");
-        Auth mockAuth = new MockAuth(createdUser.getId());
+        Question question = TestSetup.getQuestion("my question title", "my question");
+        Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
         questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
         List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
@@ -96,20 +89,42 @@ public class QuestionResourceTest {
         assertEquals(createdUser.getId(), selectedQuestion.getUserId());
     }
 
+    @Test
+    public void shouldBePossibleToGetQuestionBySlackThreadId() {
+
+        User createdUser = TestSetup.insertUser(userResource);
+        Auth mockAuth = new MockAuth(createdUser.getId());
+
+        Question question      = TestSetup.getQuestion("my question title", "my question");
+        String   slackThreadId = String.valueOf(System.currentTimeMillis());
+        question.setSlackThreadId(slackThreadId);
+
+        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        Question returnedQuestion = questionResource.getQuestionBySlackThreadId(slackThreadId).toBlocking().singleOrDefault(null);
+
+        assertThat(returnedQuestion.getSlackThreadId()).isEqualTo(slackThreadId);
+    }
+
+    @Test
+    public void shouldReturnNotFoundWhenNoQuestionIsFoundForSlackThreadId() {
+
+        AssertableSubscriber<Question> test = questionResource.getQuestionBySlackThreadId(String.valueOf(System.currentTimeMillis())).test();
+        test.awaitTerminalEvent();
+
+        test.assertError(WebException.class);
+        assertThat(((WebException)test.getOnErrorEvents().get(0)).getError()).isEqualTo("not_found");
+    }
+
 
     @Test
     public void shouldBePossibleToUpdateQuestion() {
 
-        User createdUser = insertUser();
+        User createdUser = TestSetup.insertUser(userResource);
 
         // when question is inserted
-        Question question = new Question();
-        question.setAnswerAccepted(false);
-        question.setBounty(300);
-        question.setTitle("my question title");
-        question.setVotes(3);
-        question.setQuestion("my question");
-        Auth mockAuth = new MockAuth(createdUser.getId());
+        Question question = TestSetup.getQuestion("my question title", "my question");
+
+        Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
         questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
@@ -131,25 +146,14 @@ public class QuestionResourceTest {
     @Test
     public void shouldOnyReturnQuestionsForTheSpecifiedUser() {
 
-        User otherUser = insertUser();
-        User ourUser = insertUser();
-
+        User otherUser = TestSetup.insertUser(userResource);
+        User ourUser = TestSetup.insertUser(userResource);
 
         // when questions are inserted for different users
-        Question ourQuestion = new Question();
-        ourQuestion.setAnswerAccepted(false);
-        ourQuestion.setBounty(300);
-        ourQuestion.setTitle("our users question title");
-        ourQuestion.setVotes(3);
-        ourQuestion.setQuestion("our users question");
+        Question ourQuestion = TestSetup.getQuestion("our users question title", "our users question");
 
         // when question is inserted
-        Question questionForOtherUser = new Question();
-        questionForOtherUser.setAnswerAccepted(false);
-        questionForOtherUser.setBounty(300);
-        questionForOtherUser.setTitle("other users question title");
-        questionForOtherUser.setVotes(3);
-        questionForOtherUser.setQuestion("other users question");
+        Question questionForOtherUser = TestSetup.getQuestion("other users question title", "other users question");
 
         Auth auth = new MockAuth(ourUser.getId());
         questionResource.postQuestion(auth, ourQuestion).toBlocking().singleOrDefault(null);
@@ -163,16 +167,6 @@ public class QuestionResourceTest {
         Question insertedQuestion = questions.get(0);
         assertEquals("our users question title", insertedQuestion.getTitle());
         assertEquals(ourUser.getId(), insertedQuestion.getUserId());
-    }
-
-
-    private User insertUser() {
-        final String generatedEmail = UUID.randomUUID().toString()+"@fortnox.se";
-        User user = new User();
-        user.setEmail(generatedEmail);
-        user.setName("Test Subject");
-        userResource.createUser(null, user).toBlocking().single();
-        return userResource.getUserByEmail(generatedEmail).toBlocking().single();
     }
 
 }

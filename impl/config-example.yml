@@ -1,0 +1,34 @@
+liquibase-database:
+  user: dbuser
+  schema: <db-schema>
+  password: super-secret-password
+  url: jdbc:postgresql://localhost/databasename
+
+database:
+  user: dbuser
+  password: super-secret-password
+  schema: <db-schema>
+  url: jdbc:postgresql://localhost/databasename
+
+applicationTokenConfig:
+  secret: a-valid-but-not-secure-secret
+
+slack:
+  botUserToken: <your-slack-app-bot-user-token>
+  apiToken: <your-slack-app-api-token>
+
+logging:
+  # Log requests to file, other level INFO to redis (kibana)
+  additivity:
+    com.fortnox.reactivewizard.ReactiveWizardServer: false
+    se.fortnox.reactivewizard.jaxrs.JaxRsResource: false
+  levels:
+    com.fortnox.reactivewizard.ReactiveWizardServer: INFO, file
+    se.fortnox.reactivewizard.jaxrs.JaxRsResource: INFO, file
+  appenders:
+    file:
+      file: /tmp/slackoverflow.log
+
+    stdout:
+      layout: net.logstash.log4j.JSONEventLayoutV1
+      threshold: INFO

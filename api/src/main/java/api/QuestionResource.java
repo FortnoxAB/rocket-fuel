@@ -49,4 +49,7 @@ public interface QuestionResource {
     @Path("me/questions/{questionId}")
     Observable<Question> updateQuestion(Auth auth, @PathParam("questionId") long questionId, Question question);
 
+    @GET
+    @Path("me/questions/{slackThreadId}")
+    Observable<Question> getQuestionBySlackThreadId(String slackThreadId);
 }

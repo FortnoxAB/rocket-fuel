@@ -18,6 +18,7 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 
+import static rx.Observable.defer;
 import static rx.Observable.error;
 
 @Singleton
@@ -53,9 +54,15 @@ public class UserResourceImpl implements UserResource {
     }
 
     @Override
-    public Observable<User> getUserByEmail(String email) {
+    public Observable<User> getUserByEmail(String email, boolean createIfMissing) {
         return this.userDao.getUserByEmail(email)
-                .switchIfEmpty(error(new WebException(HttpResponseStatus.NOT_FOUND)));
+            .switchIfEmpty(defer(() -> {
+                if(createIfMissing) {
+                    return addUserToDatabase("Added from slack", email);
+                } else {
+                    return error(new WebException(HttpResponseStatus.NOT_FOUND));
+                }
+            }));
     }
 
     @Override
@@ -70,7 +77,7 @@ public class UserResourceImpl implements UserResource {
         return userDao.getUserByEmail(validOpenId.email)
                 .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
                 .single()
-                .onErrorResumeNext((t) -> addUserToDatabase(validOpenId))
+                .onErrorResumeNext((t) -> addUserToDatabase(validOpenId.name, validOpenId.email))
                 .map((user) -> {
             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
             addAsCookie(applicationToken);
@@ -79,11 +86,11 @@ public class UserResourceImpl implements UserResource {
 
     }
 
-    private Observable<User> addUserToDatabase(ImmutableOpenIdToken validOpenId) {
+    private Observable<User> addUserToDatabase(String name, String email) {
         User user = new User();
-        user.setName(validOpenId.name);
-        user.setEmail(validOpenId.email);
-        return userDao.insertUser(user).flatMap((ignore) -> userDao.getUserByEmail(validOpenId.email))
+        user.setName(name);
+        user.setEmail(email);
+        return userDao.insertUser(user).flatMap((ignore) -> userDao.getUserByEmail(email))
                 .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add user to the database", t)));
     }
 

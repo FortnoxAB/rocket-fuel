@@ -8,3 +8,4 @@ node_modules/
 dist/
 localhost.crt
 localhost.key
+/impl/config.yml

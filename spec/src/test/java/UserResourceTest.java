@@ -70,7 +70,7 @@ public class UserResourceTest {
 
         // then
         assertNotNull(applicationToken);
-        User insertedUser = userResource.getUserByEmail("jeppe@email.com").toBlocking().singleOrDefault(null);
+        User insertedUser = userResource.getUserByEmail("jeppe@email.com", false).toBlocking().singleOrDefault(null);
         assertEquals("jeppe", insertedUser.getName());
     }
 
@@ -86,7 +86,7 @@ public class UserResourceTest {
 
         // then
         assertNotNull(applicationToken);
-        User insertedUser = userResource.getUserByEmail(user.getEmail()).toBlocking().singleOrDefault(null);
+        User insertedUser = userResource.getUserByEmail(user.getEmail(), false).toBlocking().singleOrDefault(null);
         assertEquals(user.getName(), insertedUser.getName());
     }
 
@@ -117,7 +117,7 @@ public class UserResourceTest {
         User user = insertUser();
 
         // when
-        User foundUser = userResource.getUserByEmail(user.getEmail()).toBlocking().singleOrDefault(null);
+        User foundUser = userResource.getUserByEmail(user.getEmail(), false).toBlocking().singleOrDefault(null);
 
         // then
         assertNotNull(foundUser);
@@ -155,7 +155,7 @@ public class UserResourceTest {
     public void shouldReturnNotFoundIfUserDoesNotExistWhenSearchingByEmail() {
 
         try {
-            userResource.getUserByEmail("random@email.com").toBlocking().singleOrDefault(null);
+            userResource.getUserByEmail("random@email.com", false).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException e) {
             assertEquals(HttpResponseStatus.NOT_FOUND, e.getStatus());
@@ -184,6 +184,6 @@ public class UserResourceTest {
         user.setEmail(generatedEmail);
         user.setName("Test Subject");
         userResource.createUser(null, user).toBlocking().single();
-        return userResource.getUserByEmail(generatedEmail).toBlocking().single();
+        return userResource.getUserByEmail(generatedEmail, false).toBlocking().single();
     }
 }

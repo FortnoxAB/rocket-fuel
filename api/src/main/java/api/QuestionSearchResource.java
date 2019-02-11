@@ -9,7 +9,7 @@ import javax.ws.rs.QueryParam;
 import java.util.List;
 
  /**
-  * Acts like a universal search. It will return questions that can be related to the search tearm.
+  * Acts like a universal search. It will return questions that can be related to the search term.
   */
  @Path("/api/questions")
 public interface QuestionSearchResource {

@@ -13,6 +13,7 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 import java.util.List;
 
 import static rx.Observable.error;
+import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 
 public class QuestionResourceImpl implements QuestionResource {
 
@@ -28,14 +29,16 @@ public class QuestionResourceImpl implements QuestionResource {
     public Observable<List<Question>> getQuestions(long userId, CollectionOptions collectionOptions) {
         return this.questionDao
                 .getQuestions(userId, collectionOptions).toList()
-                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get questions from database",throwable)));
+                .onErrorResumeNext(throwable ->
+                    error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get questions from database",throwable)));
     }
 
     @Override
     public Observable<Question> getQuestion(long userId, long questionId) {
         return this.questionDao
                 .getQuestion(userId, questionId)
-                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get question from database", throwable)));
+                .onErrorResumeNext(throwable ->
+                    error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get question from database", throwable)));
     }
 
 
@@ -43,7 +46,8 @@ public class QuestionResourceImpl implements QuestionResource {
     public Observable<Void> postQuestion(Auth auth, Question question) {
         return this.questionDao
                 .addQuestion(auth.getUserId(), question)
-                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add question to database",throwable)));
+                .onErrorResumeNext(throwable ->
+                    error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add question to database", throwable)));
     }
 
     @Override
@@ -52,5 +56,9 @@ public class QuestionResourceImpl implements QuestionResource {
             .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to update question to database",throwable)));
     }
 
-
+    @Override
+    public Observable<Question> getQuestionBySlackThreadId(String slackThreadId) {
+        return this.questionDao.getQuestionBySlackThreadId(slackThreadId).switchIfEmpty(
+            exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not_found")));
+    }
 }
