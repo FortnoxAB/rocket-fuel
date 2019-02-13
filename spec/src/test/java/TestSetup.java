@@ -9,6 +9,7 @@ import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 import org.jetbrains.annotations.NotNull;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -19,6 +20,7 @@ import se.fortnox.reactivewizard.dbmigrate.LiquibaseConfig;
 import se.fortnox.reactivewizard.dbmigrate.LiquibaseMigrate;
 import se.fortnox.reactivewizard.logging.LoggingFactory;
 import se.fortnox.reactivewizard.server.ServerConfig;
+import slack.SlackRTMClient;
 
 import java.util.UUID;
 
@@ -41,7 +43,14 @@ public class TestSetup {
 
         this.migrator = TestSetup.getMigrator(databaseConfig);
 
-        this.injector = Guice.createInjector(new AutoBindModules(Modules.override(TestSetup.createGuiceModuleForReactiveWizard(TestSetup.createConfigFactory(databaseConfig))).with(mocks)));
+        this.injector = Guice.createInjector(new AutoBindModules(Modules.override(TestSetup.createGuiceModuleForReactiveWizard(TestSetup.createConfigFactory(databaseConfig)))
+            .with(mocks, new AbstractModule() {
+                @Override
+                protected void configure() {
+                    SlackRTMClient slackRTMClient = Mockito.mock(SlackRTMClient.class);
+                    binder().bind(SlackRTMClient.class).toInstance(slackRTMClient);
+                }
+            })));
     }
 
     public TestSetup(PostgreSQLContainer postgreSQLContainer) {

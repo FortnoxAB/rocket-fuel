@@ -14,6 +14,7 @@ import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import static rx.Observable.empty;
+import static rx.Observable.error;
 import static rx.Observable.fromCallable;
 
 @Singleton
@@ -52,7 +53,8 @@ public class SlackResourceImpl implements SlackResource {
             .token(slackConfig.getApiToken())
             .build())).flatMap(chatPostMessageResponse -> {
                 if(!chatPostMessageResponse.isOk()) {
-                    LOG.warn("Could not post to slack: %s", chatPostMessageResponse.getError());
+                    LOG.warn("Could not post to slack: {}", chatPostMessageResponse.getError());
+                    return error(new RuntimeException(chatPostMessageResponse.getError()));
                 }
                 return empty();
         });
@@ -72,7 +74,7 @@ public class SlackResourceImpl implements SlackResource {
                 if (channelsRepliesResponse.isOk()) {
                    return channelsRepliesResponse.getMessages().get(0);
                 }
-                LOG.warn("Could not get message from slack: " + channelsRepliesResponse.getError());
+                LOG.warn("Could not get message from slack: {}", channelsRepliesResponse.getError());
                 throw new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, channelsRepliesResponse.getError() + " " + channelsRepliesResponse.getWarning());
             });
     }

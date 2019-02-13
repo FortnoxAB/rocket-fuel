@@ -24,13 +24,13 @@ import static rx.Observable.concat;
  */
 public class SlackRTMClient {
 
-    private static Logger LOG = LoggerFactory.getLogger(SlackRTMClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SlackRTMClient.class);
 
     private       RTMClient                rtmClient;
     private final Set<SlackMessageHandler> messageHandlers;
 
     @Inject
-    public SlackRTMClient(SlackConfig slackConfig, Set<SlackMessageHandler> rtmMessageHandlers) {
+    public SlackRTMClient(SlackConfig slackConfig, Set<SlackMessageHandler> rtmMessageHandlers) throws IOException, DeploymentException {
 
         messageHandlers = rtmMessageHandlers;
 
@@ -40,7 +40,7 @@ public class SlackRTMClient {
 
         messageHandler
             .map(message -> {
-                LOG.info("Message received: " + message);
+                LOG.info("Message received: {}", message);
                 return jsonParser.parse(message).getAsJsonObject();
             })
             .flatMap(this::handleMessage)
@@ -50,28 +50,23 @@ public class SlackRTMClient {
         connectClient(slackConfig, messageHandler);
     }
 
-    private void connectClient(SlackConfig slackConfig, PublishSubject<String> messageHandler) {
-        try {
+    private void connectClient(SlackConfig slackConfig, PublishSubject<String> messageHandler) throws IOException, DeploymentException {
 
-            //Create websocket connection to slack
-            rtmClient = new Slack().rtm(slackConfig.getBotUserToken());
+        //Create websocket connection to slack
+        rtmClient = new Slack().rtm(slackConfig.getBotUserToken());
 
-            //Close connection when system is shut down
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    rtmClient.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }));
+        //Close connection when system is shut down
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                rtmClient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
 
-            rtmClient.addMessageHandler(messageHandler::onNext);
+        rtmClient.addMessageHandler(messageHandler::onNext);
 
-            rtmClient.connect();
-        } catch (IOException | DeploymentException | IllegalStateException exception) {
-            //During tests the api-token is not available, so just ignoring and
-            LOG.error("Could not connect to slack: ", exception);
-        }
+        rtmClient.connect();
     }
 
     /**
