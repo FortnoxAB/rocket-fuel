@@ -1,7 +1,5 @@
  package api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public class User {
 
     private Long id;
@@ -10,19 +8,8 @@ public class User {
 
     private String name;
 
-    @JsonIgnore
-    private String vendorId;
-
     public Long getId() {
         return id;
-    }
-
-    public String getVendorId() {
-        return vendorId;
-    }
-
-    public void setVendorId(String vendorId) {
-        this.vendorId = vendorId;
     }
 
     public void setId(Long id) {

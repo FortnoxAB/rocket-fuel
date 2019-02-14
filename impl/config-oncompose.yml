@@ -1,0 +1,11 @@
+liquibase-database:
+  user: postgres
+  password: mysecretpassword
+  schema: public
+  url: jdbc:postgresql://storage/rocket-fuel
+
+database:
+  user: postgres
+  password: mysecretpassword
+  schema: public
+  url: jdbc:postgresql://storage/rocket-fuel
