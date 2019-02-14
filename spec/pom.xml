@@ -29,7 +29,7 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
             <version>1.10.5</version>
-
+            <scope>test</scope>
         </dependency>
 
         <dependency>
