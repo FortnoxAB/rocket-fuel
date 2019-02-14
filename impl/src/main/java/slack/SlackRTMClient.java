@@ -60,7 +60,7 @@ public class SlackRTMClient {
             try {
                 rtmClient.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.error("Could not close connection to slack properly", e);
             }
         }));
 

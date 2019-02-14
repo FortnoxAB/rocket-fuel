@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import rx.Observable;
 
 /**
- * Interface to be used by message handlers from slack.
+ * Interface to be used by message handlers handling messages from slack.
  *
  */
 public interface SlackMessageHandler {

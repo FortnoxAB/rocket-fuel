@@ -108,7 +108,7 @@ public class ThreadMessageHandlerTest {
         //Make sure the message is posted to slack
         verify(slackResourceMock).postMessageToSlack(
                 eq(slackMessage.get("channel").getAsString()),
-                eq("This looks like an interesting conversation, added it to slackoverflow"),
+                eq("This looks like an interesting conversation, added it to rocket-fuel"),
                 eq(slackMessage.get("thread_ts").getAsString()));
 
         //Make sure the question is created connected to the user connected to the slack user email

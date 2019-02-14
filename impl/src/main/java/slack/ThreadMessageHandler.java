@@ -7,10 +7,11 @@ import api.QuestionResource;
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
-import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
@@ -23,6 +24,8 @@ import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
 @Singleton
 public class ThreadMessageHandler implements SlackMessageHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ThreadMessageHandler.class);
 
     private static final String           SLACK_THREAD_ID = "thread_ts";
     private final        QuestionResource questionResource;
@@ -80,7 +83,7 @@ public class ThreadMessageHandler implements SlackMessageHandler {
     private Observable<Void> postToSlack(JsonObject message) {
         return slackResource.postMessageToSlack(
             message.get("channel").getAsString(),
-            "This looks like an interesting conversation, added it to slackoverflow",
+            "This looks like an interesting conversation, added it to rocket-fuel",
             message.get(SLACK_THREAD_ID).getAsString())
         .ignoreElements();
     }
@@ -109,14 +112,13 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                         question.setSlackThreadId(mainMessageId);
                         question.setBounty(DEFAULT_BOUNTY);
 
-                        return first(questionResource.postQuestion(getAuthAs(userId), question).doOnError(throwable -> {
-
-                        }))
-                            .thenReturn(question);
+                        return first(questionResource.postQuestion(as(userId), question).doOnError(throwable -> {
+                            LOG.error("Could not post message to slack", throwable);
+                        })).thenReturn(question);
                     }));
     }
 
-    private Auth getAuthAs(Long userId) {
+    private Auth as(Long userId) {
         Auth auth = new Auth();
         auth.setUserId(userId);
         return auth;
@@ -141,7 +143,7 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                     answer.setTitle(getTitleFrom(message));
                     answer.setUserId(user.getId());
 
-                    return answerResource.createAnswer(getAuthAs(user.getId()), question.getId(), answer);
+                    return answerResource.createAnswer(as(user.getId()), question.getId(), answer);
                 }
         ));
     }
