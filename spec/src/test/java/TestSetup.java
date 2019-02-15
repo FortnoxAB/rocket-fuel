@@ -99,6 +99,7 @@ public class TestSetup {
     private static ConfigFactory createConfigFactory(LiquibaseConfig databaseConfig) {
         ConfigFactory configFactory = spy(new ConfigFactory((String) null));
         when(configFactory.get(DatabaseConfig.class)).thenReturn(databaseConfig);
+        when(configFactory.get(LiquibaseConfig.class)).thenReturn(databaseConfig);
         configFactory.get(LoggingFactory.class).init();
         return configFactory;
     }

@@ -2,6 +2,7 @@ package auth;
 
 import api.auth.Auth;
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.inject.Inject;
@@ -45,7 +46,6 @@ public class JwtAuthResolver {
             throw new WebException(HttpResponseStatus.UNAUTHORIZED);
         }
 
-
         Claim email = applicationTokenJwt.getClaim(EMAIL);
         Claim name = applicationTokenJwt.getClaim(NAME);
         Claim picture = applicationTokenJwt.getClaim(PICTURE);
@@ -57,6 +57,7 @@ public class JwtAuthResolver {
             throw new WebException(HttpResponseStatus.UNAUTHORIZED);
         }
 
+        // we must verify the token in a better way.
         if (expires.get().isBefore(dateProvider.getOffsetDateTime())) {
             throw new WebException(HttpResponseStatus.UNAUTHORIZED);
         }
@@ -76,11 +77,11 @@ public class JwtAuthResolver {
      * @param jwt the decoded jwt we want the expiration date from
      * @return expiration date as OffsetDateTime instance
      */
-    private static Optional<OffsetDateTime> getExpiration(DecodedJWT jwt) {
+    private  Optional<OffsetDateTime> getExpiration(DecodedJWT jwt) {
         Date expiresAt = jwt.getExpiresAt();
         if (expiresAt == null) {
             return Optional.empty();
         }
-        return Optional.of(OffsetDateTime.ofInstant(expiresAt.toInstant(), ZoneId.systemDefault()));
+        return Optional.of(OffsetDateTime.ofInstant(expiresAt.toInstant(), dateProvider.getDefaultZone()));
     }
 }

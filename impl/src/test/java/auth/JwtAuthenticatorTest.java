@@ -8,6 +8,8 @@ import org.junit.Test;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -21,8 +23,9 @@ public class JwtAuthenticatorTest {
 	@Before
 	public void beforeEach() {
 		dateProvider = mock(DateProvider.class);
-		final String pastTime = "2019-01-01T14:00:47+01:00";
+		final String pastTime = "2019-01-25T13:00:47+01:00";
 		when(dateProvider.getOffsetDateTime()).thenReturn(OffsetDateTime.parse(pastTime));
+		when(dateProvider.getDefaultZone()).thenReturn(ZoneId.of("Z"));
 		jwtAuthResolver = new JwtAuthResolver(dateProvider);
 	}
 
@@ -41,7 +44,7 @@ public class JwtAuthenticatorTest {
 	@Test
 	public void shouldResolveExpires() {
 		Auth auth = jwtAuthResolver.getAuth(JWT);
-		assertEquals(OffsetDateTime.parse("2019-01-25T14:00:47+01:00"), auth.getExpires());
+		assertEquals(OffsetDateTime.parse("2019-01-25T13:00:47Z"), auth.getExpires());
 	}
 
 	@Test
