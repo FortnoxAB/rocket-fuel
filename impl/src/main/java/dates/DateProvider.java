@@ -1,6 +1,7 @@
 package dates;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 /**
  * Provides an abstraction for retrieving various date formats.
@@ -10,4 +11,6 @@ import java.time.OffsetDateTime;
 public interface DateProvider {
 
 	OffsetDateTime getOffsetDateTime();
+
+	ZoneId getDefaultZone();
 }
