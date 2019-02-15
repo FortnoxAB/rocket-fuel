@@ -1,6 +1,13 @@
  package api;
 
-public class Question extends Post {
+ /**
+  *  Defines a question. A question is connected to the {@link User} asking it.
+  *  
+  *  A question can be answered if it has a accepted answer.
+  *
+  *  {@link Answer}s are linked to a question.
+  */
+ public class Question extends Post {
 
     private String question;
 

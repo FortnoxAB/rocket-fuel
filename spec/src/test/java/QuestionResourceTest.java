@@ -2,6 +2,7 @@ import api.Question;
 import api.QuestionResource;
 import api.User;
 import api.UserResource;
+import api.auth.Auth;
 import org.junit.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import se.fortnox.reactivewizard.CollectionOptions;
@@ -53,7 +54,9 @@ public class QuestionResourceTest {
         question.setVotes(3);
         question.setQuestion("my question");
 
-        questionResource.postQuestion(createdUser.getId(), question).toBlocking().singleOrDefault(null);
+        Auth mockAuth = new MockAuth(createdUser.getId());
+        mockAuth.setUserId(createdUser.getId());
+        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
         // then the question should be returned when asking for the users questions
         List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
@@ -78,8 +81,9 @@ public class QuestionResourceTest {
         question.setTitle("my question title");
         question.setVotes(3);
         question.setQuestion("my question");
-
-        questionResource.postQuestion(createdUser.getId(), question).toBlocking().singleOrDefault(null);
+        Auth mockAuth = new MockAuth(createdUser.getId());
+        mockAuth.setUserId(createdUser.getId());
+        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
         List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
         assertEquals(1, questions.size());
 
@@ -105,14 +109,15 @@ public class QuestionResourceTest {
         question.setTitle("my question title");
         question.setVotes(3);
         question.setQuestion("my question");
-
-        questionResource.postQuestion(createdUser.getId(), question).toBlocking().singleOrDefault(null);
+        Auth mockAuth = new MockAuth(createdUser.getId());
+        mockAuth.setUserId(createdUser.getId());
+        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
         long newQuestionId = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single().get(0).getId();
         question.setBounty(400);
         question.setTitle("new title");
         question.setQuestion("new question body");
-        questionResource.updateQuestion(createdUser.getId(), newQuestionId,  question).toBlocking().singleOrDefault(null);
+        questionResource.updateQuestion(mockAuth, newQuestionId, question).toBlocking().singleOrDefault(null);
         List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
         assertEquals(1, questions.size());
 
@@ -146,8 +151,10 @@ public class QuestionResourceTest {
         questionForOtherUser.setVotes(3);
         questionForOtherUser.setQuestion("other users question");
 
-        questionResource.postQuestion(ourUser.getId(), ourQuestion).toBlocking().singleOrDefault(null);
-        questionResource.postQuestion(otherUser.getId(), questionForOtherUser).toBlocking().singleOrDefault(null);
+        Auth auth = new MockAuth(ourUser.getId());
+        questionResource.postQuestion(auth, ourQuestion).toBlocking().singleOrDefault(null);
+        Auth authOtherUser = new MockAuth(otherUser.getId());
+        questionResource.postQuestion(authOtherUser, questionForOtherUser).toBlocking().singleOrDefault(null);
 
         // then only questions for our user should be returned
         List<Question> questions = questionResource.getQuestions(ourUser.getId(), new CollectionOptions()).toBlocking().single();
@@ -164,8 +171,7 @@ public class QuestionResourceTest {
         User user = new User();
         user.setEmail(generatedEmail);
         user.setName("Test Subject");
-        user.setVendorId("vendorId");
-        userResource.createUser(user).toBlocking().single();
+        userResource.createUser(null, user).toBlocking().single();
         return userResource.getUserByEmail(generatedEmail).toBlocking().single();
     }
 
