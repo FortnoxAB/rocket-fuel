@@ -34,7 +34,7 @@ public interface UserResource {
      */
     @GET
     @Path("email/{email}")
-    Observable<User> getUserByEmail(@NotNull @PathParam("email") String email);
+    Observable<User> getUserByEmail(@NotNull @PathParam("email") String email, @QueryParam("createIfMissing") boolean createIfMissing);
 
     /**
      * Returns the user by userId

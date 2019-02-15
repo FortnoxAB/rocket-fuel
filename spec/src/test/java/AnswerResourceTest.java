@@ -176,6 +176,6 @@ public class AnswerResourceTest {
         user.setEmail(generatedEmail);
         user.setName("Test Subject");
         userResource.createUser(null, user).toBlocking().single();
-        return userResource.getUserByEmail(generatedEmail).toBlocking().single();
+        return userResource.getUserByEmail(generatedEmail, false).toBlocking().single();
     }
 }
