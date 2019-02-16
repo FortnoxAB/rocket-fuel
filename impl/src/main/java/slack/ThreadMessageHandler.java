@@ -1,11 +1,6 @@
 package slack;
 
-import api.Answer;
-import api.AnswerResource;
-import api.Question;
-import api.QuestionResource;
-import api.User;
-import api.UserResource;
+import api.*;
 import api.auth.Auth;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
@@ -16,10 +11,7 @@ import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static rx.Observable.concat;
-import static rx.Observable.error;
-import static rx.Observable.merge;
-import static rx.Observable.zip;
+import static rx.Observable.*;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
 @Singleton
@@ -61,10 +53,10 @@ public class ThreadMessageHandler implements SlackMessageHandler {
 
                 //No thread found -> create new
                 .onErrorResumeNext(throwable -> {
-                    if (throwable instanceof WebException) {
-                        if (NOT_FOUND.equals(((WebException)throwable).getStatus())) {
-                            return createQuestionAndPostToSlack(message);
-                        }
+                    if (throwable instanceof WebException
+                            && NOT_FOUND.equals(((WebException) throwable).getStatus())) {
+                        return createQuestionAndPostToSlack(message);
+
                     }
                     return error(throwable);
                 })
@@ -112,9 +104,9 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                         question.setSlackThreadId(mainMessageId);
                         question.setBounty(DEFAULT_BOUNTY);
 
-                        return first(questionResource.postQuestion(as(userId), question).doOnError(throwable -> {
-                            LOG.error("Could not post message to slack", throwable);
-                        })).thenReturn(question);
+                        return first(questionResource.postQuestion(as(userId), question)
+                                .doOnError(throwable -> LOG.error("Could not post message to slack", throwable)))
+                                .thenReturn(question);
                     }));
     }
 

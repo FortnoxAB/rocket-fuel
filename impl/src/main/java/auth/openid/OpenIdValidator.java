@@ -29,7 +29,7 @@ public class OpenIdValidator {
         final DecodedJWT decodedOpenId;
         try {
             decodedOpenId = JWT.decode(openIdToken);
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             LOG.warn("failed to parse openId jwt", throwable);
             throw new WebException(HttpResponseStatus.UNAUTHORIZED, throwable);
         }

@@ -2,7 +2,6 @@ package auth;
 
 import api.auth.Auth;
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.inject.Inject;
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
@@ -41,7 +39,7 @@ public class JwtAuthResolver {
 
         try {
             applicationTokenJwt = JWT.decode(rawApplicationJwt);
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             LOG.warn("failed to decode application jwt");
             throw new WebException(HttpResponseStatus.UNAUTHORIZED);
         }
