@@ -1,8 +1,6 @@
 package auth;
 
 import api.auth.Auth;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.inject.Inject;
@@ -13,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
@@ -25,10 +22,12 @@ public class JwtAuthResolver {
     private static final Logger LOG = LoggerFactory.getLogger(JwtAuthResolver.class);
 
     private final DateProvider dateProvider;
+    private final ApplicationTokenVerifier applicationTokenVerifier;
 
     @Inject
-    public JwtAuthResolver(DateProvider dateProvider) {
+    public JwtAuthResolver(DateProvider dateProvider, ApplicationTokenVerifier applicationTokenVerifier) {
         this.dateProvider = dateProvider;
+        this.applicationTokenVerifier = applicationTokenVerifier;
     }
 
     /**
@@ -40,9 +39,9 @@ public class JwtAuthResolver {
         final DecodedJWT applicationTokenJwt;
 
         try {
-            applicationTokenJwt = JWT.decode(rawApplicationJwt);
-        } catch (Throwable throwable) {
-            LOG.warn("failed to decode application jwt");
+            applicationTokenJwt = applicationTokenVerifier.verifyAndDecode(rawApplicationJwt);
+        } catch (Exception throwable) {
+            LOG.warn("failed to decode and verify the application jwt");
             throw new WebException(HttpResponseStatus.UNAUTHORIZED);
         }
 
@@ -54,11 +53,6 @@ public class JwtAuthResolver {
         Optional<OffsetDateTime> expires = getExpiration(applicationTokenJwt);
 
         if (email.isNull() || name.isNull() || !expires.isPresent() || userId.isNull()) {
-            throw new WebException(HttpResponseStatus.UNAUTHORIZED);
-        }
-
-        // we must verify the token in a better way.
-        if (expires.get().isBefore(dateProvider.getOffsetDateTime())) {
             throw new WebException(HttpResponseStatus.UNAUTHORIZED);
         }
 

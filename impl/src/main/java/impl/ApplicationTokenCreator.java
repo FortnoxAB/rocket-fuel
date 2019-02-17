@@ -21,7 +21,7 @@ import static auth.openid.OpenIdClaims.*;
 public class ApplicationTokenCreator {
 
     private ApplicationTokenConfig applicationTokenConfig;
-
+    private static final String ISSUER = "rocket-fuel";
     private DateProvider dateProvider;
 
     @Inject
@@ -50,6 +50,7 @@ public class ApplicationTokenCreator {
             .withClaim(USER_ID, userId)
             .withClaim(PICTURE, openIdToken.picture)
             .withExpiresAt(date)
+                .withIssuer(ISSUER)
             .sign(Algorithm.HMAC256(applicationTokenConfig.getSecret()));
 
         return new ApplicationToken(jwt);
