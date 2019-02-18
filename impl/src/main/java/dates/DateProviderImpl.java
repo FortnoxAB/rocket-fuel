@@ -8,6 +8,7 @@ import java.time.ZoneId;
 
 @Singleton
 public class DateProviderImpl implements DateProvider {
+	private static final ZoneId DEFAULT_ZONE_ID = ZoneId.of("Z");
 
 	@Inject
 	public DateProviderImpl() {
@@ -19,8 +20,7 @@ public class DateProviderImpl implements DateProvider {
 		return OffsetDateTime.now();
 	}
 
-
 	public ZoneId getDefaultZone() {
-		return ZoneId.of("Z");
+		return DEFAULT_ZONE_ID;
 	}
 }
