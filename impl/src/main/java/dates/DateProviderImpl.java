@@ -12,7 +12,7 @@ public class DateProviderImpl implements DateProvider {
 
 	@Inject
 	public DateProviderImpl() {
-
+        // used by guice injector
 	}
 
 	@Override

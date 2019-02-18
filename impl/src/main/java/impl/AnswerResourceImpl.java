@@ -54,6 +54,6 @@ public class AnswerResourceImpl implements AnswerResource {
         Observable<Integer> markAnswerAsAnswered = this.answerDao.markAsAnswered(auth.getUserId(), answerId);
         this.daoTransactions.createTransaction(markQuestionAsAnswered, markAnswerAsAnswered);
         return this.daoTransactions.executeTransaction(markQuestionAsAnswered, markAnswerAsAnswered)
-                .onErrorResumeNext((e) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to mark question as answered", e)));
+                .onErrorResumeNext(e -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to mark question as answered", e)));
     }
 }

@@ -44,7 +44,7 @@ public class AuthResolverImpl implements AuthResolver {
 	public Observable<Auth> resolve(JaxRsRequest request) {
 		try {
 			return resolveAuth(request);
-		} catch (Throwable e) {
+        } catch (Exception e) {
 			LOG.warn("Unexpected error loading auth", e);
 			return  error(new WebException(HttpResponseStatus.UNAUTHORIZED, FAILURE_TO_AUTHENTICATE_REQUEST));
 		}

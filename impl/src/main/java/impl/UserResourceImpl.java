@@ -10,21 +10,18 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.UserDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
+import java.util.Map;
 
 import static rx.Observable.defer;
 import static rx.Observable.error;
 
 @Singleton
 public class UserResourceImpl implements UserResource {
-
-    private final Logger LOG = LoggerFactory.getLogger(UserResourceImpl.class);
 
     private final ResponseHeaderHolder responseHeaderHolder;
 
@@ -75,10 +72,10 @@ public class UserResourceImpl implements UserResource {
     public Observable<ApplicationToken> generateToken(@NotNull String openIdToken) {
         final ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
         return userDao.getUserByEmail(validOpenId.email)
-                .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
+                .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
                 .single()
-                .onErrorResumeNext((t) -> addUserToDatabase(validOpenId.name, validOpenId.email))
-                .map((user) -> {
+                .onErrorResumeNext(t -> addUserToDatabase(validOpenId.name, validOpenId.email))
+                .map(user -> {
             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
             addAsCookie(applicationToken);
             return applicationToken;
@@ -90,14 +87,14 @@ public class UserResourceImpl implements UserResource {
         User user = new User();
         user.setName(name);
         user.setEmail(email);
-        return userDao.insertUser(user).flatMap((ignore) -> userDao.getUserByEmail(email))
+        return userDao.insertUser(user).flatMap(ignore -> userDao.getUserByEmail(email))
                 .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add user to the database", t)));
     }
 
     private void addAsCookie(final ApplicationToken applicationToken) {
-        responseHeaderHolder.addHeaders(applicationToken, new HashMap<String, Object>() {{
-            put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
-        }});
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
+        responseHeaderHolder.addHeaders(applicationToken, headers);
     }
 
 }
