@@ -16,31 +16,31 @@ import com.google.inject.Singleton;
 @Singleton
 public class ApplicationTokenVerifier {
 
-    private JWTVerifier jwtVerifier;
-    private static final String ISSUER = "rocket-fuel";
-    private static final long LEEWAY = 5;
+	private JWTVerifier jwtVerifier;
+	private static final String ISSUER = "rocket-fuel";
+	private static final long   LEEWAY = 5;
 
-    public ApplicationTokenVerifier() {
-        // used by guice
-    }
+	public ApplicationTokenVerifier() {
+		// used by guice
+	}
 
-    public ApplicationTokenVerifier(ClockProvider clockProvider, ApplicationTokenConfig applicationTokenConfig) {
-        Algorithm algorithm = Algorithm.HMAC256(applicationTokenConfig.getSecret());
-        JWTVerifier.BaseVerification verification = (JWTVerifier.BaseVerification) JWT.require(algorithm)
-                .acceptLeeway(LEEWAY)
-                .withIssuer(ISSUER)
-                .acceptExpiresAt(LEEWAY);
-        Clock clock = clockProvider.getClock();
-        this.jwtVerifier = verification.build(clock);
-    }
+	public ApplicationTokenVerifier(ClockProvider clockProvider, ApplicationTokenConfig applicationTokenConfig) {
+		Algorithm algorithm = Algorithm.HMAC256(applicationTokenConfig.getSecret());
+		JWTVerifier.BaseVerification verification = (JWTVerifier.BaseVerification)JWT.require(algorithm)
+			.acceptLeeway(LEEWAY)
+			.withIssuer(ISSUER)
+			.acceptExpiresAt(LEEWAY);
+		Clock clock = clockProvider.getClock();
+		this.jwtVerifier = verification.build(clock);
+	}
 
-    /**
-     * Perform the verification against the given Token, using any previous configured options.
-     *
-     * @param token to verify.
-     * @return a verified and decoded JWT
-     **/
-    public DecodedJWT verifyAndDecode(String token) {
-        return jwtVerifier.verify(token);
-    }
+	/**
+	 * Perform the verification against the given Token, using any previous configured options.
+	 *
+	 * @param token to verify.
+	 * @return a verified and decoded JWT
+	 **/
+	public DecodedJWT verifyAndDecode(String token) {
+		return jwtVerifier.verify(token);
+	}
 }

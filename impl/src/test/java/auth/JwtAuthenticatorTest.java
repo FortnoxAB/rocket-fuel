@@ -20,21 +20,21 @@ import static org.mockito.Mockito.when;
 
 public class JwtAuthenticatorTest {
 	private static final String JWT = "eyJhbGciOiJIUzI1NiIsImtpZCI6ImIxNWEyYjhmN2E2YjNmNmJjMDhiYzFjNTZhODg0MTBlMTQ2ZDAxZmQiLCJ0eXAiOiJKV1QifQ.eyJlbWFpbCI6ImplcHAzX2RyYWdvbnNsYXllckBmb3J0bm94LnNlIiwibmFtZSI6ImplcHAzIiwicGljdHVyZSI6InVybHRvcGljdHVyZSIsInVzZXJfaWQiOjEsImlhdCI6MTU0ODQxNzY0NywiZXhwIjoxNTQ4NDIxMjQ3fQ.yDPCbMe5ZPqNubrWBoJJytk3DqS5FiEVotirtj3wzNA";
-	private JwtAuthResolver jwtAuthResolver;
-    private ApplicationTokenVerifier applicationTokenVerifier;
+	private JwtAuthResolver          jwtAuthResolver;
+	private ApplicationTokenVerifier applicationTokenVerifier;
 
 	@Before
 	public void beforeEach() {
-        DateProvider dateProvider = mock(DateProvider.class);
-        applicationTokenVerifier = mock(ApplicationTokenVerifier.class);
+		DateProvider dateProvider = mock(DateProvider.class);
+		applicationTokenVerifier = mock(ApplicationTokenVerifier.class);
 
-        DecodedJWT decodedJWT = com.auth0.jwt.JWT.decode(JWT);
-        when(applicationTokenVerifier.verifyAndDecode(any())).thenReturn(decodedJWT);
+		DecodedJWT decodedJWT = com.auth0.jwt.JWT.decode(JWT);
+		when(applicationTokenVerifier.verifyAndDecode(any())).thenReturn(decodedJWT);
 
 		final String pastTime = "2019-01-25T13:00:47+01:00";
 		when(dateProvider.getOffsetDateTime()).thenReturn(OffsetDateTime.parse(pastTime));
 		when(dateProvider.getDefaultZone()).thenReturn(ZoneId.of("Z"));
-        jwtAuthResolver = new JwtAuthResolver(dateProvider, applicationTokenVerifier);
+		jwtAuthResolver = new JwtAuthResolver(dateProvider, applicationTokenVerifier);
 	}
 
 	@Test
@@ -68,8 +68,8 @@ public class JwtAuthenticatorTest {
 	}
 
 	@Test
-    public void shouldThrowIfTokenCannotBeVerified() {
-        when(applicationTokenVerifier.verifyAndDecode(any())).thenThrow(new TokenExpiredException("old"));
+	public void shouldThrowIfTokenCannotBeVerified() {
+		when(applicationTokenVerifier.verifyAndDecode(any())).thenThrow(new TokenExpiredException("old"));
 		try {
 			jwtAuthResolver.getAuth(JWT);
 			fail("expected expection");
