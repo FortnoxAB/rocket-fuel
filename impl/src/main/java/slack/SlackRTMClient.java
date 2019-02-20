@@ -78,7 +78,7 @@ public class SlackRTMClient {
         return concat(
                 messageHandlers
                     .stream()
-                    .filter(slackMessageHandler -> slackMessageHandler.shouldHandle(messageAsJson))
+                    .filter(slackMessageHandler -> slackMessageHandler.shouldHandle(messageAsJson.get("type").getAsString(), messageAsJson))
                     .map(slackMessageHandler -> slackMessageHandler.handleMessage(messageAsJson))
                     .collect(Collectors.toList()));
     }

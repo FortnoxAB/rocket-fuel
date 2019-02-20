@@ -19,6 +19,8 @@
 
     private Integer votes;
 
+    private String slackId;
+
     public String getTitle() {
         return title;
     }
@@ -66,4 +68,12 @@
     public void setUserId(Long userId) {
         this.userId = userId;
     }
-}
+
+     public String getSlackId() {
+         return slackId;
+     }
+
+     public void setSlackId(String slackId) {
+         this.slackId = slackId;
+     }
+ }
