@@ -9,7 +9,7 @@
 
     private String title;
 
-    private Long Id;
+     private Long id;
 
     private String createdBy;
 
@@ -54,11 +54,11 @@
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public Long getUserId() {

@@ -33,7 +33,6 @@ public class AnswerResourceImpl implements AnswerResource {
         return answerDao.upVoteAnswer(threadId);
     }
 
-    @Override
     public Observable<Void> downVoteAnswer(String threadId) {
         return answerDao.downVoteAnswer(threadId);
     }

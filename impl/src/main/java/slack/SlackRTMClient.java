@@ -26,7 +26,6 @@ public class SlackRTMClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(SlackRTMClient.class);
 
-    private       RTMClient                rtmClient;
     private final Set<SlackMessageHandler> messageHandlers;
 
     @Inject
@@ -53,7 +52,7 @@ public class SlackRTMClient {
     private void connectClient(SlackConfig slackConfig, PublishSubject<String> messageHandler) throws IOException, DeploymentException {
 
         //Create websocket connection to slack
-        rtmClient = new Slack().rtm(slackConfig.getBotUserToken());
+        final RTMClient rtmClient = new Slack().rtm(slackConfig.getBotUserToken());
 
         //Close connection when system is shut down
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
