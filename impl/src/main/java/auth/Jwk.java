@@ -32,9 +32,6 @@ public class Jwk {
         // used by jackson
     }
 
-    /**
-     * @return id
-     */
     public String getId() {
         return id;
     }
@@ -43,9 +40,6 @@ public class Jwk {
         this.id = id;
     }
 
-    /**
-     * @return type
-     */
     public String getType() {
         return type;
     }
@@ -54,9 +48,6 @@ public class Jwk {
         this.type = type;
     }
 
-    /**
-     * @return algorithm
-     */
     public String getAlgorithm() {
         return algorithm;
     }
@@ -65,9 +56,6 @@ public class Jwk {
         this.algorithm = algorithm;
     }
 
-    /**
-     * @return usage
-     */
     public String getUsage() {
         return usage;
     }
@@ -76,9 +64,6 @@ public class Jwk {
         this.usage = usage;
     }
 
-    /**
-     * @return operations
-     */
     public List<String> getOperations() {
         return operations;
     }
@@ -87,9 +72,6 @@ public class Jwk {
         this.operations = operations;
     }
 
-    /**
-     * @return certificateUrl
-     */
     public String getCertificateUrl() {
         return certificateUrl;
     }
@@ -98,9 +80,6 @@ public class Jwk {
         this.certificateUrl = certificateUrl;
     }
 
-    /**
-     * @return certificateChain
-     */
     public List<String> getCertificateChain() {
         return certificateChain;
     }
@@ -109,9 +88,6 @@ public class Jwk {
         this.certificateChain = certificateChain;
     }
 
-    /**
-     * @return certificateThumbprint
-     */
     public String getCertificateThumbprint() {
         return certificateThumbprint;
     }
