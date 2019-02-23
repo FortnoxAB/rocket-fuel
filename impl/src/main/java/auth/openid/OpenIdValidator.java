@@ -80,16 +80,15 @@ public class OpenIdValidator {
      */
     private Observable<DecodedJWT> verify(String token) {
         final String issuer = openIdConfiguration.getIssuer();
-        final DecodedJWT unverifiedJwt = JWT.decode(token);
-        final String keyId = unverifiedJwt.getKeyId();
+        final String keyId = JWT.decode(token).getKeyId();
         return jwkResource.getJWks()
-                .doOnError((e) -> LOG.error("failed to get jwks to verify token", e))
+                .doOnError(e -> LOG.error("failed to get jwks to verify token", e))
                 .map(OpenIdValidator::getJwksOrderedById)
-                .doOnError((e) -> LOG.error("failed to order jwks", e))
+                .doOnError(e -> LOG.error("failed to order jwks", e))
                 .flatMap(jwksById -> getPublicKeyByKeyId(keyId, jwksById))
-                .doOnError((e) -> LOG.info("failed to get jwk by kid", e))
+                .doOnError(e -> LOG.info("failed to get jwk by kid", e))
                 .map(publicKey -> getJwtVerifier(issuer, publicKey))
-                .doOnError((e) -> LOG.info("failed to create jwt verifier", e))
+                .doOnError(e -> LOG.info("failed to create jwt verifier", e))
                 .map(jwtVerifier -> jwtVerifier.verify(token))
                 .doOnError(e -> LOG.info("failed to verify token", e));
     }
@@ -109,14 +108,14 @@ public class OpenIdValidator {
     private static Map<String, Jwk> getJwksOrderedById(JwkResponse response) {
         return response.getKeys().stream()
                 .map(jwk -> new Jwk(
-                        jwk.getKid(),
-                        jwk.getKty(),
-                        jwk.getAlg(),
-                        jwk.getUse(),
-                        jwk.getKey_ops(),
-                        jwk.getX5u(),
-                        jwk.getX5c(),
-                        jwk.getX5t(),
+                        jwk.getId(),
+                        jwk.getType(),
+                        jwk.getAlgorithm(),
+                        jwk.getUsage(),
+                        jwk.getOperations(),
+                        jwk.getCertificateUrl(),
+                        jwk.getCertificateChain(),
+                        jwk.getCertificateThumbprint(),
                         jwk.getAdditionalAttributes()))
                 .collect(Collectors.toMap(Jwk::getId, Function.identity()));
     }

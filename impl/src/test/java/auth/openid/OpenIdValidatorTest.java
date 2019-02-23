@@ -174,16 +174,16 @@ public class OpenIdValidatorTest {
     private Jwk getValidJwk() {
         Jwk jwk = new Jwk();
 
-        jwk.setKid("7d680d8c70d44e947133cbd499ebc1a61c3d5abc");
-        jwk.setE("AQAB");
-        jwk.setKty("RSA");
-        jwk.setAlg("RS256");
-        jwk.setN("2K7epoJWl_B68lRUi1txaa0kEuIK4WHiHpi1yC4kPyu48d046yLlrwuvbQMbog2YTOZdV" +
+        jwk.setId("7d680d8c70d44e947133cbd499ebc1a61c3d5abc");
+        jwk.setType("RSA");
+        jwk.setAlgorithm("RS256");
+        jwk.setUsage("sig");
+        jwk.setAdditionalAttributes("n", "2K7epoJWl_B68lRUi1txaa0kEuIK4WHiHpi1yC4kPyu48d046yLlrwuvbQMbog2YTOZdV" +
                 "oG1D4zlWKHuVY00O80U1ocFmBl3fKVrUMakvHru0C0mAcEUQo7ItyEX7rpOVYtxlrVk6G8PY4" +
                 "EK61EB-Xe35P0zb2AMZn7Tvm9-tLcccqYlrYBO4SWOwd5uBSqc_WcNJXgnQ-9sYEZ0JUMhKZel" +
                 "EMrpX72hslmduiz-LMsXCnbS7jDGcUuSjHXVLM9tb1SQynx5Xz9xyGeN4rQLnFIKvgwpiqnvLpbMo6" +
                 "grhJwrz67d1X6MwpKtAcqZ2V2v4rQsjbblNH7GzF8ZsfOaqw");
-        jwk.setUse("sig");
+        jwk.setAdditionalAttributes("e", "AQAB");
         return jwk;
     }
 
