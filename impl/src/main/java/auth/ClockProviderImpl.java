@@ -1,6 +1,7 @@
 package auth;
 
 import com.auth0.jwt.interfaces.Clock;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import java.util.Date;
@@ -11,6 +12,7 @@ import java.util.Date;
 @Singleton
 public class ClockProviderImpl implements ClockProvider {
 
+    @Inject
     public ClockProviderImpl() {
         // used by guice
     }

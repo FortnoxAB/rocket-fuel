@@ -1,6 +1,7 @@
 import api.Question;
 import api.User;
 import api.UserResource;
+import auth.JwkResource;
 import auth.application.ApplicationTokenConfig;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -9,7 +10,6 @@ import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 import org.jetbrains.annotations.NotNull;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -24,9 +24,7 @@ import slack.SlackRTMClient;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class TestSetup {
 
@@ -47,8 +45,9 @@ public class TestSetup {
             .with(mocks, new AbstractModule() {
                 @Override
                 protected void configure() {
-                    SlackRTMClient slackRTMClient = Mockito.mock(SlackRTMClient.class);
+                    SlackRTMClient slackRTMClient = mock(SlackRTMClient.class);
                     binder().bind(SlackRTMClient.class).toInstance(slackRTMClient);
+                    binder().bind(JwkResource.class).toProvider(() -> mock(JwkResource.class));
                 }
             })));
     }

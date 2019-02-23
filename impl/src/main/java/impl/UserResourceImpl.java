@@ -4,7 +4,6 @@ import api.User;
 import api.UserResource;
 import api.auth.ApplicationToken;
 import api.auth.Auth;
-import auth.openid.ImmutableOpenIdToken;
 import auth.openid.OpenIdValidator;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -70,17 +69,17 @@ public class UserResourceImpl implements UserResource {
 
     @Override
     public Observable<ApplicationToken> generateToken(@NotNull String openIdToken) {
-        final ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
-        return userDao.getUserByEmail(validOpenId.email)
+        return openIdValidator.validate(openIdToken).flatMap(validOpenId ->
+                userDao.getUserByEmail(validOpenId.email)
                 .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
                 .single()
                 .onErrorResumeNext(t -> addUserToDatabase(validOpenId.name, validOpenId.email))
                 .map(user -> {
-            ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
-            addAsCookie(applicationToken);
-            return applicationToken;
-        });
-
+                            ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
+                            addAsCookie(applicationToken);
+                            return applicationToken;
+                        }
+                ));
     }
 
     private Observable<User> addUserToDatabase(String name, String email) {
