@@ -8,7 +8,18 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <properties>
+        <build.directory.impl>../impl/target</build.directory.impl>
+        <build.directory.spec>target</build.directory.spec>
 
+        <classes.directory.impl>../impl/target/classes</classes.directory.impl>
+
+        <sources.directory.impl>../impl/src/main/java</sources.directory.impl>
+
+        <generated-sources.directory.impl>../impl/target/generated-sources/annotations
+        </generated-sources.directory.impl>
+        <generated-sources.directory.spec>target/generated-sources/annotations</generated-sources.directory.spec>
+    </properties>
     <artifactId>spec</artifactId>
 
     <dependencies>
@@ -51,4 +62,62 @@
 
     </dependencies>
 
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- Execute an ant task within maven -->
+                                <echo message="Generating JaCoCo Reports"/>
+                                <taskdef name="report" classname="org.jacoco.ant.ReportTask">
+                                    <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>
+                                </taskdef>
+                                <mkdir dir="${basedir}/target/coverage-report"/>
+                                <report>
+                                    <executiondata>
+                                        <fileset dir="${build.directory.impl}">
+                                            <include name="jacoco.exec"/>
+                                        </fileset>
+                                        <fileset dir="${build.directory.spec}">
+                                            <include name="jacoco.exec"/>
+                                        </fileset>
+                                    </executiondata>
+                                    <structure name="jacoco-multi Coverage Project">
+                                        <group name="jacoco-multi">
+                                            <classfiles>
+                                                <fileset dir="${classes.directory.impl}"/>
+                                            </classfiles>
+                                            <sourcefiles encoding="UTF-8">
+                                                <fileset dir="${sources.directory.impl}"/>
+                                            </sourcefiles>
+                                        </group>
+                                    </structure>
+                                    <html destdir="${basedir}/target/coverage-report/html"/>
+                                    <xml destfile="${basedir}/target/coverage-report/coverage-report.xml"/>
+                                    <csv destfile="${basedir}/target/coverage-report/coverage-report.csv"/>
+                                </report>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>org.jacoco.ant</artifactId>
+                        <version>${jacoco.plugin.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
 </project>
