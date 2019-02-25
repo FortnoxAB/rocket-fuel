@@ -15,7 +15,6 @@
         <classes.directory.impl>../impl/target/classes</classes.directory.impl>
 
         <sources.directory.impl>../impl/src/main/java</sources.directory.impl>
-        <sources.directory.spec>src/main/java</sources.directory.spec>
 
         <generated-sources.directory.impl>../impl/target/generated-sources/annotations
         </generated-sources.directory.impl>
@@ -100,7 +99,6 @@
                                             </classfiles>
                                             <sourcefiles encoding="UTF-8">
                                                 <fileset dir="${sources.directory.impl}"/>
-                                                <fileset dir="${sources.directory.spec}"/>
                                             </sourcefiles>
                                         </group>
                                     </structure>
