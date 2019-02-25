@@ -44,29 +44,17 @@
             <version>1.7</version>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <finalName>rocket-fuel-fatjar</finalName>
-                    <appendAssemblyId>false</appendAssemblyId>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>se.fortnox.reactivewizard.Main</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.plugin.version}</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <id>default-prepare-agent</id>
                         <goals>
-                            <goal>single</goal>
+                            <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                 </executions>
