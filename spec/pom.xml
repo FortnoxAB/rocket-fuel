@@ -13,7 +13,6 @@
         <build.directory.spec>target</build.directory.spec>
 
         <classes.directory.impl>../impl/target/classes</classes.directory.impl>
-        <classes.directory.spec>target/classes</classes.directory.spec>
 
         <sources.directory.impl>../impl/src/main/java</sources.directory.impl>
         <sources.directory.spec>src/main/java</sources.directory.spec>
@@ -98,11 +97,10 @@
                                         <group name="jacoco-multi">
                                             <classfiles>
                                                 <fileset dir="${classes.directory.impl}"/>
-                                                <fileset dir="${classes.directory.spec}"/>
                                             </classfiles>
                                             <sourcefiles encoding="UTF-8">
                                                 <fileset dir="${sources.directory.impl}"/>
-                                                <fileset dir="${sources.directory.spec}"></fileset>
+                                                <fileset dir="${sources.directory.spec}"/>
                                             </sourcefiles>
                                         </group>
                                     </structure>
