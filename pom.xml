@@ -88,7 +88,6 @@
             <version>2.9.8</version>
         </dependency>
     </dependencies>
-
        <build>
             <plugins>
                 <plugin>
@@ -99,6 +98,25 @@
                         <target>1.8</target>
                         <compilerArgument>-parameters</compilerArgument>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </build>
