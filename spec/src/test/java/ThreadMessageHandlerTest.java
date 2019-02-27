@@ -1,17 +1,8 @@
-import api.Answer;
-import api.AnswerResource;
-import api.Question;
-import api.QuestionResource;
-import api.User;
-import api.UserResource;
+import api.*;
 import com.github.seratch.jslack.api.model.Message;
 import com.google.gson.JsonObject;
 import com.google.inject.AbstractModule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.mockito.Mockito;
 import org.testcontainers.containers.PostgreSQLContainer;
 import slack.SlackResource;
@@ -19,14 +10,11 @@ import slack.ThreadMessageHandler;
 
 import java.util.List;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static rx.Observable.empty;
 import static rx.Observable.just;
 
