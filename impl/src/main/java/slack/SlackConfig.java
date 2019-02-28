@@ -18,6 +18,20 @@ public class SlackConfig {
     @NotNull
     private String botUserToken;
 
+    /**
+     * Defines if the slack integration should be enabled
+     */
+    @NotNull
+    private boolean enabled = false;
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public String getApiToken() {
         return apiToken;
     }

@@ -13,6 +13,7 @@ import rx.subjects.PublishSubject;
 
 import javax.websocket.DeploymentException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,10 @@ public class SlackRTMClient {
 
     @Inject
     public SlackRTMClient(SlackConfig slackConfig, Set<SlackMessageHandler> rtmMessageHandlers) throws IOException, DeploymentException {
+        if(!slackConfig.isEnabled()) {
+            messageHandlers = Collections.emptySet();
+            return;
+        }
 
         messageHandlers = rtmMessageHandlers;
 
