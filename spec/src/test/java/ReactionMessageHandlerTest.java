@@ -90,7 +90,7 @@ public class ReactionMessageHandlerTest {
         jsonObject.add("item", item);
 
         //Then
-        assertThat(reactionMessageHandler.shouldHandle("reaction_added", jsonObject));
+        assertThat(reactionMessageHandler.shouldHandle("reaction_added", jsonObject)).isTrue();
 
         AssertableSubscriber<Void> test = reactionMessageHandler.handleMessage(jsonObject).test();
         test.awaitTerminalEvent();
@@ -157,7 +157,7 @@ public class ReactionMessageHandlerTest {
         jsonObject.add("item", item);
 
         //Then
-        assertThat(reactionMessageHandler.shouldHandle("reaction_added", jsonObject));
+        assertThat(reactionMessageHandler.shouldHandle("reaction_added", jsonObject)).isTrue();
 
         AssertableSubscriber<Void> test = reactionMessageHandler.handleMessage(jsonObject).test();
         test.awaitTerminalEvent();

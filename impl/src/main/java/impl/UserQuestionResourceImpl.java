@@ -53,7 +53,7 @@ public class UserQuestionResourceImpl implements UserQuestionResource {
 
     @Override
     public Observable<Question> updateQuestion(Auth auth, long questionId, Question question) {
-        return this.questionDao.updateQuestion(auth.getUserId(), questionId, question).flatMap((num) -> this.questionDao.getQuestion(auth.getUserId(), questionId))
+        return this.questionDao.updateQuestion(auth.getUserId(), questionId, question).flatMap(num -> this.questionDao.getQuestion(auth.getUserId(), questionId))
             .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to update question to database",throwable)));
     }
 }
