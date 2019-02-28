@@ -1,7 +1,7 @@
 package impl;
 
 import api.Question;
-import api.QuestionResource;
+import api.UserQuestionResource;
 import api.auth.Auth;
 import dao.QuestionDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -17,15 +17,15 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class QuestionResourceImplTest {
+public class UserQuestionResourceImplTest {
 
-    private QuestionResource questionResource;
-    private QuestionDao questionDao;
+    private UserQuestionResource userQuestionResource;
+    private QuestionDao          questionDao;
 
     @Before
     public void beforeEach() {
         questionDao = mock(QuestionDao.class);
-        questionResource = new QuestionResourceImpl(questionDao);
+        userQuestionResource = new UserQuestionResourceImpl(questionDao);
     }
 
     @Test
@@ -33,7 +33,7 @@ public class QuestionResourceImplTest {
         when(questionDao.getQuestions(123, null)).thenReturn(Observable.error(new SQLException("poff")));
 
         try {
-            questionResource.getQuestions(123, null).toBlocking().singleOrDefault(null);
+            userQuestionResource.getQuestions(123, null).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
@@ -46,7 +46,7 @@ public class QuestionResourceImplTest {
         when(questionDao.getQuestion(123, 123)).thenReturn(Observable.error(new SQLException("poff")));
 
         try {
-            questionResource.getQuestion(123, 123).toBlocking().singleOrDefault(null);
+            userQuestionResource.getQuestion(123, 123).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
@@ -61,7 +61,7 @@ public class QuestionResourceImplTest {
         Auth auth = new Auth();
         auth.setUserId(123);
         try {
-            questionResource.postQuestion(auth, question).toBlocking().singleOrDefault(null);
+            userQuestionResource.postQuestion(auth, question).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
@@ -77,7 +77,7 @@ public class QuestionResourceImplTest {
         Auth auth = new Auth();
         auth.setUserId(123);
         try {
-            questionResource.updateQuestion(auth, 123, question).toBlocking().singleOrDefault(null);
+            userQuestionResource.updateQuestion(auth, 123, question).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());

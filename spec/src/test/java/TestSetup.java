@@ -24,7 +24,6 @@ import slack.SlackRTMClient;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -125,7 +124,7 @@ public class TestSetup {
     }
 
     @NotNull
-    public static Question getQuestion(String title, String question) {
+    public static final Question getQuestion(String title, String question) {
         Question questionObject = new Question();
         questionObject.setAnswerAccepted(false);
         questionObject.setBounty(300);

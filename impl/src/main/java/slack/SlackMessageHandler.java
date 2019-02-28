@@ -10,10 +10,10 @@ import rx.Observable;
 public interface SlackMessageHandler {
 
     /**
-     * Returns the type this messagehandler will recieve events for
+     * Decides if this handler should handle this particular message
      * @return
      */
-    boolean shouldHandle(JsonObject body);
+    boolean shouldHandle(String type, JsonObject body);
 
     /**
      * Method that handlesTheMessage

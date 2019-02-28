@@ -2,58 +2,38 @@ package impl;
 
 import api.Answer;
 import api.AnswerResource;
-import api.auth.Auth;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import dao.AnswerDao;
-import dao.QuestionDao;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Observable;
-import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
-import se.fortnox.reactivewizard.jaxrs.WebException;
 
-import java.util.List;
-
-import static rx.Observable.error;
-
+@Singleton
 public class AnswerResourceImpl implements AnswerResource {
 
-    private final DaoTransactions daoTransactions;
-    private QuestionDao questionDao;
-    private AnswerDao answerDao;
+    private final AnswerDao answerDao;
 
     @Inject
-    public AnswerResourceImpl(QuestionDao questionDao, AnswerDao answerDao, DaoTransactions daoTransactions) {
-        this.questionDao = questionDao;
+    public AnswerResourceImpl(AnswerDao answerDao) {
+
         this.answerDao = answerDao;
-        this.daoTransactions = daoTransactions;
     }
 
     @Override
-    public Observable<List<Answer>> getAnswers(long userId, long questionId) {
-        return answerDao.getAnswers(userId, questionId).toList()
-                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get answers from database", throwable)));
-
+    public Observable<Answer> getAnswers(long questionId) {
+        return answerDao.getAnswers(questionId);
     }
 
     @Override
-    public Observable<Void> createAnswer(Auth auth, long questionId, Answer answer) {
-        return answerDao.createAnswer(auth.getUserId(), questionId, answer)
-                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to create answer", throwable)));
-
+    public Observable<Answer> getAnswerBySlackId(String slackId) {
+        return answerDao.getAnswer(slackId);
     }
 
     @Override
-    public Observable<Void> updateAnswer(Auth auth, long questionId, long answerId, Answer answer) {
-        return answerDao.updateAnswer(auth.getUserId(), questionId, answerId, answer)
-                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to update answer", throwable)));
+    public Observable<Void> upVoteAnswer(String threadId) {
+        return answerDao.upVoteAnswer(threadId);
     }
 
-    @Override
-    public Observable<Void> markAsAnswered(Auth auth, long questionId, long answerId) {
-        Observable<Integer> markQuestionAsAnswered = this.questionDao.markAsAnswered(auth.getUserId(), questionId);
-        Observable<Integer> markAnswerAsAnswered = this.answerDao.markAsAnswered(auth.getUserId(), answerId);
-        this.daoTransactions.createTransaction(markQuestionAsAnswered, markAnswerAsAnswered);
-        return this.daoTransactions.executeTransaction(markQuestionAsAnswered, markAnswerAsAnswered)
-                .onErrorResumeNext(e -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to mark question as answered", e)));
+    public Observable<Void> downVoteAnswer(String threadId) {
+        return answerDao.downVoteAnswer(threadId);
     }
 }
