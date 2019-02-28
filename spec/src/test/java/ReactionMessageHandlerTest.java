@@ -20,7 +20,7 @@ import rx.observers.AssertableSubscriber;
 import slack.ReactionMessageHandler;
 import slack.SlackResource;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ReactionMessageHandlerTest {
 
