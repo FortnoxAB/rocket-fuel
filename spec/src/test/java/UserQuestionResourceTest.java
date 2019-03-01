@@ -1,9 +1,14 @@
 import api.Question;
 import api.QuestionResource;
 import api.User;
+import api.UserQuestionResource;
 import api.UserResource;
 import api.auth.Auth;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.CollectionOptions;
@@ -11,14 +16,15 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.util.List;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 
-public class QuestionResourceTest {
+public class UserQuestionResourceTest {
 
-    private static QuestionResource questionResource;
-    private static UserResource userResource;
+    private static UserQuestionResource userQuestionResource;
+    private static QuestionResource     questionResource;
+    private static UserResource         userResource;
 
 
     @ClassRule
@@ -30,6 +36,7 @@ public class QuestionResourceTest {
     public static void before() {
         testSetup = new TestSetup(postgreSQLContainer);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
+        userQuestionResource = testSetup.getInjector().getInstance(UserQuestionResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
     }
 
@@ -54,10 +61,10 @@ public class QuestionResourceTest {
 
         Auth mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
-        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        userQuestionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
         // then the question should be returned when asking for the users questions
-        List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
+        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question insertedQuestion = questions.get(0);
@@ -76,12 +83,12 @@ public class QuestionResourceTest {
         Question question = TestSetup.getQuestion("my question title", "my question");
         Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
-        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
-        List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
+        userQuestionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
         assertEquals(1, questions.size());
 
         // then the question should be returned when asking for the specific question
-        Question selectedQuestion = questionResource.getQuestion(createdUser.getId(), questions.get(0).getId()).toBlocking().single();
+        Question selectedQuestion = userQuestionResource.getQuestion(createdUser.getId(), questions.get(0).getId()).toBlocking().single();
 
         assertEquals("my question title", selectedQuestion.getTitle());
         assertEquals("my question", selectedQuestion.getQuestion());
@@ -97,12 +104,12 @@ public class QuestionResourceTest {
 
         Question question      = TestSetup.getQuestion("my question title", "my question");
         String   slackThreadId = String.valueOf(System.currentTimeMillis());
-        question.setSlackThreadId(slackThreadId);
+        question.setSlackId(slackThreadId);
 
-        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        userQuestionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
         Question returnedQuestion = questionResource.getQuestionBySlackThreadId(slackThreadId).toBlocking().singleOrDefault(null);
 
-        assertThat(returnedQuestion.getSlackThreadId()).isEqualTo(slackThreadId);
+        assertThat(returnedQuestion.getSlackId()).isEqualTo(slackThreadId);
     }
 
     @Test
@@ -126,14 +133,14 @@ public class QuestionResourceTest {
 
         Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
-        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        userQuestionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
-        long newQuestionId = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single().get(0).getId();
+        long newQuestionId = userQuestionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single().get(0).getId();
         question.setBounty(400);
         question.setTitle("new title");
         question.setQuestion("new question body");
-        questionResource.updateQuestion(mockAuth, newQuestionId, question).toBlocking().singleOrDefault(null);
-        List<Question> questions = questionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
+        userQuestionResource.updateQuestion(mockAuth, newQuestionId, question).toBlocking().singleOrDefault(null);
+        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question updatedQuestion = questions.get(0);
@@ -156,12 +163,12 @@ public class QuestionResourceTest {
         Question questionForOtherUser = TestSetup.getQuestion("other users question title", "other users question");
 
         Auth auth = new MockAuth(ourUser.getId());
-        questionResource.postQuestion(auth, ourQuestion).toBlocking().singleOrDefault(null);
+        userQuestionResource.postQuestion(auth, ourQuestion).toBlocking().singleOrDefault(null);
         Auth authOtherUser = new MockAuth(otherUser.getId());
-        questionResource.postQuestion(authOtherUser, questionForOtherUser).toBlocking().singleOrDefault(null);
+        userQuestionResource.postQuestion(authOtherUser, questionForOtherUser).toBlocking().singleOrDefault(null);
 
         // then only questions for our user should be returned
-        List<Question> questions = questionResource.getQuestions(ourUser.getId(), new CollectionOptions()).toBlocking().single();
+        List<Question> questions = userQuestionResource.getQuestions(ourUser.getId(), new CollectionOptions()).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question insertedQuestion = questions.get(0);

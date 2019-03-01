@@ -1,8 +1,9 @@
 import api.Answer;
-import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
 import api.User;
+import api.UserAnswerResource;
+import api.UserQuestionResource;
 import api.UserResource;
 import com.github.seratch.jslack.api.model.Message;
 import com.google.gson.JsonObject;
@@ -19,7 +20,7 @@ import slack.ThreadMessageHandler;
 
 import java.util.List;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -32,7 +33,8 @@ import static rx.Observable.just;
 
 public class ThreadMessageHandlerTest {
     private static QuestionResource     questionResource;
-    private static AnswerResource       answerResource;
+    private static UserQuestionResource userQuestionResource;
+    private static UserAnswerResource   userAnswerResource;
     private static UserResource         userResource;
     private static TestSetup            testSetup;
     private static ThreadMessageHandler threadMessageHandler;
@@ -53,12 +55,13 @@ public class ThreadMessageHandlerTest {
             }
         });
 
+        userQuestionResource = testSetup.getInjector().getInstance(UserQuestionResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         threadMessageHandler = testSetup.getInjector().getInstance(ThreadMessageHandler.class);
 
         slackResourceMock = testSetup.getInjector().getInstance(SlackResource.class);
-        answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
+        userAnswerResource = testSetup.getInjector().getInstance(UserAnswerResource.class);
     }
 
     @After
@@ -82,6 +85,7 @@ public class ThreadMessageHandlerTest {
         User user = TestSetup.insertUser(userResource);
         User originalMessageUser = TestSetup.insertUser(userResource);
 
+        long questionIdLong = System.currentTimeMillis();
         String questionId = String.valueOf(System.currentTimeMillis());
 
         Message message = new Message();
@@ -98,6 +102,7 @@ public class ThreadMessageHandlerTest {
         JsonObject slackMessage = new JsonObject();
 
         slackMessage.addProperty("thread_ts", questionId);
+        slackMessage.addProperty("ts", questionId+1);
         slackMessage.addProperty("channel", "channel");
         slackMessage.addProperty("user", "user_id");
         slackMessage.addProperty("text", "an answer to your question");
@@ -117,23 +122,25 @@ public class ThreadMessageHandlerTest {
         assertThat(whateverQuestion.getUserId()).isEqualTo(originalMessageUser.getId());
 
         //Make sure the answer is also created
-        List<Answer> answers = answerResource.getAnswers(user.getId(), whateverQuestion.getId()).toBlocking().singleOrDefault(null);
+        List<Answer> answers = userAnswerResource.getAnswers(user.getId(), whateverQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(answers).isNotNull();
+        assertThat(answers.get(0).getSlackId()).isNotNull();
 
         //When second message in thread
         JsonObject messageNo2 = new JsonObject();
 
         messageNo2.addProperty("thread_ts", questionId);
+        messageNo2.addProperty("ts", String.valueOf(questionIdLong+1));
         messageNo2.addProperty("channel", "channel");
         messageNo2.addProperty("user", "user_id");
         messageNo2.addProperty("text", "yet another answer");
 
         threadMessageHandler.handleMessage(messageNo2).toBlocking().singleOrDefault(null);
 
-        answers = answerResource.getAnswers(user.getId(), whateverQuestion.getId()).toBlocking().singleOrDefault(null);
+        answers = userAnswerResource.getAnswers(user.getId(), whateverQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(answers).isNotNull();
         assertThat(answers).hasSize(2);
-
+        assertThat(answers.get(1).getSlackId()).isNotNull();
 
         //No sending to slack the second time. Verifying only single invocation after second call to handleMessage
         verify(slackResourceMock, times(1)).postMessageToSlack(anyString(), anyString(), anyString());
