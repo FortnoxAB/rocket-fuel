@@ -23,6 +23,7 @@ import java.util.UUID;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
+import static rx.Observable.just;
 
 public class UserResourceTest {
     private static final String OPEN_ID_TOKEN = "eyJhbGciOiJIUzI1NiIsImtpZCI6ImIxNWEyYjhmN2E2YjNmNmJjMDhiYzFjNTZhODg0MTBlMTQ2ZDAxZmQiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiamVwcDMiLCJwaWN0dXJlIjoidXJsdG9waWN0dXJlIiwiZW1haWwiOiJqZXNwZXIubGFoZGV2aXJ0YUBnbWFpbC5jb20iLCJpYXQiOjE1NDg0MTc2NDcsImV4cCI6MTY0ODQyMTI0N30.WH70YBPaMFg1QtTaZddikcslsN2C5sxm4oQSOVIt_PU";
@@ -63,7 +64,7 @@ public class UserResourceTest {
     public void shouldCreateUserInDatabaseIfFirstTimeLogin() {
         // given
         ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken("jeppe", "jeppe@email.com", "pictureUrl");
-        when(openIdValidator.validate(any())).thenReturn(openIdObject);
+        when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
         ApplicationToken applicationToken = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
@@ -79,7 +80,7 @@ public class UserResourceTest {
         // given
         User user = insertUser();
         ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken(user.getName(), user.getEmail(), "pictureUrl");
-        when(openIdValidator.validate(any())).thenReturn(openIdObject);
+        when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
         ApplicationToken applicationToken = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
@@ -95,7 +96,7 @@ public class UserResourceTest {
         // given
         User user = insertUser();
         ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken(user.getName(), user.getEmail(), "pictureUrl");
-        when(openIdValidator.validate(any())).thenReturn(openIdObject);
+        when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
         ApplicationToken applicationToken = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);

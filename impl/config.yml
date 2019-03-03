@@ -10,3 +10,8 @@ database:
 
 applicationTokenConfig:
   secret: a-valid-but-not-secure-secret
+
+openId:
+  issuer: https://accounts.google.com
+  jwksUri: https://www.googleapis.com/oauth2/v3/certs
+  clientId: client-id-found-in-google-console-for-example

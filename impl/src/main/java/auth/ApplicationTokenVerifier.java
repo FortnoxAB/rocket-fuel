@@ -6,6 +6,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Clock;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
@@ -24,6 +25,7 @@ public class ApplicationTokenVerifier {
 		// used by guice
 	}
 
+	@Inject
 	public ApplicationTokenVerifier(ClockProvider clockProvider, ApplicationTokenConfig applicationTokenConfig) {
 		Algorithm algorithm = Algorithm.HMAC256(applicationTokenConfig.getSecret());
 		JWTVerifier.BaseVerification verification = (JWTVerifier.BaseVerification)JWT.require(algorithm)
