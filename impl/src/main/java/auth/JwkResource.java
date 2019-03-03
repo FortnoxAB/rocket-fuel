@@ -5,7 +5,7 @@ import rx.Observable;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-@Path("")
+@Path(value = "not-used")
 public interface JwkResource {
 
     @GET

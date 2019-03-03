@@ -24,8 +24,7 @@ import slack.SlackRTMClient;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class TestSetup {
 
