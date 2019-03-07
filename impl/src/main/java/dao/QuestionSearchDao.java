@@ -18,11 +18,11 @@ public interface QuestionSearchDao {
             "question.user_id, " +
             "\"user\".name as created_by " +
             "FROM " +
-            "public.question " +
+            "question " +
             "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
             "LEFT JOIN  " +
-            "answer on answer.question_id = question.id and answer.user_id = public.question.user_id " +
+            "answer on answer.question_id = question.id and answer.user_id = question.user_id " +
             "WHERE  " +
             "question.title like ('%' || :search || '%') " +
             "or " +

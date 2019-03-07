@@ -1,4 +1,5 @@
 import React from 'react';
+import FillPage from '../../components/utils/fillpage';
 
 class Loader extends React.Component {
 	getColor(){
@@ -8,28 +9,37 @@ class Loader extends React.Component {
 		return '';
 	}
 
-	render() {
+	checkFillPage() {
+		if (this.props.fillPage) {
+			return (
+				<FillPage>
+					{this.renderLoader()}
+				</FillPage>
+			);
+		}
+
+		return this.renderLoader();
+	}
+
+	renderLoader() {
 		return (
-			<div className={`loader ${this.props.size}`}>
-				<svg className="circular" viewBox="25 25 50 50">
-					<circle
-						className={`path ${this.getColor()}`}
-						cx="50"
-						cy="50"
-						r="20"
-						fill="none"
-						strokeWidth="2"
-						strokeMiterlimit="10"
-					/>
-				</svg>
+			<div className={`loader ${this.props.size} ${this.getColor()}`}>
+				<span />
+				<span />
+				<span />
 			</div>
 		);
+	}
+
+	render() {
+		return this.checkFillPage();
 	}
 }
 
 Loader.defaultProps = {
 	size: '',
-	light: false
+	light: false,
+	fillPage: false
 };
 
 export default Loader;

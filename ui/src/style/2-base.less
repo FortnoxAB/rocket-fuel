@@ -46,9 +46,11 @@ table {
 }
 
 body {
+	.contrast-color(@background-color);
 	background-color: @background-color;
 	font-family: @default-font;
-	color: .contrast-color (@background-color)[@value];
+	color: fade(@contrast-value, 80%);
+	font-size: @font-size;
 }
 
 a,
@@ -64,4 +66,34 @@ p {
 	margin: 0;
 	padding: 0;
 	line-height: 1.4;
+}
+
+
+.markdown {
+	line-height: 1.2;
+	// .material-shadow(2);
+
+	table td, table th {
+		border: 1px solid @gray-dark-more;
+	}
+
+	code {
+		border: 1px solid @gray-light-more;
+		padding: 10px;
+		border-radius: 10px;
+	}
+
+	img {
+		max-width: 100%;
+		height: auto;
+	}
+
+	ul, ol {
+		margin-left: 20px;
+		list-style: initial;
+	}
+
+	ol {
+		list-style-type: decimal;
+	}
 }

@@ -1,69 +1,41 @@
-@width: 50px;
+
+@loader-ball-size: 10px;
+@loader-ball-color: @primary-color;
 
 .loader {
 	position: relative;
-	margin: 0 auto;
-	width: @width;
+	display: flex;
+	justify-content: center;
 
-	&:before {
-		content: '';
-		display: block;
-		padding-top: 100%;
+	span {
+		margin: 0 @loader-ball-size/4;
+		display: inline-block;
+		height: @loader-ball-size;
+		width: @loader-ball-size;
+		background-color: @loader-ball-color;
+		border-radius: 50%;
+		animation-name: fade-loader;
+		animation-duration: 1s;
+		animation-iteration-count: infinite;
+		animation-timing-function: linear;
 	}
-	&.large {
-		&:extend(.loader all);
-		width: @width * 1.5;
+
+	span:nth-child(2) {
+		animation-delay: .2s;
 	}
-
-	&.small {
-		&:extend(.loader all);
-		width: @width / 2;
-	}
-}
-
-.circular {
-	animation: rotate 2s linear infinite;
-	height: 100%;
-	transform-origin: center center;
-	width: 100%;
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	margin: auto;
-}
-
-.path {
-	stroke-width: 5;
-	stroke: @primary-color;
-	stroke-dasharray: 1, 200;
-	stroke-dashoffset: 0;
-	animation: dash 1.5s ease-in-out infinite;
-	stroke-linecap: round;
-
-	&.light {
-		stroke: @text-color-light;
+	span:nth-child(3) {
+		animation-delay: .4s;
 	}
 }
 
-@keyframes rotate {
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
-@keyframes dash {
+@keyframes fade-loader {
 	0% {
-		stroke-dasharray: 1, 200;
-		stroke-dashoffset: 0;
+		opacity: 1;
 	}
 	50% {
-		stroke-dasharray: 89, 200;
-		stroke-dashoffset: -35px;
+		opacity: .2;
 	}
 	100% {
-		stroke-dasharray: 89, 200;
-		stroke-dashoffset: -124px;
+		opacity: 1;
 	}
 }

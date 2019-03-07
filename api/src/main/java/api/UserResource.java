@@ -56,6 +56,6 @@ public interface UserResource {
      */
     @GET
     @Path("authenticate")
-    Observable<ApplicationToken> generateToken(@HeaderParam("authorizationToken") @NotNull String authorizationToken);
+    Observable<User> generateToken(@HeaderParam("authorizationToken") @NotNull String authorizationToken);
 
 }

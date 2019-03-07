@@ -1,0 +1,35 @@
+.user-bar {
+	.contrast-color(@primary-color);
+	color: @contrast-value;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 10px;
+	display: flex;
+	background-color: @primary-color;
+	position: fixed;
+	height: @user-bar-height;
+	width: 100%;
+	z-index: 1;
+	// .material-shadow(2);
+
+	.logo {
+		.icon .icon-layer {
+			fill: @text-color-light;
+		}
+	}
+
+	.user {
+		display: flex;
+		align-items: center;
+
+		.name {
+			margin-right: 10px;
+		}
+	}
+}
+
+.user-bar-placeholder {
+	display: block;
+	height: @user-bar-height;
+	width: 1px;
+}

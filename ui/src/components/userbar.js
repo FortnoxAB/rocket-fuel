@@ -1,40 +1,28 @@
 import React from 'react'
-import Coins from '../components/utils/coins';
+import { AppContext } from '../appcontext';
+import Logo from './utils/logo';
+import Coins from './utils/coins';
 
-class Userbar extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			user: null
-		}
-	}
-
-	componentDidUpdate(prevProps) {
-		if (prevProps.signedIn !== this.props.signedIn && this.props.signedIn === true) {
-			this.setState({
-				user: JSON.parse(window.sessionStorage.getItem('user'))
-			});
-		}
-	}
-
+class UserBar extends React.Component {
 	getUser() {
-		if (!this.props.signedIn || !this.state.user) {
-			return 'Ej inloggad';
-		}
-
-		return <span>{this.state.user.name} <Coins amount="1337" /> </span>
+		return <span>{this.context.state.user.name}</span>
 	}
 
 	render() {
 		return (
 			<div>
-				<div className="userbar">
-					{this.getUser()}
+				<div className="user-bar">
+					<Logo size="small" color="light" />
+					<div className="user">
+						<div className="name">{this.getUser()}</div> <Coins amount={172} />
+					</div>
 				</div>
-				<div className="userbar-placeholder" />
+				<div className="user-bar-placeholder" />
 			</div>
 		);
 	}
 }
 
-export default Userbar;
+UserBar.contextType = AppContext;
+
+export default UserBar;

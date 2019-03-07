@@ -7,7 +7,6 @@ import se.fortnox.reactivewizard.db.Update;
 
 
 public interface UserDao {
-
     @Update("INSERT INTO \"user\" " +
             "(email, \"name\") " +
             "VALUES(:user.email, :user.name);\n")

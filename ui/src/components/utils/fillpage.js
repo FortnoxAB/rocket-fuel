@@ -7,7 +7,7 @@ class FillPage extends React.Component {
 
 	render() {
 		return (
-			<div className="center-center fill-page">
+			<div className="center-center fill-page ignore-position">
 				{this.props.children}
 			</div>
 		);

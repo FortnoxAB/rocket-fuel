@@ -1,0 +1,50 @@
+.question-card, .card {
+	@input-border-color: contrast(@background-color, lighten(@background-color, 5%), darken(@background-color, 5%), 43%);
+
+	.contrast-color(@input-border-color);
+	margin-bottom: 15px;
+	margin-top: 15px;
+	padding: 20px;
+	background-color: @input-border-color;
+	color: @contrast-value;
+	// .material-shadow(2);
+	border-radius: @roundness;
+}
+.question-card {
+	.body {
+		display: flex;
+		justify-content: space-between;
+
+		.coins {
+			font-size: .8em;
+
+			.amount:before {
+				content: '+';
+			}
+		}
+
+		.title {
+			text-decoration: none;
+			color: @primary-color;
+			font-weight: 700;
+			font-size: 1.3em;
+		}
+	}
+
+	&:hover {
+		// .material-shadow(3);
+	}
+
+	.user {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: .7em;
+		padding-top: 10px;
+	}
+
+	&.answered {
+		transition: .3s;
+		background-color: lighten(@notification-success, 40%);
+	}
+}

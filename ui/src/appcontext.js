@@ -11,7 +11,7 @@ export class Provider extends React.Component {
 		return (
 			<AppContext.Provider value={{
 				state: this.state,
-				changeState: (newState) => {this.setState(newState)}
+				setState: (newState) => {this.setState(newState)}
 			}}>
 				{this.props.children}
 			</AppContext.Provider>

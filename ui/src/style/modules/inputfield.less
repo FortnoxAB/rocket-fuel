@@ -9,10 +9,11 @@
 	}
 
 	.error-message {
+		.contrast-color (@notification-error);
 		font-size: 10px;
 		margin: 0;
 		padding: 3px;
-		color: .contrast-color (@notification-error)[@value];
+		color: @contrast-value;
 		background-color: @notification-error;
 	}
 
@@ -47,21 +48,25 @@
 	}
 
 	input, textarea {
-		height: auto;
+		@input-background-color: contrast(@background-color, lighten(@background-color, 2%), darken(@background-color, 2%), 43%);
+		@input-border-color: contrast(@background-color, lighten(@background-color, 10%), darken(@background-color, 10%), 43%);
+		.contrast-color(@input-background-color);
+		// height: auto;
 		vertical-align: middle;
-		font-size: 16px;
+		font-size: @font-size;
 		font-family: @default-font;
 		padding: 10px;
 		transition: .2s;
 		width: 100%;
-		background-color: @text-color-light;
-		border: 1px solid @gray-light;
-		color: .contrast-color (@text-color-light)[@value];
+		background-color: @input-background-color;
+		border: 1px solid @input-border-color;
+		color: @contrast-value;
 		outline: none;
 		resize: none;
+		border-radius: @roundness;
 
 		&::placeholder {
-			color: @gray-light;
+			color: darken(@input-border-color, 10%);
 		}
 
 		&:focus {

@@ -65,7 +65,7 @@ public class UserResourceImpl implements UserResource {
     }
 
     @Override
-    public Observable<ApplicationToken> generateToken(@NotNull String openIdToken) {
+    public Observable<User> generateToken(@NotNull String openIdToken) {
         final ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
         return userDao.getUserByEmail(validOpenId.email)
                 .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
@@ -74,7 +74,7 @@ public class UserResourceImpl implements UserResource {
                 .map((user) -> {
             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
             addAsCookie(applicationToken);
-            return applicationToken;
+            return user;
         });
 
     }

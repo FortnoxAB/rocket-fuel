@@ -1,0 +1,12 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: src/components/menubar.js:15
+msgid "Overview"
+msgstr ""
+
+#: src/components/menubar.js:16
+msgid "Questions"
+msgstr ""

@@ -1,10 +1,9 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const babelConfig = {
+const reactConfig = {
 	presets: [
 		'@babel/preset-react',
 		[
@@ -23,7 +22,6 @@ const babelConfig = {
 		'@babel/plugin-proposal-class-properties'
 	]
 };
-
 module.exports = {
 	entry: {
 		main: ['@babel/polyfill', './src/index.js']
@@ -31,7 +29,7 @@ module.exports = {
 	output: {
 		publicPath: '/',
 		path: path.resolve(__dirname, 'dist'),
-		filename: '[name].[hash].js'
+		filename: `rocketfuel.js`
 	},
 	module: {
 		rules: [
@@ -39,7 +37,14 @@ module.exports = {
 				test: /\.js$/,
 				exclude: /node_modules/,
 				loader: 'babel-loader',
-				options: babelConfig
+				options: reactConfig
+			},
+			{
+				test: /\.po$/,
+				use: [
+					{ loader: 'json-loader' },
+					{ loader: 'po-gettext-loader' }
+				]
 			},
 			{
 				test: /\.less$/,
@@ -74,16 +79,23 @@ module.exports = {
 			filename: 'style.css'
 		}),
 		new CleanWebpackPlugin('dist', {}),
-		// new ExtractTextPlugin({filename: 'style.css'}),
 		new HtmlWebpackPlugin({
 			inject: false,
 			hash: true,
 			template: './src/index.html',
-			filename: 'index.html',
+			filename: 'index.html'
 		})
 	],
 	devServer: {
+		port: 8083,
 		publicPath: '/',
-		historyApiFallback: true
+		historyApiFallback: true,
+		proxy: {
+			'/api/**': {
+				target: 'http://localhost:8080',
+				secure: false,
+				changeOrigin: true
+			}
+		}
 	}
 };

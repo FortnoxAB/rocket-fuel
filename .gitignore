@@ -1,10 +1,13 @@
 .idea/**
-dev.example.yml
+config.yml
 .DS_Store
 **.iml
 target/
 ui/build/
 node_modules/
 dist/
+package-lock.json
+config.js
+
 localhost.crt
 localhost.key

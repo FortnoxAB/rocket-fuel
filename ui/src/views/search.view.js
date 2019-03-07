@@ -5,9 +5,26 @@ import { Route, withRouter, NavLink } from 'react-router-dom'
 const SearchView = () => {
 	return (
 		<div>
-			<div className="content">
-				Sök användare eller trådar...
-			</div>
+			<p>lipsum</p><br /><br /><br />
+			<p>lipsum</p>
+			<p>lipsum</p>
+			<p>lipsum</p><br /><br /><br />
+			<p>lipsum</p>
+			<p>lipsum</p>
+			<p>lipsum</p>
+			<p>lipsum</p><br /><br /><br />
+			<p>lipsum</p>
+			<p>lipsum</p><br /><br /><br />
+			<p>lipsum</p>
+			<p>lipsum</p><br /><br /><br />
+			<p>lipsum</p>
+			<p>lipsum</p><br /><br /><br />
+			<p>lipsum</p>
+			<p>lipsum</p>
+			<p>lipsum</p><br /><br /><br />
+			<p>lipsum</p><br /><br /><br />
+			<p>lipsum</p><br /><br /><br />
+			<p>lipsum</p><br /><br /><br />
 		</div>
 	);
 };

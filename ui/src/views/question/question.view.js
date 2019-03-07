@@ -6,8 +6,9 @@ import InputField from '../../components/inputfield';
 import Button from '../../components/button';
 import Thread from '../../components/thread';
 import Answer from '../../components/answer';
+import * as Question from '../../models/question';
 
-class ThreadView extends React.Component {
+class QuestionView extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -27,14 +28,20 @@ class ThreadView extends React.Component {
 	}
 
 	componentDidMount() {
-		const threadId = this.props.match.params.id;
-		this.loadThreadAndAnswers(threadId);
+		const questionId = this.props.match.params.id;
+		this.loadThreadAndAnswers(questionId);
 	}
 
-	loadThreadAndAnswers(threadId) {
+	loadThreadAndAnswers(questionId) {
+		Question.getQuestions(questionId).then((question) => {
+			this.setState({
+				loaded: true,
+				question: question
+			})
+		});
 		/*
-		const getThread = this.context.threads().getThread(threadId);
-		const getAnswers = this.context.threads().getAnswers(threadId);
+		const getThread = this.context.threads().getThread(questionId);
+		const getAnswers = this.context.threads().getAnswers(questionId);
 		Promise.all([getThread,getAnswers]).then((values) => {
 			const thread = values[0];
 			const answers = this.placeAcceptedAnswerAtTop(values[1]);
@@ -139,7 +146,7 @@ class ThreadView extends React.Component {
 		}
 		return (
 			<div className="content">
-				<Thread thread={this.state.thread} />
+				<Thread thread={this.state.question} />
 				<h3>Svar</h3>
 				{this.renderAnswers()}
 				{this.renderAnswerForm()}
@@ -148,4 +155,4 @@ class ThreadView extends React.Component {
 	}
 }
 
-export default withRouter(ThreadView);
+export default withRouter(QuestionView);

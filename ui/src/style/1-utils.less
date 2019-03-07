@@ -1,26 +1,68 @@
 span.coins {
-	color: @text-color-dark;
-	font-weight: 700;
+	.contrast-color(@secondary-color);
+	display: flex;
+	align-items: center;
+	padding: 3px;
+	border-radius: @roundness;
+	background-color: @secondary-color;
+	color: @contrast-value;
+
+	.amount {
+		margin-right: 2px;
+	}
 
 	.fa {
+		font-size: .6em;
 		color: #FBC02D;
 	}
+}
+
+.padded {
+	padding: 20px;
+
+	&-vertical {
+		padding: 20px 0;
+	}
+
+	&-horizontal {
+		padding: 0 20px;
+	}
+
+	&-bottom {
+		padding-bottom: 20px;
+	}
+
+	&-top {
+		padding-top: 20px;
+	}
+}
+
+.tag {
+	.contrast-color(@secondary-color);
+	font-size: 10px;
+	flex-grow: 0;
+	display: inline-block;
+	padding: 3px;
+	border-radius: @roundness;
+	background-color: @secondary-color;
+	color: @contrast-value;
+	margin-right: 2px;
 }
 
 .relative {
 	position: relative;
 }
 
-
 .form {
 	flex-grow: 1;
 }
 
 .info-square {
+	.contrast-color(@notification-info);
 	padding: 20px;
 	background-color: @notification-warning;
 	max-width: 300px;
-	color: .contrast-color (@notification-info)[@value];
+	color: @contrast-value;
 }
 
 .graph {
@@ -28,8 +70,7 @@ span.coins {
 	width: 500px;
 }
 
-
-.user-space {
+.underlined {
 	margin-bottom: 10px;
 	padding-bottom: 10px;
 	border-bottom: 1px solid @primary-color;

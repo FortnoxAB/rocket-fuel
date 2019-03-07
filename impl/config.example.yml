@@ -1,0 +1,12 @@
+liquibase-database:
+  user: user
+  schema: public
+  url: jdbc:postgresql://localhost/rocket-fuel
+
+database:
+  user: user
+  schema: public
+  url: jdbc:postgresql://localhost/rocket-fuel
+
+applicationTokenConfig:
+  secret: a-valid-but-not-secure-secret
