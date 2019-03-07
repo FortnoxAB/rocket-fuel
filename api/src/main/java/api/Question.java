@@ -2,7 +2,7 @@
 
  /**
   *  Defines a question. A question is connected to the {@link User} asking it.
-  *  
+  *
   *  A question can be answered if it has a accepted answer.
   *
   *  {@link Answer}s are linked to a question.
@@ -13,7 +13,9 @@
 
     private Integer bounty;
 
-    public boolean answerAccepted;
+    private boolean answerAccepted;
+
+    private String slackThreadId;
 
     public boolean isAnswerAccepted() {
         return answerAccepted;
@@ -38,4 +40,12 @@
     public void setBounty(Integer bounty) {
         this.bounty = bounty;
     }
-}
+
+     public String getSlackThreadId() {
+         return slackThreadId;
+     }
+
+     public void setSlackThreadId(String slackThreadId) {
+         this.slackThreadId = slackThreadId;
+     }
+ }

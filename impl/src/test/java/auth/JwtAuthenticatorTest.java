@@ -1,6 +1,8 @@
 package auth;
 
 import api.auth.Auth;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import dates.DateProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Before;
@@ -8,22 +10,31 @@ import org.junit.Test;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class JwtAuthenticatorTest {
 	private static final String JWT = "eyJhbGciOiJIUzI1NiIsImtpZCI6ImIxNWEyYjhmN2E2YjNmNmJjMDhiYzFjNTZhODg0MTBlMTQ2ZDAxZmQiLCJ0eXAiOiJKV1QifQ.eyJlbWFpbCI6ImplcHAzX2RyYWdvbnNsYXllckBmb3J0bm94LnNlIiwibmFtZSI6ImplcHAzIiwicGljdHVyZSI6InVybHRvcGljdHVyZSIsInVzZXJfaWQiOjEsImlhdCI6MTU0ODQxNzY0NywiZXhwIjoxNTQ4NDIxMjQ3fQ.yDPCbMe5ZPqNubrWBoJJytk3DqS5FiEVotirtj3wzNA";
-	private JwtAuthResolver jwtAuthResolver;
-	private DateProvider dateProvider;
+	private JwtAuthResolver          jwtAuthResolver;
+	private ApplicationTokenVerifier applicationTokenVerifier;
+
 	@Before
 	public void beforeEach() {
-		dateProvider = mock(DateProvider.class);
-		final String pastTime = "2019-01-01T14:00:47+01:00";
+		DateProvider dateProvider = mock(DateProvider.class);
+		applicationTokenVerifier = mock(ApplicationTokenVerifier.class);
+
+		DecodedJWT decodedJWT = com.auth0.jwt.JWT.decode(JWT);
+		when(applicationTokenVerifier.verifyAndDecode(any())).thenReturn(decodedJWT);
+
+		final String pastTime = "2019-01-25T13:00:47+01:00";
 		when(dateProvider.getOffsetDateTime()).thenReturn(OffsetDateTime.parse(pastTime));
-		jwtAuthResolver = new JwtAuthResolver(dateProvider);
+		when(dateProvider.getDefaultZone()).thenReturn(ZoneId.of("Z"));
+		jwtAuthResolver = new JwtAuthResolver(dateProvider, applicationTokenVerifier);
 	}
 
 	@Test
@@ -41,7 +52,7 @@ public class JwtAuthenticatorTest {
 	@Test
 	public void shouldResolveExpires() {
 		Auth auth = jwtAuthResolver.getAuth(JWT);
-		assertEquals(OffsetDateTime.parse("2019-01-25T14:00:47+01:00"), auth.getExpires());
+		assertEquals(OffsetDateTime.parse("2019-01-25T13:00:47Z"), auth.getExpires());
 	}
 
 	@Test
@@ -57,8 +68,8 @@ public class JwtAuthenticatorTest {
 	}
 
 	@Test
-	public void shouldThrowIfTokenIsExpired() {
-		when(dateProvider.getOffsetDateTime()).thenReturn(OffsetDateTime.parse("2030-01-01T14:00:47+01:00"));
+	public void shouldThrowIfTokenCannotBeVerified() {
+		when(applicationTokenVerifier.verifyAndDecode(any())).thenThrow(new TokenExpiredException("old"));
 		try {
 			jwtAuthResolver.getAuth(JWT);
 			fail("expected expection");

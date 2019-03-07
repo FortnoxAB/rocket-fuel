@@ -1,9 +1,14 @@
+import api.Question;
+import api.User;
+import api.UserResource;
+import auth.JwkResource;
 import auth.application.ApplicationTokenConfig;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
+import com.google.inject.util.Modules;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +20,11 @@ import se.fortnox.reactivewizard.dbmigrate.LiquibaseConfig;
 import se.fortnox.reactivewizard.dbmigrate.LiquibaseMigrate;
 import se.fortnox.reactivewizard.logging.LoggingFactory;
 import se.fortnox.reactivewizard.server.ServerConfig;
+import slack.SlackRTMClient;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import java.util.UUID;
+
+import static org.mockito.Mockito.*;
 
 public class TestSetup {
 
@@ -26,7 +33,7 @@ public class TestSetup {
     private final LiquibaseMigrate migrator;
     private final Injector injector;
 
-    public TestSetup(PostgreSQLContainer postgreSQLContainer) {
+    public TestSetup(PostgreSQLContainer postgreSQLContainer, Module mocks) {
 
         LOG.info("Postgres connection info: url: {}, user: {}, password: {}", postgreSQLContainer.getJdbcUrl(), postgreSQLContainer.getUsername(), postgreSQLContainer.getPassword());
 
@@ -34,7 +41,24 @@ public class TestSetup {
 
         this.migrator = TestSetup.getMigrator(databaseConfig);
 
-        this.injector = Guice.createInjector(new AutoBindModules(TestSetup.createGuiceModuleForReactiveWizard(TestSetup.createConfigFactory(databaseConfig))));
+        this.injector = Guice.createInjector(new AutoBindModules(Modules.override(TestSetup.createGuiceModuleForReactiveWizard(TestSetup.createConfigFactory(databaseConfig)))
+            .with(mocks, new AbstractModule() {
+                @Override
+                protected void configure() {
+                    SlackRTMClient slackRTMClient = mock(SlackRTMClient.class);
+                    binder().bind(SlackRTMClient.class).toInstance(slackRTMClient);
+                    binder().bind(JwkResource.class).toProvider(() -> mock(JwkResource.class));
+                }
+            })));
+    }
+
+    public TestSetup(PostgreSQLContainer postgreSQLContainer) {
+
+        this(postgreSQLContainer, new AbstractModule() {
+            @Override
+            protected void configure() {
+            }
+        });
     }
 
     public Injector getInjector() {
@@ -74,6 +98,7 @@ public class TestSetup {
     private static ConfigFactory createConfigFactory(LiquibaseConfig databaseConfig) {
         ConfigFactory configFactory = spy(new ConfigFactory((String) null));
         when(configFactory.get(DatabaseConfig.class)).thenReturn(databaseConfig);
+        when(configFactory.get(LiquibaseConfig.class)).thenReturn(databaseConfig);
         configFactory.get(LoggingFactory.class).init();
         return configFactory;
     }
@@ -96,5 +121,25 @@ public class TestSetup {
 
     public void clearDatabase() throws Exception {
         this.migrator.forceDrop();
+    }
+
+    @NotNull
+    public static final Question getQuestion(String title, String question) {
+        Question questionObject = new Question();
+        questionObject.setAnswerAccepted(false);
+        questionObject.setBounty(300);
+        questionObject.setTitle(title);
+        questionObject.setVotes(3);
+        questionObject.setQuestion(question);
+        return questionObject;
+    }
+
+    public static User insertUser(UserResource userResource) {
+        final String generatedEmail = UUID.randomUUID().toString()+"@fortnox.se";
+        User user = new User();
+        user.setEmail(generatedEmail);
+        user.setName("Test Subject");
+        userResource.createUser(null, user).toBlocking().single();
+        return userResource.getUserByEmail(generatedEmail, false).toBlocking().single();
     }
 }

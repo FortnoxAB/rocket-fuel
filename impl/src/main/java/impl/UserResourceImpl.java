@@ -4,26 +4,23 @@ import api.User;
 import api.UserResource;
 import api.auth.ApplicationToken;
 import api.auth.Auth;
-import auth.openid.ImmutableOpenIdToken;
 import auth.openid.OpenIdValidator;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.UserDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
+import java.util.Map;
 
+import static rx.Observable.defer;
 import static rx.Observable.error;
 
 @Singleton
 public class UserResourceImpl implements UserResource {
-
-    private final Logger LOG = LoggerFactory.getLogger(UserResourceImpl.class);
 
     private final ResponseHeaderHolder responseHeaderHolder;
 
@@ -53,9 +50,15 @@ public class UserResourceImpl implements UserResource {
     }
 
     @Override
-    public Observable<User> getUserByEmail(String email) {
+    public Observable<User> getUserByEmail(String email, boolean createIfMissing) {
         return this.userDao.getUserByEmail(email)
-                .switchIfEmpty(error(new WebException(HttpResponseStatus.NOT_FOUND)));
+            .switchIfEmpty(defer(() -> {
+                if(createIfMissing) {
+                    return addUserToDatabase("Added from slack", email);
+                } else {
+                    return error(new WebException(HttpResponseStatus.NOT_FOUND));
+                }
+            }));
     }
 
     @Override
@@ -66,31 +69,31 @@ public class UserResourceImpl implements UserResource {
 
     @Override
     public Observable<User> generateToken(@NotNull String openIdToken) {
-        final ImmutableOpenIdToken validOpenId = openIdValidator.validate(openIdToken);
-        return userDao.getUserByEmail(validOpenId.email)
-                .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
+        return openIdValidator.validate(openIdToken).flatMap(validOpenId ->
+                userDao.getUserByEmail(validOpenId.email)
+                .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
                 .single()
-                .onErrorResumeNext((t) -> addUserToDatabase(validOpenId))
-                .map((user) -> {
-            ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
-            addAsCookie(applicationToken);
-            return user;
-        });
-
+                .onErrorResumeNext(t -> addUserToDatabase(validOpenId.name, validOpenId.email))
+                .map(user -> {
+                            ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
+                            addAsCookie(applicationToken);
+                            return user;
+                        }
+                ));
     }
 
-    private Observable<User> addUserToDatabase(ImmutableOpenIdToken validOpenId) {
+    private Observable<User> addUserToDatabase(String name, String email) {
         User user = new User();
-        user.setName(validOpenId.name);
-        user.setEmail(validOpenId.email);
-        return userDao.insertUser(user).flatMap((ignore) -> userDao.getUserByEmail(validOpenId.email))
+        user.setName(name);
+        user.setEmail(email);
+        return userDao.insertUser(user).flatMap(ignore -> userDao.getUserByEmail(email))
                 .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add user to the database", t)));
     }
 
     private void addAsCookie(final ApplicationToken applicationToken) {
-        responseHeaderHolder.addHeaders(applicationToken, new HashMap<String, Object>() {{
-            put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
-        }});
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
+        responseHeaderHolder.addHeaders(applicationToken, headers);
     }
 
 }

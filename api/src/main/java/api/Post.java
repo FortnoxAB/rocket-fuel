@@ -9,7 +9,7 @@
 
     private String title;
 
-    private Long Id;
+     private Long id;
 
     private String createdBy;
 
@@ -18,6 +18,8 @@
     private String createdAt;
 
     private Integer votes;
+
+    private String slackId;
 
     public String getTitle() {
         return title;
@@ -52,11 +54,11 @@
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public Long getUserId() {
@@ -66,4 +68,12 @@
     public void setUserId(Long userId) {
         this.userId = userId;
     }
-}
+
+     public String getSlackId() {
+         return slackId;
+     }
+
+     public void setSlackId(String slackId) {
+         this.slackId = slackId;
+     }
+ }

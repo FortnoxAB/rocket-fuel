@@ -23,6 +23,7 @@ import java.util.UUID;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
+import static rx.Observable.just;
 
 public class UserResourceTest {
     private static final String OPEN_ID_TOKEN = "eyJhbGciOiJIUzI1NiIsImtpZCI6ImIxNWEyYjhmN2E2YjNmNmJjMDhiYzFjNTZhODg0MTBlMTQ2ZDAxZmQiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiamVwcDMiLCJwaWN0dXJlIjoidXJsdG9waWN0dXJlIiwiZW1haWwiOiJqZXNwZXIubGFoZGV2aXJ0YUBnbWFpbC5jb20iLCJpYXQiOjE1NDg0MTc2NDcsImV4cCI6MTY0ODQyMTI0N30.WH70YBPaMFg1QtTaZddikcslsN2C5sxm4oQSOVIt_PU";
@@ -63,14 +64,14 @@ public class UserResourceTest {
     public void shouldCreateUserInDatabaseIfFirstTimeLogin() {
         // given
         ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken("jeppe", "jeppe@email.com", "pictureUrl");
-        when(openIdValidator.validate(any())).thenReturn(openIdObject);
+        when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
         ApplicationToken applicationToken = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
 
         // then
         assertNotNull(applicationToken);
-        User insertedUser = userResource.getUserByEmail("jeppe@email.com").toBlocking().singleOrDefault(null);
+        User insertedUser = userResource.getUserByEmail("jeppe@email.com", false).toBlocking().singleOrDefault(null);
         assertEquals("jeppe", insertedUser.getName());
     }
 
@@ -79,14 +80,14 @@ public class UserResourceTest {
         // given
         User user = insertUser();
         ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken(user.getName(), user.getEmail(), "pictureUrl");
-        when(openIdValidator.validate(any())).thenReturn(openIdObject);
+        when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
         ApplicationToken applicationToken = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
 
         // then
         assertNotNull(applicationToken);
-        User insertedUser = userResource.getUserByEmail(user.getEmail()).toBlocking().singleOrDefault(null);
+        User insertedUser = userResource.getUserByEmail(user.getEmail(), false).toBlocking().singleOrDefault(null);
         assertEquals(user.getName(), insertedUser.getName());
     }
 
@@ -95,7 +96,7 @@ public class UserResourceTest {
         // given
         User user = insertUser();
         ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken(user.getName(), user.getEmail(), "pictureUrl");
-        when(openIdValidator.validate(any())).thenReturn(openIdObject);
+        when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
         ApplicationToken applicationToken = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
@@ -117,7 +118,7 @@ public class UserResourceTest {
         User user = insertUser();
 
         // when
-        User foundUser = userResource.getUserByEmail(user.getEmail()).toBlocking().singleOrDefault(null);
+        User foundUser = userResource.getUserByEmail(user.getEmail(), false).toBlocking().singleOrDefault(null);
 
         // then
         assertNotNull(foundUser);
@@ -155,7 +156,7 @@ public class UserResourceTest {
     public void shouldReturnNotFoundIfUserDoesNotExistWhenSearchingByEmail() {
 
         try {
-            userResource.getUserByEmail("random@email.com").toBlocking().singleOrDefault(null);
+            userResource.getUserByEmail("random@email.com", false).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException e) {
             assertEquals(HttpResponseStatus.NOT_FOUND, e.getStatus());
@@ -184,6 +185,6 @@ public class UserResourceTest {
         user.setEmail(generatedEmail);
         user.setName("Test Subject");
         userResource.createUser(null, user).toBlocking().single();
-        return userResource.getUserByEmail(generatedEmail).toBlocking().single();
+        return userResource.getUserByEmail(generatedEmail, false).toBlocking().single();
     }
 }

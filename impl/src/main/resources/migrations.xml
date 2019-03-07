@@ -72,4 +72,33 @@
     <changeSet id="drop-vendor-column" author="jesper">
             <dropColumn columnName="vendor_id" tableName="user"/>
     </changeSet>
+
+    <changeSet id="add_slack_thread_id" author="jonas.fredin">
+        <addColumn tableName="question">
+            <column name="slack_thread_id" type="VARCHAR">
+                <constraints unique="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_slack_thread_id_answer" author="jonas.fredin">
+        <addColumn tableName="answer">
+            <column name="slack_id" type="VARCHAR">
+                <constraints unique="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="change_votes_types" author="jonas.fredin">
+        <dropDefaultValue tableName="question" columnName="votes"/>
+        <dropDefaultValue tableName="answer" columnName="votes"/>
+        <modifyDataType tableName="question" columnName="votes" newDataType="INTEGER"/>
+        <modifyDataType tableName="answer" columnName="votes" newDataType="INTEGER"/>
+        <addDefaultValue tableName="question" columnName="votes" defaultValueNumeric="0"/>
+        <addDefaultValue tableName="answer" columnName="votes" defaultValueNumeric="0"/>
+    </changeSet>
+
+    <changeSet id="change_column_name" author="jonas.fredin">
+        <renameColumn tableName="question" oldColumnName="slack_thread_id" newColumnName="slack_id"/>
+    </changeSet>
 </databaseChangeLog>

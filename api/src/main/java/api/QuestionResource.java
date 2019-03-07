@@ -1,52 +1,38 @@
- package api;
+package api;
 
- import api.auth.Auth;
- import rx.Observable;
- import se.fortnox.reactivewizard.CollectionOptions;
+import rx.Observable;
 
- import javax.ws.rs.*;
- import java.util.List;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
-
-/**
- * Manages a users questions.
- *
- * A question is always linked to a {@link User} and may have {@link Answer}s connected to it.
- *
- */
-@Path("/api/users/")
+@Path("api/questions")
 public interface QuestionResource {
+    /**
+     * Gives a positive vote on a question
+     * @param slackId
+     * @return
+     */
+    @PATCH
+    @Path("upvote/{slackId}")
+    Observable<Void> upVoteQuestion(@PathParam("slackId") String slackId);
 
     /**
-     * Returns all questions for a given user
-     *
-     * Collection options can be used to limit the number questions returned to the client.
-     *
+     * Gives a negative vote on a question
+     * @param slackId
+     * @return
      */
-    @Path("{userId}/questions")
+    @PATCH
+    @Path("downvote/{slackId}")
+    Observable<Void> downVoteQuestion(@PathParam("slackId") String slackId);
+
+    /**
+     * Return a question if found by a slack id
+     * @param slackId id from slack
+     * @return question
+     */
     @GET
-    Observable<List<Question>> getQuestions(@PathParam("userId") long userId, CollectionOptions collectionOptions);
-
-    /**
-     * Returns a specific question to the client
-     */
-    @Path("{userId}/questions/{questionId}")
-    @GET
-    Observable<Question> getQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
-
-
-    /**
-     * Adds a question and links it to the given userId.
-     */
-    @Path("me/questions")
-    @POST
-    Observable<Void> postQuestion(Auth auth, Question question);
-
-    /**
-     * Updates the question with the given questionId
-     */
-    @PUT
-    @Path("me/questions/{questionId}")
-    Observable<Question> updateQuestion(Auth auth, @PathParam("questionId") long questionId, Question question);
-
+    @Path("byslackid/{slackId}")
+    Observable<Question> getQuestionBySlackThreadId(@PathParam("slackId") String slackId);
 }
