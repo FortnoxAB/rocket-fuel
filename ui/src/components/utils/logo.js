@@ -2,7 +2,7 @@ import React from 'react';
 class Logo extends React.Component {
 	render() {
 		return (
-			<div className={`logo ${this.props.size}`}>
+			<div className={`logo ${this.props.size} ${this.props.className}`} onClick={this.props.onClick.bind(this)}>
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 471 471" className="icon">
 					<g className="">
 						<title>Logo</title>
@@ -26,7 +26,9 @@ class Logo extends React.Component {
 
 Logo.defaultProps = {
 	size: '',
-	color: ''
+	color: '',
+	onClick: () => {},
+	className: ''
 };
 
 export default Logo;

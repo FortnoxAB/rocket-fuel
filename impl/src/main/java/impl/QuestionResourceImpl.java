@@ -41,4 +41,10 @@ public class QuestionResourceImpl implements QuestionResource {
         return this.questionDao.getQuestionBySlackThreadId(slackThreadId).switchIfEmpty(
             exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not_found")));
     }
+
+	@Override
+	public Observable<Question> getQuestionById(long questionId) {
+      return this.questionDao.getQuestionById(questionId).switchIfEmpty(
+        exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not_found")));
+	}
 }

@@ -66,7 +66,9 @@
 		border-radius: @roundness;
 
 		&::placeholder {
-			color: darken(@input-border-color, 10%);
+			@input-placeholder-color: contrast(@background-color, lighten(@background-color, 20%), darken(@background-color, 20%), 43%);
+
+			color: @input-placeholder-color;
 		}
 
 		&:focus {

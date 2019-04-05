@@ -11,12 +11,22 @@
 	border-radius: @roundness;
 }
 .question-card {
+	border: 1px solid transparent;
+	position: relative;
+
 	.body {
+		align-items: center;
 		display: flex;
 		justify-content: space-between;
 
 		.coins {
+			border-radius: 0;
 			font-size: .8em;
+			position: absolute;
+			top: -2px;
+			right: 20px;
+			border-bottom-left-radius: @roundness;
+			border-bottom-right-radius: @roundness;
 
 			.amount:before {
 				content: '+';
@@ -24,27 +34,51 @@
 		}
 
 		.title {
+			display: flex;
+			@title-color: contrast(@background-color, lighten(@background-color, 5%), darken(@background-color, 5%), 43%);
+			.contrast-color(@title-color);
+			color: @contrast-value;
 			text-decoration: none;
-			color: @primary-color;
-			font-weight: 700;
-			font-size: 1.3em;
+			font-size: 2em;
+		}
+
+		.title-text {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 	}
 
-	&:hover {
-		// .material-shadow(3);
+	.user {
+		font-size: .7em;
 	}
 
-	.user {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		font-size: .7em;
+	 .question-footer {
 		padding-top: 10px;
+		align-items: center;
 	}
 
 	&.answered {
 		transition: .3s;
-		background-color: lighten(@notification-success, 40%);
+		border-color: @notification-success;
+	}
+
+	&.small {
+		justify-content: space-between;
+		align-items: center;
+		padding: 5px;
+
+		.title {
+			font-size: 1em;
+		}
+
+		.user, .coins, .question-footer {
+			display: none;
+		}
+	}
+
+	.certificate {
+		font-size: .8em;
+		margin-right: 10px;
 	}
 }

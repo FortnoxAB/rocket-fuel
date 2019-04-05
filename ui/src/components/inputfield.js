@@ -109,7 +109,7 @@ InputField.defaultProps = {
 	onFocus: () => {},
 	height: 'auto',
 	type: 'text',
-	placeholder: {},
+	placeholder: '',
 	label: '',
 	value: '',
 	onChange: () => {},

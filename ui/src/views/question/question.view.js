@@ -1,12 +1,14 @@
 import React from 'react';
+import { t } from 'ttag';
 import { withRouter } from 'react-router-dom';
 import FillPage from '../../components/utils/fillpage';
 import Loader from '../../components/utils/loader';
+import Markdown from '../../components/markdown';
 import InputField from '../../components/inputfield';
 import Button from '../../components/button';
-import Thread from '../../components/thread';
+import Question from '../../components/question';
 import Answer from '../../components/answer';
-import * as Question from '../../models/question';
+import * as QuestionApi from '../../models/question';
 
 class QuestionView extends React.Component {
 	constructor(props) {
@@ -14,16 +16,16 @@ class QuestionView extends React.Component {
 
 		this.state = {
 			loaded: false,
-			thread: null,
+			question: null,
 			answer: '',
 			answers: [],
 			postingAnswer: false
 		};
 	}
 
-	onChangeAnswer(target) {
+	onChangeAnswer(node) {
 		this.setState({
-			answer: target.value
+			answer: node.target.value
 		});
 	}
 
@@ -33,21 +35,23 @@ class QuestionView extends React.Component {
 	}
 
 	loadThreadAndAnswers(questionId) {
-		Question.getQuestions(questionId).then((question) => {
+		QuestionApi.getQuestionById(questionId).then((question) => {
 			this.setState({
 				loaded: true,
 				question: question
 			})
+		}).catch(() => {
+			this.props.history.replace('../404');
 		});
 		/*
-		const getThread = this.context.threads().getThread(questionId);
-		const getAnswers = this.context.threads().getAnswers(questionId);
+		const getThread = this.context.questions().getThread(questionId);
+		const getAnswers = this.context.questions().getAnswers(questionId);
 		Promise.all([getThread,getAnswers]).then((values) => {
-			const thread = values[0];
+			const question = values[0];
 			const answers = this.placeAcceptedAnswerAtTop(values[1]);
 			this.setState({
 				loaded: true,
-				thread: thread,
+				question: question,
 				answers: answers
 			});
 		});
@@ -68,9 +72,9 @@ class QuestionView extends React.Component {
 		this.setState({
 			postingAnswer: true
 		});
-		this.context.threads().addAnswerToThread(this.props.match.params.id, {
+		this.context.questions().addAnswerToThread(this.props.match.params.id, {
 			answer: this.state.answer,
-			votes: 0, 
+			votes: 0,
 			accepted: false,
 			created: Date.now()
 		}).then(() => {
@@ -89,20 +93,20 @@ class QuestionView extends React.Component {
 
 	renderAnswers() {
 		return this.state.answers.map((answer, index) => {
-			return  <Answer onAnswer={this.onAnswerAccepted.bind(this)}enableAnswer={!this.state.thread.answered} answer={answer} key={index} />;
+			return  <Answer onAnswer={this.onAnswerAccepted.bind(this)} enableAnswer={!this.state.question.answerAccepted} answer={answer} key={index} />;
 		});
 	}
 
 	onAnswerAccepted(answer) {
 		/*
-		this.context.threads().markAnswerAsAccepted(this.state.thread.id,answer.id)
+		this.context.questions().markAnswerAsAccepted(this.state.question.id,answer.id)
 			.then(() => {
 
 				let foundAnswer = this.state.answers.find((a) => a.id === answer.id);
 				foundAnswer.accepted = true;
-		
+
 				this.setState({
-					thread: { ...this.state.thread,  
+					question: { ...this.state.question,
 						answered: true
 					 },
 					 answers: this.state.answers
@@ -112,14 +116,8 @@ class QuestionView extends React.Component {
 	}
 
 	renderAnswerForm() {
-		const user = window.sessionStorage.getItem('user');
-
-		if (!user) {
-			return <div>Logga in för att svara på tråden.</div>;
-		}
-
 		if(this.state.postingAnswer) {
-			return <Loader />
+			return <Loader />;
 		}
 
 		return(
@@ -130,10 +128,22 @@ class QuestionView extends React.Component {
 					value={this.state.answer}
 					onChange={this.onChangeAnswer.bind(this)}
 				/>
-				<Button onClick={()=>this.saveAnswer.bind(this)}>Skicka svar</Button>
+				<Button color="secondary" onClick={this.saveAnswer.bind(this)}>{t`Post answer`}</Button>
 			</div>
 		);
 
+	}
+
+	renderPreview() {
+		if (!this.state.answer) {
+			return null;
+		}
+		return (
+			<div className="padded-vertical">
+				<div className="underlined">{t`Preview`}</div>
+				<Markdown text={this.state.answer} />
+			</div>
+		);
 	}
 
 	render() {
@@ -144,12 +154,14 @@ class QuestionView extends React.Component {
 				</FillPage>
 			);
 		}
+
 		return (
 			<div className="content">
-				<Thread thread={this.state.question} />
-				<h3>Svar</h3>
+				<Question question={this.state.question} />
+				<h3>{t`Answers`}</h3>
 				{this.renderAnswers()}
 				{this.renderAnswerForm()}
+				{this.renderPreview()}
 			</div>
 		);
 	}

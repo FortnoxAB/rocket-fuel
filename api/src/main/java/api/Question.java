@@ -41,11 +41,11 @@
         this.bounty = bounty;
     }
 
-     public String getSlackThreadId() {
-         return slackThreadId;
-     }
+    public String getSlackThreadId() {
+       return slackThreadId;
+    }
 
-     public void setSlackThreadId(String slackThreadId) {
-         this.slackThreadId = slackThreadId;
-     }
+    public void setSlackThreadId(String slackThreadId) {
+       this.slackThreadId = slackThreadId;
+    }
  }

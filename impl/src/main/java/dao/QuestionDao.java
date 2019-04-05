@@ -23,6 +23,9 @@ public interface QuestionDao {
     @Query("SELECT id, question, title, bounty, votes, answer_accepted, created_at, user_id, slack_id FROM question WHERE user_id = :userId AND id=:questionId")
     Observable<Question> getQuestion(long userId, long questionId);
 
+    @Query("SELECT question.id, question.question, question.title, question.bounty, question.votes, question.answer_accepted, question.created_at, question.slack_id, u.name as created_by, u.id AS user_id FROM question LEFT JOIN \"user\" u on u.id = question.user_id WHERE question.id=:questionId")
+    Observable<Question> getQuestionById(long questionId);
+
     @Update("UPDATE question " +
             "SET answer_accepted=true WHERE question.id=:questionId AND question.user_id=:userId")
     Observable<Integer> markAsAnswered(long userId, long questionId);

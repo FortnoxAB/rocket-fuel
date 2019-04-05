@@ -5,14 +5,18 @@ import QuickBar from './quickbar';
 import Footer from './footer';
 
 class SignedInView extends React.Component {
-	renderSideBar() {
-		console.log(2);
-	}
-
 	render() {
 		return (
 			<div className="view">
 				<UserBar />
+				<div className="main">
+					<MenuBar />
+					<div className="content">
+						{this.props.children}
+					</div>
+					<QuickBar />
+				</div>
+				{/*
 				<div className="flex-grow">
 					<div className="main">
 						<div className="flex-no-shrink">
@@ -25,6 +29,7 @@ class SignedInView extends React.Component {
 						<Footer />
 					</div>
 				</div>
+				*/}
 			</div>
 		);
 	}

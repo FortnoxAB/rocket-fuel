@@ -1,26 +1,26 @@
 import ApiFetch from '../components/utils/apifetch';
 
-export function getQuestions(id) {
+export function getQuestionsFromUser(userId) {
 	const options = {
-		url: `/api/users/${id}/questions`,
+		url: `/api/users/${userId}/questions`,
 	};
 
 	return ApiFetch(options).then((response) => {
 		if (response.error) {
-			return 'test';
+			return 'err';
 		}
 		return response;
 	});
 }
 
-export function getQuestion(id) {
+export function getQuestionById(id) {
 	const options = {
-		url: `/api/users/${id}/questions`,
+		url: `/api/questions/${id}`
 	};
 
 	return ApiFetch(options).then((response) => {
 		if (response.error) {
-			return 'test';
+			return 'err';
 		}
 		return response;
 	});
@@ -33,7 +33,7 @@ export function searchQuestions(param) {
 
 	return ApiFetch(options).then((response) => {
 		if (response.error) {
-			return 'test';
+			return 'err';
 		}
 		return response;
 	});

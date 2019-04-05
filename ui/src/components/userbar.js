@@ -1,4 +1,5 @@
 import React from 'react'
+import { withRouter } from 'react-router-dom';
 import { AppContext } from '../appcontext';
 import Logo from './utils/logo';
 import Coins from './utils/coins';
@@ -8,13 +9,17 @@ class UserBar extends React.Component {
 		return <span>{this.context.state.user.name}</span>
 	}
 
+	navigateToMain() {
+		this.props.history.push('/');
+	}
+
 	render() {
 		return (
 			<div>
 				<div className="user-bar">
-					<Logo size="small" color="light" />
+					<Logo onClick={this.navigateToMain.bind(this)} className="pointer" size="small" color="light" />
 					<div className="user">
-						<div className="name">{this.getUser()}</div> <Coins amount={172} />
+						<div className="name"><i className="fa fa-user" /> {this.getUser()}</div> <Coins amount={172} />
 					</div>
 				</div>
 				<div className="user-bar-placeholder" />
@@ -23,6 +28,6 @@ class UserBar extends React.Component {
 	}
 }
 
-UserBar.contextType = AppContext;
+export default withRouter(UserBar);
 
-export default UserBar;
+UserBar.contextType = AppContext;

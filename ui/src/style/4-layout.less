@@ -8,6 +8,7 @@
 		flex-grow: 1;
 		height: 100vh;
 		width: 100vw;
+		overflow: hidden;
 	}
 
 	.flex {
@@ -16,6 +17,11 @@
 		&-no-shrink {
 			display: flex;
 			flex-shrink: 0;
+		}
+
+		&-between {
+			display: flex;
+			justify-content: space-between;
 		}
 
 		&-end {
@@ -49,15 +55,14 @@
 	}
 
 	.main {
-		overflow: auto;
+		overflow-y: scroll;
 		display: flex;
 		flex-grow: 1;
-		flex-direction: column;
 		justify-content: space-between;
 	}
 
 	.content {
-		flex-grow: 1;
+		width: 100%;
 		padding: 20px;
 	}
 }

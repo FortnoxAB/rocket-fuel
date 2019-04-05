@@ -1,25 +1,58 @@
 import React from 'react';
+import { t } from 'ttag';
+import Loader from '../components/utils/loader';
+import QuestionCard from '../components/questioncard';
 import { AppContext } from '../appcontext';
+import * as Question from '../models/question';
 
 class HomeView extends React.Component {
 	constructor(props) {
 		super(props);
+		this.state = {
+			questions: [],
+			loaded: false
+		};
 	}
 
-	getUserDisplayName() {
+	componentDidMount() {
+		this.fetchQuestions();
+	}
+
+	fetchQuestions() {
 		const user = this.context.state.user;
-		return user.name;
+		Question.getQuestionsFromUser(user.id).then((questions) => {
+			this.setState({
+				questions: questions,
+				loaded: true
+			});
+		});
+	}
+
+	getUsersPost() {
+		return this.state.questions.map((question, index) => {
+			return  <QuestionCard small key={index} question={question} />;
+		});
+	}
+
+	getDisplayName() {
+		return this.context.state.user.name;
 	}
 
 	render() {
+		if (!this.state.loaded) {
+			return(
+				<Loader fillPage />
+			);
+		}
 		return (
-			<div className="content">
+			<div>
 				<div className="user-space">
-					<h2>{this.getUserDisplayName()}</h2>
+					<h1>{this.getDisplayName()}</h1>
 
 				</div>
-				<div className="flex-row grow">
-
+				<div>
+					<h3>{t`Your recent questions`}</h3>
+					{this.getUsersPost()}
 				</div>
 			</div>
 		)

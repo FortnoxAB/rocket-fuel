@@ -1,23 +1,26 @@
-.thread, .answer {
+@contrast-color: contrast(@background-color, lighten(@background-color, 5%), darken(@background-color, 5%), 43%);
+
+.question, .answer {
 	display: flex;
 	border-bottom: 1px solid @primary-color;
 	padding-bottom: 20px;
 	margin-bottom: 20px;
 
 	.post-sidebar {
-		color: @gray-light;
+		.contrast-color(@background-color);
+		color: fade(@contrast-value, 70%);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		padding: 0 20px;
-		border-right: 1px solid @gray-light-more;
+		border-right: 1px solid @contrast-color;
 
 		.vote {
 			cursor: pointer;
 			font-size: 1.7em;
 
 			&:hover {
-				color: @gray;
+				color: @contrast-value;
 			}
 		}
 
@@ -31,6 +34,11 @@
 		.accepted {
 			color: @notification-success;
 		}
+
+		.golden {
+			color: #FFCA28;
+		}
+
 		.unaccepted {
 			cursor: pointer;
 			color: @gray-light-more;
@@ -43,33 +51,36 @@
 
 	.post-body {
 		display: flex;
+		flex-grow: 1;
 		flex-direction: column;
 		white-space: pre-line;
 
-		h3 {
-			color: @primary-color;
-			font-weight: 700;
-		}
-
 		> div {
-			padding: 0 20px;
+			padding: 0 20px 20px 20px;
 		}
 
 		.post-footer {
+			.contrast-color(@contrast-color);
+			color: @contrast-value;
 			line-height: 2em;
 			font-size: .8em;
 			padding: 20px;
+			background-color: @contrast-color;
 		}
 	}
 }
 
 .answer {
-	background-color: @text-color-light;
 	padding: 10px 0;
 	border: none;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 
 	&.accepted {
-		background-color: lighten(@notification-success, 40%);
+		background-color: fade(@notification-success, 40%);
+	}
+}
+
+.answer-form {
+	textarea {
+		margin-bottom: 20px;
 	}
 }
