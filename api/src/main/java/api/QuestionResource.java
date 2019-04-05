@@ -35,4 +35,13 @@ public interface QuestionResource {
     @GET
     @Path("byslackid/{slackId}")
     Observable<Question> getQuestionBySlackThreadId(@PathParam("slackId") String slackId);
+
+    /**
+     * Return a question if found by a slack id
+     * @param slackId id from slack
+     * @return question
+     */
+    @GET
+    @Path("/{questionId}")
+    Observable<Question> getQuestionById(@PathParam("questionId") long questionId);
 }

@@ -1,0 +1,35 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Plural-Forms: nplurals = 2; plural = (n !== 1);\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/components/menubar.js:15
+msgid "Overview"
+msgstr ""
+
+#: src/components/menubar.js:16
+msgid "Questions"
+msgstr ""
+
+#: src/components/menubar.js:17
+msgid "Blogs"
+msgstr ""
+
+#: src/components/menubar.js:18
+msgid "Users"
+msgstr ""
+
+#: src/components/menubar.js:19
+msgid "Search"
+msgstr ""
+
+#: src/components/menubar.js:20
+msgid "FAQ"
+msgstr ""
+
+#: src/components/menubar.js:21
+msgid "Logout"
+msgstr ""

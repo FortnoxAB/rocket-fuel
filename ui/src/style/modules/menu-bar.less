@@ -1,0 +1,44 @@
+.menu-bar {
+	.contrast-color(@background-color);
+	height: calc(~"100vh -" @user-bar-height);
+	border-right: 1px solid fade(@contrast-value, 10%);
+	width: @menu-bar-width;
+	color: @contrast-value;
+	overflow: auto;
+	flex-shrink: 0;
+	position: fixed;
+	padding-top: 20px;
+
+	ul {
+		li {
+			.contrast-color(@background-color);
+			cursor: pointer;
+			color: fade(@contrast-value, 70%);
+
+			a {
+				transition: .2s;
+				text-decoration: none;
+				color: inherit;
+				display: block;
+				padding: 12px 24px;
+
+				&.active {
+					.contrast-color(darken(@menu-bar-color, 5%));
+					color: @contrast-value;
+				}
+
+				&:hover {
+					.contrast-color(@background-color);
+					color: @contrast-value;
+					background-color: fade(@contrast-value, 5%);
+				}
+			}
+		}
+	}
+}
+
+.menu-bar-placeholder {
+	display: block;
+	height: 1px;
+	width: @menu-bar-width;
+}

@@ -1,0 +1,106 @@
+span.coins {
+	.contrast-color(@secondary-color);
+	display: flex;
+	align-items: center;
+	padding: 3px;
+	border-radius: @roundness;
+	background-color: @secondary-color;
+	color: @contrast-value;
+
+	.amount {
+		margin-right: 2px;
+	}
+
+	.fa {
+		font-size: .6em;
+		color: #FBC02D;
+	}
+}
+
+.padded {
+	padding: 20px;
+
+	&-vertical {
+		padding: 20px 0;
+	}
+
+	&-horizontal {
+		padding: 0 20px;
+	}
+
+	&-bottom {
+		padding-bottom: 20px;
+	}
+
+	&-top {
+		padding-top: 20px;
+	}
+}
+
+.tag {
+	.contrast-color(@secondary-color);
+	font-size: 10px;
+	flex-grow: 0;
+	display: inline-block;
+	padding: 3px;
+	border-radius: @roundness;
+	background-color: @secondary-color;
+	color: @contrast-value;
+	margin-right: 2px;
+}
+
+.relative {
+	position: relative;
+}
+
+.form {
+	flex-grow: 1;
+}
+
+.info-square {
+	.contrast-color(@notification-info);
+	padding: 20px;
+	background-color: @notification-warning;
+	max-width: 300px;
+	color: @contrast-value;
+}
+
+.graph {
+	height: 300px;
+	width: 500px;
+}
+
+.underlined {
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid @primary-color;
+}
+
+.faded {
+	opacity: .5;
+}
+
+.pointer {
+	cursor: pointer;
+}
+
+.certificate {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: .15em;
+
+	.fa-certificate {
+		font-size: 1em;
+		z-index: 1;
+		color: #2196F3;
+	}
+
+	.fa-check {
+		font-size: .6em;
+		position: absolute;
+		z-index: 1;
+		color: #E3F2FD;
+	}
+}

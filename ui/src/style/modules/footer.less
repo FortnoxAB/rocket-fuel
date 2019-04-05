@@ -1,0 +1,17 @@
+.footer {
+	@footer-background-color: darken(@menu-bar-color, 5%);
+	.contrast-color(@footer-background-color);
+	z-index: 100;
+	padding: 20px;
+	background-color: @footer-background-color;
+	display: flex;
+	flex-shrink: 0;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	font-size: .8em;
+
+	.headline {
+		font-size: 1.1em;
+	}
+}

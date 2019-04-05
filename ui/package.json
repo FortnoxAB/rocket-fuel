@@ -4,13 +4,19 @@
   "scripts": {
     "dev": "webpack-dev-server --hot --mode development",
     "build": "webpack --mode production",
-    "start": "node server.js"
+    "extract-sv": "ttag update i18n/sv.po src/",
+    "extract-en": "ttag update i18n/en.po src/",
+    "update": "extract-en && extract-sv"
   },
   "dependencies": {
     "prop-types": "^15.6.2",
-    "react": "16.6.1",
-    "react-dom": "16.6.1",
-    "react-router-dom": "4.2.2"
+    "react": "16.8.4",
+    "react-dom": "16.8.4",
+    "react-expanding-textarea": "^1.0.0",
+    "react-highlight": "^0.12.0",
+    "react-markdown": "^4.0.6",
+    "react-router-dom": "4.2.2",
+    "ttag": "^1.7.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
@@ -27,13 +33,17 @@
     "file-loader": "2.0.0",
     "font-awesome": "4.7.0",
     "html-webpack-plugin": "^3.2.0",
+    "json-loader": "^0.5.7",
     "less": "^3.9.0",
     "less-loader": "4.1.0",
     "mini-css-extract-plugin": "^0.4.4",
     "moment": "2.22.2",
+    "po-gettext-loader": "^0.1.1",
     "postcss-loader": "^3.0.0",
+    "react-autosize-textarea": "^6.0.0",
     "react-hot-loader": "^4.3.6",
     "style-loader": "0.20.3",
+    "ttag-cli": "^1.7.1",
     "url-loader": "1.0.1",
     "webpack": "4.18.0",
     "webpack-cli": "3.1.0",

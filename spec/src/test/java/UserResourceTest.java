@@ -1,6 +1,5 @@
 import api.User;
 import api.UserResource;
-import api.auth.ApplicationToken;
 import api.auth.Auth;
 import auth.application.ApplicationTokenConfig;
 import auth.openid.ImmutableOpenIdToken;
@@ -67,10 +66,10 @@ public class UserResourceTest {
         when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
-        ApplicationToken applicationToken = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
 
         // then
-        assertNotNull(applicationToken);
+        assertNotNull(returnedUser);
         User insertedUser = userResource.getUserByEmail("jeppe@email.com", false).toBlocking().singleOrDefault(null);
         assertEquals("jeppe", insertedUser.getName());
     }
@@ -83,10 +82,10 @@ public class UserResourceTest {
         when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
-        ApplicationToken applicationToken = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
 
         // then
-        assertNotNull(applicationToken);
+        assertNotNull(returnedUser);
         User insertedUser = userResource.getUserByEmail(user.getEmail(), false).toBlocking().singleOrDefault(null);
         assertEquals(user.getName(), insertedUser.getName());
     }
@@ -99,11 +98,11 @@ public class UserResourceTest {
         when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
-        ApplicationToken applicationToken = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
 
         // then
         ArgumentCaptor<Map> mapArgumentCaptor = ArgumentCaptor.forClass(Map.class);
-        assertNotNull(applicationToken);
+        assertNotNull(returnedUser);
         verify(responseHeaderHolder, times(1)).addHeaders(any(), mapArgumentCaptor.capture());
         String setCookieHeader = (String) mapArgumentCaptor.getValue().get("Set-Cookie");
         assertTrue(setCookieHeader.contains("application="));

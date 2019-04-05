@@ -1,0 +1,41 @@
+
+@loader-ball-size: 10px;
+@loader-ball-color: @primary-color;
+
+.loader {
+	position: relative;
+	display: flex;
+	justify-content: center;
+
+	span {
+		margin: 0 @loader-ball-size/4;
+		display: inline-block;
+		height: @loader-ball-size;
+		width: @loader-ball-size;
+		background-color: @loader-ball-color;
+		border-radius: 50%;
+		animation-name: fade-loader;
+		animation-duration: 1s;
+		animation-iteration-count: infinite;
+		animation-timing-function: linear;
+	}
+
+	span:nth-child(2) {
+		animation-delay: .2s;
+	}
+	span:nth-child(3) {
+		animation-delay: .4s;
+	}
+}
+
+@keyframes fade-loader {
+	0% {
+		opacity: 1;
+	}
+	50% {
+		opacity: .2;
+	}
+	100% {
+		opacity: 1;
+	}
+}

@@ -1,0 +1,92 @@
+.input-wrap {
+	position: relative;
+
+	&.error {
+		input {
+			border-color: @notification-error;
+			border-bottom: none;
+		}
+	}
+
+	.error-message {
+		.contrast-color (@notification-error);
+		font-size: 10px;
+		margin: 0;
+		padding: 3px;
+		color: @contrast-value;
+		background-color: @notification-error;
+	}
+
+	.label {
+		display: block;
+		margin: 12px 0 5px 0;
+	}
+
+	.field-auto-complete {
+		margin-top: 2px;
+		z-index: 2;
+		position: absolute;
+		color: @text-color-dark;
+		background-color: @background-color;
+		width: 100%;
+		list-style: none;
+		border: 1px solid @gray-light-more;
+		box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+
+		li {
+			padding: 10px;
+			cursor: pointer;
+
+			&:not(:last-child) {
+				border-bottom: 1px solid @gray-light-more;
+			}
+
+			&:hover {
+				background-color: @gray-light-more;
+			}
+		}
+	}
+
+	input, textarea {
+		@input-background-color: contrast(@background-color, lighten(@background-color, 2%), darken(@background-color, 2%), 43%);
+		@input-border-color: contrast(@background-color, lighten(@background-color, 10%), darken(@background-color, 10%), 43%);
+		.contrast-color(@input-background-color);
+		// height: auto;
+		vertical-align: middle;
+		font-size: @font-size;
+		font-family: @default-font;
+		padding: 10px;
+		transition: .2s;
+		width: 100%;
+		background-color: @input-background-color;
+		border: 1px solid @input-border-color;
+		color: @contrast-value;
+		outline: none;
+		resize: none;
+		border-radius: @roundness;
+
+		&::placeholder {
+			@input-placeholder-color: contrast(@background-color, lighten(@background-color, 20%), darken(@background-color, 20%), 43%);
+
+			color: @input-placeholder-color;
+		}
+
+		&:focus {
+			box-shadow: 0 0 1px 2px fade(@primary-color, 50%);
+		}
+	}
+}
+
+.lg {
+	label {
+		font-size: 20px;
+	}
+
+	input, textarea {
+		font-size: 30px;
+	}
+
+	input {
+		height: 60px;
+	}
+}
