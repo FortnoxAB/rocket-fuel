@@ -1,6 +1,5 @@
 import api.User;
 import api.UserResource;
-import api.auth.ApplicationToken;
 import api.auth.Auth;
 import auth.application.ApplicationTokenConfig;
 import auth.openid.ImmutableOpenIdToken;
