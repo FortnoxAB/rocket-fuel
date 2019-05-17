@@ -26,6 +26,15 @@ A user can add a question to rocket fuel directly in the ui, and then wait for a
 
 Feel free to contribute to rocket fuel. Create a issue, when the issue is accepted, create a fork and create a pull request. 
 
+#### Prerequisites
+
+* Authentication requires you to set up a client in the Google Developer console.
+* Postgres - run one in docker with
+```
+docker run --name rocketfuel-postgres -p 15432:5432 -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_DB=rocket-fuel -d postgres
+```
+* A [slack bot](https://api.slack.com/apps)
+
 #### Running in intellij
 
 Import the project as a maven project. Intellij will probably fix this for you. To be able to run the application from intellij, you need to go to build , Preferences -> execution, deployment > compiler  > java compiler and type "-parameters" in the text box labeled "additional command line parameters". Then rebuild the project. Now you can add a run configuration. Add a application configuration. In the text field labeled "Main class" type "se.fortnox.reactivewizard.Main". In the text field labeled "Program arguments", type "db-migrate config.yml". The working directory should point to the impl module ( use the browse functionality).    
