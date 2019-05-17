@@ -37,14 +37,7 @@ public interface UserQuestionResource {
     @Path("{userId}/questions/{questionId}")
     @GET
     Observable<Question> getQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
-
-    /**
-     * Adds a question and links it to the given userId.
-     */
-    @Path("me/questions")
-    @POST
-    Observable<Void> postQuestion(Auth auth, Question question);
-
+    
     /**
      * Updates the question with the given questionId
      */

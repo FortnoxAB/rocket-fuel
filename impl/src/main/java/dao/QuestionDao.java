@@ -12,8 +12,10 @@ public interface QuestionDao {
     @Query("SELECT question.id, question.question, answer_accepted, question.title, question.bounty, question.votes, question.created_at, question,user_id, question.slack_id, \"user\".name as created_by FROM question  INNER JOIN \"user\" on \"user\".id = question.user_id WHERE question.user_id=:userId")
     Observable<Question> getQuestions(long userId, CollectionOptions collectionOptions);
 
-    @Update("INSERT INTO question (question, title, bounty, votes, created_at, user_id, slack_id) VALUES(:question.question, :question.title, :question.bounty, 0, NOW(), :userId, :question.slackId)")
-    Observable<Void> addQuestion(long userId, Question question);
+    @Update("INSERT INTO question (question, title, bounty, votes, created_at, user_id, slack_id) " +
+      " VALUES(:question.question, :question.title, :question.bounty, 0, NOW(), :userId, :question.slackId)" +
+      "RETURNING (question.id, question.question, answer_accepted, question.title, question.bounty, question.votes, question.created_at, question,user_id, question.slack_id, \"user\".name as created_by)")
+    Observable<Question> addQuestion(long userId, Question question);
 
     @Update("UPDATE question " +
             "SET question=:question.question, bounty=:question.bounty, title=:question.title, votes=:question.votes " +

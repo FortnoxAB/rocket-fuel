@@ -1,11 +1,9 @@
 package api;
 
+import api.auth.Auth;
 import rx.Observable;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 
 @Path("api/questions")
 public interface QuestionResource {
@@ -44,4 +42,12 @@ public interface QuestionResource {
     @GET
     @Path("/{questionId}")
     Observable<Question> getQuestionById(@PathParam("questionId") long questionId);
+
+    /**
+     * Adds a question and links it to the given userId.
+     */
+    @Path("")
+    @POST
+    Observable<Question> postQuestion(Auth auth, Question question);
+
 }

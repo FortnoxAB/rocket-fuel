@@ -48,19 +48,26 @@ class SignInView extends React.Component {
 				this.signInUser(token);
 				return;
 			}
-			this.context.setState({
-				user: null,
-				loaded: true
-			});
+			this.updateUserInContext(null);
 		});
 	}
 
 	signInUser(token) {
 		User.signIn(token).then((user) => {
-			this.context.setState({
-				user: user,
-				loaded: true
+			this.updateUserInContext(user, token);
+		})
+			.catch(() => {
+				this.updateUserInContext(null);
+				this.setState({
+					loaded: true
+				});
 			});
+	}
+
+	updateUserInContext(user, token = null) {
+		this.context.setState({
+			user: user,
+			token: token
 		});
 	}
 

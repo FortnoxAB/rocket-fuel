@@ -4,6 +4,8 @@ import InputField from '../../components/inputfield';
 import Button from '../../components/button';
 import Markdown from '../../components/markdown';
 import Loader from '../../components/utils/loader';
+import * as Question from '../../models/question';
+import { AppContext } from '../../appcontext';
 
 class CreatequestionView extends React.Component {
 	constructor(props) {
@@ -39,19 +41,20 @@ class CreatequestionView extends React.Component {
 		this.setState({
 			postingThread:true
 		});
-		/*
-		this.context.threads().addThread({
-			title:this.state.title,
-			description: this.state.description,
-			bounty:this.state.bounty,
-			created: Date.now()
-		}).then((threadId)=> {
-			window.location.replace(window.location.origin + "/thread/" + threadId);
+
+		const question = {
+			title: this.state.title,
+			question: this.state.question,
+			bounty: this.state.bounty
+		};
+
+		Question.createQuestion(question, this.context.state.token).then((resp) => {
+			console.log(resp);
 		});
-		*/
 	}
 
 	renderPreview() {
+		console.log(this.context);
 		if (!this.state.description && !this.state.title) {
 			return null;
 		}
@@ -68,7 +71,7 @@ class CreatequestionView extends React.Component {
 		if(this.state.postingThread) {
 			return <Loader fillPage />
 		}
-		
+
 		return (
 			<div>
 				<h1>{t`New post`}</h1>
@@ -108,5 +111,7 @@ class CreatequestionView extends React.Component {
 		);
 	}
 }
+
+CreatequestionView.contextType = AppContext;
 
 export default CreatequestionView;

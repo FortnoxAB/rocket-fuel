@@ -1,17 +1,19 @@
 liquibase-database:
-  user: user
-  schema: public
-  url: jdbc:postgresql://localhost/rocket-fuel
+  user: utvjava
+  schema: rocket-fuel-tf
+  url: jdbc:postgresql://192.168.3.41/javaservices_utv
+  password: fortnox1
 
 database:
-  user: user
-  schema: public
-  url: jdbc:postgresql://localhost/rocket-fuel
+  user: utvjava
+  schema: rocket-fuel-tf
+  url: jdbc:postgresql://192.168.3.41/javaservices_utv
+  password: fortnox1
 
 applicationTokenConfig:
-  secret: a-valid-but-not-secure-secret
+  secret: 8hDBY692NW3wEssD9GgzeJtsk8JqXQZJYYTPCqhBtA22v7RS6meADqMjPFAt6AY2
 
 openId:
-  issuer: https://accounts.google.com
+  issuer: accounts.google.com
   jwksUri: https://www.googleapis.com/oauth2/v3/certs
-  clientId: client-id-found-in-google-console-for-example
+  clientId: 921310387394-ci437tfrcc4r1o30hqs3mrnmrpp40oj0.apps.googleusercontent.com
