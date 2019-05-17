@@ -3,32 +3,32 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>rocket-fuel</artifactId>
         <groupId>se.fortnox</groupId>
+        <artifactId>rocket-fuel-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>Aggregated jacoco report</name>
-    <artifactId>report</artifactId>
+    <artifactId>rocket-fuel-report</artifactId>
 
 
     <dependencies>
         <dependency>
             <groupId>se.fortnox</groupId>
-            <artifactId>impl</artifactId>
-            <version>${project.version}</version>
+            <artifactId>rocket-fuel-impl</artifactId>
+            <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>se.fortnox</groupId>
-            <artifactId>api</artifactId>
-            <version>${project.version}</version>
+            <artifactId>rocket-fuel-api</artifactId>
+            <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>se.fortnox</groupId>
-            <artifactId>spec</artifactId>
-            <version>${project.version}</version>
+            <artifactId>rocket-fuel-spec</artifactId>
+            <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
