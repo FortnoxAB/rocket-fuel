@@ -1,4 +1,5 @@
 import React from 'react';
+import { withRouter } from 'react-router';
 import { t } from 'ttag';
 import { googleClientId } from '../../config';
 import Button from '../components/button';
@@ -55,6 +56,7 @@ class SignInView extends React.Component {
 	signInUser(token) {
 		User.signIn(token).then((user) => {
 			this.updateUserInContext(user, token);
+			this.props.history.push('/');
 		})
 			.catch(() => {
 				this.updateUserInContext(null);
@@ -90,4 +92,4 @@ class SignInView extends React.Component {
 
 SignInView.contextType = AppContext;
 
-export default SignInView;
+export default withRouter(SignInView);
