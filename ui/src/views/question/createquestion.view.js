@@ -1,4 +1,5 @@
 import React from 'react';
+import { withRouter } from 'react-router-dom';
 import { t } from 'ttag';
 import InputField from '../../components/inputfield';
 import Button from '../../components/button';
@@ -27,8 +28,8 @@ class CreatequestionView extends React.Component {
 		});
 	}
 
-	handleChangeBounty(target) {
-		let bountyValue = target.value;
+	handleChangeBounty(node) {
+		let bountyValue = node.target.value;
 		if (bountyValue < 0) {
 			bountyValue = 0;
 		}
@@ -44,12 +45,12 @@ class CreatequestionView extends React.Component {
 
 		const question = {
 			title: this.state.title,
-			question: this.state.question,
+			question: this.state.description,
 			bounty: this.state.bounty
 		};
 
 		Question.createQuestion(question, this.context.state.token).then((resp) => {
-			console.log(resp);
+			this.props.history.push(`/question/${resp.id}`);
 		});
 	}
 
@@ -114,4 +115,4 @@ class CreatequestionView extends React.Component {
 
 CreatequestionView.contextType = AppContext;
 
-export default CreatequestionView;
+export default withRouter(CreatequestionView);

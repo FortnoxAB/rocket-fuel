@@ -3,7 +3,6 @@ import api.Question;
 import api.QuestionResource;
 import api.User;
 import api.UserAnswerResource;
-import api.UserQuestionResource;
 import api.UserResource;
 import com.github.seratch.jslack.api.model.Message;
 import com.google.gson.JsonObject;
@@ -33,7 +32,6 @@ import static rx.Observable.just;
 
 public class ThreadMessageHandlerTest {
     private static QuestionResource     questionResource;
-    private static UserQuestionResource userQuestionResource;
     private static UserAnswerResource   userAnswerResource;
     private static UserResource         userResource;
     private static TestSetup            testSetup;
@@ -55,7 +53,6 @@ public class ThreadMessageHandlerTest {
             }
         });
 
-        userQuestionResource = testSetup.getInjector().getInstance(UserQuestionResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         threadMessageHandler = testSetup.getInjector().getInstance(ThreadMessageHandler.class);

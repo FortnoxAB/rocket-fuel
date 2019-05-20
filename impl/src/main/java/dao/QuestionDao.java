@@ -3,6 +3,7 @@ package dao;
 import api.Question;
 import rx.Observable;
 import se.fortnox.reactivewizard.CollectionOptions;
+import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 
@@ -13,9 +14,8 @@ public interface QuestionDao {
     Observable<Question> getQuestions(long userId, CollectionOptions collectionOptions);
 
     @Update("INSERT INTO question (question, title, bounty, votes, created_at, user_id, slack_id) " +
-      " VALUES(:question.question, :question.title, :question.bounty, 0, NOW(), :userId, :question.slackId)" +
-      "RETURNING (question.id, question.question, answer_accepted, question.title, question.bounty, question.votes, question.created_at, question,user_id, question.slack_id, \"user\".name as created_by)")
-    Observable<Question> addQuestion(long userId, Question question);
+      " VALUES(:question.question, :question.title, :question.bounty, 0, NOW(), :userId, :question.slackId)")
+    Observable<GeneratedKey<Long>> addQuestion(long userId, Question question);
 
     @Update("UPDATE question " +
             "SET question=:question.question, bounty=:question.bounty, title=:question.title, votes=:question.votes " +

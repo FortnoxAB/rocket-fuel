@@ -3,7 +3,11 @@ package api;
 import api.auth.Auth;
 import rx.Observable;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 @Path("api/questions")
 public interface QuestionResource {
@@ -35,8 +39,8 @@ public interface QuestionResource {
     Observable<Question> getQuestionBySlackThreadId(@PathParam("slackId") String slackId);
 
     /**
-     * Return a question if found by a slack id
-     * @param slackId id from slack
+     * Return a question if found by id
+     * @param questionId
      * @return question
      */
     @GET
@@ -46,7 +50,6 @@ public interface QuestionResource {
     /**
      * Adds a question and links it to the given userId.
      */
-    @Path("")
     @POST
     Observable<Question> postQuestion(Auth auth, Question question);
 

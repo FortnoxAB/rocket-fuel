@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static rx.Observable.just;
 
 public class QuestionResourceImplTest {
 
@@ -49,7 +50,7 @@ public class QuestionResourceImplTest {
         question.setTitle("My title");
         question.setBounty(3);
         question.setQuestion("My question");
-        when(questionDao.addQuestion(123, question)).thenReturn(Observable.just(question));
+        when(questionDao.addQuestion(123, question)).thenReturn(just(() -> 1L));
         Auth auth = new Auth();
         auth.setUserId(123);
 

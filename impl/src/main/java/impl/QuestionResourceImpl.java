@@ -54,7 +54,10 @@ public class QuestionResourceImpl implements QuestionResource {
     public Observable<Question> postQuestion(Auth auth, Question question) {
         return this.questionDao
           .addQuestion(auth.getUserId(), question)
-          .onErrorResumeNext(throwable ->
-            error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add question to database", throwable)));
+            .map(longGeneratedKey -> {
+                question.setId(longGeneratedKey.getKey());
+                return question;
+            })
+          .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add question to database", throwable)));
     }
 }

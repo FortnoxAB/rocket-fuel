@@ -1,5 +1,5 @@
 import React from 'react';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import { t } from 'ttag';
 import { googleClientId } from '../../config';
 import Button from '../components/button';
@@ -90,6 +90,8 @@ class SignInView extends React.Component {
 	}
 }
 
-SignInView.contextType = AppContext;
+const WrappedSignInView = withRouter(SignInView);
 
-export default withRouter(SignInView);
+WrappedSignInView.WrappedComponent.contextType = AppContext;
+
+export default WrappedSignInView;

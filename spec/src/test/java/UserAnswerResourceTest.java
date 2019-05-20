@@ -1,5 +1,7 @@
 import api.Answer;
+import api.AnswerResource;
 import api.Question;
+import api.QuestionResource;
 import api.User;
 import api.UserAnswerResource;
 import api.UserQuestionResource;
@@ -18,18 +20,20 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class UserAnswerResourceTest {
 
     private static UserQuestionResource userQuestionResource;
+    private static QuestionResource     questionResource;
     private static UserResource         userResource;
     private static UserAnswerResource   userAnswerResource;
+    private static AnswerResource answerResource;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
 
     private static TestSetup testSetup;
+
 
     @BeforeClass
     public static void before() {
@@ -37,6 +41,8 @@ public class UserAnswerResourceTest {
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         userQuestionResource = testSetup.getInjector().getInstance(UserQuestionResource.class);
         userAnswerResource = testSetup.getInjector().getInstance(UserAnswerResource.class);
+        questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
+        answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
     }
 
     @After
@@ -61,7 +67,7 @@ public class UserAnswerResourceTest {
         answer.setAnswer("this is the body of the answer");
 
         Auth auth = new MockAuth(createdUser.getId());
-        userAnswerResource.createAnswer(auth, question.getId(), answer).toBlocking().singleOrDefault(null);
+        answerResource.answerQuestion(auth, answer, question.getId()).toBlocking().singleOrDefault(null);
 
         Answer createdAnswer = getFirstAnswer(createdUser, question);
         assertFalse(createdAnswer.isAccepted());
@@ -82,7 +88,7 @@ public class UserAnswerResourceTest {
         answer.setAnswer("this is the body of the answer");
         Auth auth = new MockAuth(createdUser.getId());
 
-        userAnswerResource.createAnswer(auth, question.getId(), answer).toBlocking().singleOrDefault(null);
+        answerResource.answerQuestion(auth, answer, question.getId()).toBlocking().singleOrDefault(null);
 
         Answer createdAnswer = getFirstAnswer(createdUser, question);
 
@@ -122,8 +128,8 @@ public class UserAnswerResourceTest {
         Answer answerForUserTwo = new Answer();
         answerForUserTwo.setTitle("this is an answer title");
         answerForUserTwo.setAnswer("this is the body of the answer");
-        userAnswerResource.createAnswer(new MockAuth(createdUser.getId()), question.getId(), answer).toBlocking().singleOrDefault(null);
-        userAnswerResource.createAnswer(new MockAuth(createdUserTwo.getId()), questionForUserTwo.getId(), answerForUserTwo).toBlocking().singleOrDefault(null);
+        answerResource.answerQuestion(new MockAuth(createdUser.getId()), answer, question.getId()).toBlocking().singleOrDefault(null);
+        answerResource.answerQuestion(new MockAuth(createdUserTwo.getId()), answerForUserTwo, questionForUserTwo.getId()).toBlocking().singleOrDefault(null);
 
         Answer createdAnswer = getFirstAnswer(createdUser, question);
         assertFalse(createdAnswer.isAccepted());
@@ -131,31 +137,6 @@ public class UserAnswerResourceTest {
         assertEquals("this is an answer title", createdAnswer.getTitle());
         assertEquals(Integer.valueOf(0), createdAnswer.getVotes());
         assertEquals("Test Subject", createdAnswer.getCreatedBy());
-    }
-
-    @Test
-    public void shouldMarkBothQuestionAndAnswerAsAccepted() {
-
-        User createdUser = createUser();
-        Question question = createQuestion(createdUser);
-
-        Answer answer = new Answer();
-        answer.setTitle("this is an answer title");
-        answer.setAnswer("this is the body of the answer");
-
-        userAnswerResource.createAnswer(new MockAuth(createdUser.getId()), question.getId(), answer).toBlocking().singleOrDefault(null);
-
-        Answer createdAnswer = getFirstAnswer(createdUser, question);
-
-        userAnswerResource.markAsAnswered(new MockAuth(createdUser.getId()), question.getId(), createdAnswer.getId()).toBlocking().singleOrDefault(null);
-
-        Answer markedAsAccepted = getFirstAnswer(createdUser, question);
-
-        Question markedAsAnswered = userQuestionResource.getQuestion(createdUser.getId(), createdAnswer.getId()).toBlocking().single();
-
-        assertTrue(markedAsAccepted.isAccepted());
-        assertTrue(markedAsAnswered.isAnswerAccepted());
-
     }
 
     private Answer getFirstAnswer(User createdUser, Question question) {
@@ -173,7 +154,7 @@ public class UserAnswerResourceTest {
         question.setVotes(3);
         question.setQuestion("my question");
 
-        userQuestionResource.postQuestion(new MockAuth(createdUser.getId()), question).toBlocking().singleOrDefault(null);
+        questionResource.postQuestion(new MockAuth(createdUser.getId()), question).toBlocking().singleOrDefault(null);
 
         // then the question should be returned when asking for the users questions
         List<Question> questions = userQuestionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
