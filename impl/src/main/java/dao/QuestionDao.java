@@ -35,9 +35,9 @@ public interface QuestionDao {
     @Query("SELECT id, question, title, bounty, votes, answer_accepted, created_at, user_id, slack_id FROM question WHERE slack_id = :slackId")
     Observable<Question> getQuestionBySlackThreadId(String slackId);
 
-    @Update("UPDATE question set votes=votes+1 where slack_id = :threadId")
+    @Update("UPDATE question set votes=votes+1 WHERE slack_id = :threadId")
     Observable<Void> upVoteQuestion(String threadId);
 
-    @Update(value = "UPDATE question set votes=votes-1 where slack_id = :threadId")
+    @Update(value = "UPDATE question set votes=votes-1 WHERE slack_id = :threadId")
     Observable<Void> downVoteQuestion(String threadId);
 }
