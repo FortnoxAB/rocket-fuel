@@ -77,8 +77,8 @@ public class AnswerResourceImpl implements AnswerResource {
                 Observable<Integer> markAnswerAsAccepted = answerDao.markAsAccepted(auth.getUserId(), answerId);
                 Observable<Integer> markQuestionAsAccepted = questionDao.markAsAnswered(auth.getUserId(), questionId);
 
-                List<Observable<Integer>> inserts = asList(markAnswerAsAccepted, markQuestionAsAccepted);
-                return this.daoTransactions.executeTransaction(inserts);
+                List<Observable<Integer>> acceptances = asList(markAnswerAsAccepted, markQuestionAsAccepted);
+                return this.daoTransactions.executeTransaction(acceptances);
             });
     }
 }
