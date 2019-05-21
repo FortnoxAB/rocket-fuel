@@ -28,7 +28,7 @@ Feel free to contribute to rocket fuel. Create a issue, when the issue is accept
 
 #### Prerequisites
 
-* Authentication requires you to set up a client in the Google Developer console.
+* Authentication requires you to set up a client in the Google Developer console - javascript origin and redirect URI should be set to where rocket fuel is hosted, such as http://localhost:8083.
 * Postgres - run one in docker with
 ```
 docker run --name rocketfuel-postgres -p 15432:5432 -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_DB=rocket-fuel -d postgres
