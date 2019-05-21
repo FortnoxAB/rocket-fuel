@@ -1,12 +1,35 @@
 liquibase-database:
-  user: user
+  user: postgres
   schema: public
-  url: jdbc:postgresql://localhost/rocket-fuel
+  password: mysecretpassword
+  url: jdbc:postgresql://localhost:15432/rocket-fuel
 
 database:
-  user: user
+  user: postgres
   schema: public
-  url: jdbc:postgresql://localhost/rocket-fuel
+  password: mysecretpassword
+  url: jdbc:postgresql://localhost:15432/rocket-fuel
 
 applicationTokenConfig:
   secret: a-valid-but-not-secure-secret
+
+slack:
+  botUserToken: <your-slack-app-bot-user-token>
+  apiToken: <your-slack-app-api-token>
+
+openId:
+  issuer: https://accounts.google.com
+  jwksUri: https://www.googleapis.com/oauth2/v3/certs
+  clientId: <client-id-found-in-google-console-for-example>
+
+logging:
+  additivity:
+    com.fortnox.reactivewizard.ReactiveWizardServer: false
+    se.fortnox.reactivewizard.jaxrs.JaxRsResource: false
+  levels:
+    com.fortnox.reactivewizard.ReactiveWizardServer: INFO
+    se.fortnox.reactivewizard.jaxrs.JaxRsResource: INFO
+  appenders:
+    stdout:
+      layout: org.apache.log4j.SimpleLayout
+      threshold: INFO
