@@ -56,7 +56,7 @@ class SignInView extends React.Component {
 	signInUser(token) {
 		User.signIn(token).then((user) => {
 			this.updateUserInContext(user, token);
-			this.props.history.push('/');
+				this.props.history.push('/');
 		})
 			.catch(() => {
 				this.updateUserInContext(null);
