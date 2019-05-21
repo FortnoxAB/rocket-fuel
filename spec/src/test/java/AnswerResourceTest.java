@@ -5,7 +5,6 @@ import api.QuestionResource;
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
-import dao.AnswerDao;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,12 +15,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnswerResourceTest {
     private static QuestionResource questionResource;
     private static AnswerResource   answerResource;
-    private static AnswerDao answerDao;
 
     @ClassRule
     public static  PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
@@ -34,9 +32,6 @@ public class AnswerResourceTest {
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
-
-        answerDao = testSetup.getInjector().getInstance(AnswerDao.class);
-
     }
 
     @After
