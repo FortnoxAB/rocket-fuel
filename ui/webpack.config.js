@@ -2,6 +2,8 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const webpack = require('webpack');
+const getRepoInfo = require('git-repo-info');
 
 const reactConfig = {
 	presets: [
@@ -22,13 +24,16 @@ const reactConfig = {
 		'@babel/plugin-proposal-class-properties'
 	]
 };
+
+const gitRevision = getRepoInfo().sha;
+
 module.exports = {
 	entry: {
 		main: ['@babel/polyfill', './src/index.js']
 	},
 	output: {
-		publicPath: '/',
-		path: path.resolve(__dirname, 'dist'),
+		publicPath: `/app/${gitRevision}/build`,
+		path: path.resolve(__dirname, 'build'),
 		filename: `rocketfuel.js`
 	},
 	module: {
@@ -78,13 +83,14 @@ module.exports = {
 		new MiniCssExtractPlugin({
 			filename: 'style.css'
 		}),
-		new CleanWebpackPlugin('dist', {}),
+		new CleanWebpackPlugin('build', {}),
 		new HtmlWebpackPlugin({
 			inject: false,
-			hash: true,
 			template: './src/index.html',
 			filename: 'index.html'
-		})
+		}), new webpack.DefinePlugin({
+            'BUILDTIME': JSON.stringify(new Date().toISOString())
+        })
 	],
 	devServer: {
 		port: 8083,
