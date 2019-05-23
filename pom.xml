@@ -13,12 +13,13 @@
         <module>impl</module>
         <module>spec</module>
         <module>ui</module>
+        <module>report</module>
     </modules>
     <properties>
         <slf4j.version>1.7.22</slf4j.version>
         <reactivewizard.version>1.6.0</reactivewizard.version>
         <antrun.plugin.version>1.7</antrun.plugin.version>
-        <sonar.coverage.jacoco.xmlReportPaths>impl/target/site/jacoco/jacoco.xml, spec/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.jacoco.xmlReportPaths>report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <repositories>
@@ -167,12 +168,6 @@
                         <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <goals>
-                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>
