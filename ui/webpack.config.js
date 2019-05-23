@@ -26,13 +26,14 @@ const reactConfig = {
 };
 
 const gitRevision = getRepoInfo().sha;
+const computedPublicPath = `/app/${gitRevision}/build`;
 
 module.exports = {
 	entry: {
 		main: ['@babel/polyfill', './src/index.js']
 	},
 	output: {
-		publicPath: `/app/${gitRevision}/build`,
+		publicPath: computedPublicPath,
 		path: path.resolve(__dirname, 'build')
 	},
 	module: {
@@ -68,6 +69,7 @@ module.exports = {
 				loader: 'url-loader',
 				options: {
 					limit: 1000,
+                    publicPath: computedPublicPath,
 					minetype: 'application/font-woff'
 				}
 			},
@@ -91,8 +93,11 @@ module.exports = {
 	],
 	devServer: {
 		port: 8083,
-		publicPath: '/',
-		historyApiFallback: true,
+		publicPath: computedPublicPath,
+        contentBase: path.resolve(__dirname, 'build'),
+		historyApiFallback: {
+            index: computedPublicPath + '/index.html'
+        },
 		proxy: {
 			'/api/**': {
 				target: 'http://localhost:8080',
