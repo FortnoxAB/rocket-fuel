@@ -1,5 +1,5 @@
 {
-  "name": "noxOverflow",
+  "name": "rocket-fuel",
   "version": "1.0.0",
   "scripts": {
     "dev": "webpack-dev-server -d --hot --mode development",
