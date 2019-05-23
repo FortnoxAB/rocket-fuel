@@ -33,8 +33,7 @@ module.exports = {
 	},
 	output: {
 		publicPath: `/app/${gitRevision}/build`,
-		path: path.resolve(__dirname, 'build'),
-		filename: `rocketfuel.js`
+		path: path.resolve(__dirname, 'build')
 	},
 	module: {
 		rules: [
@@ -85,9 +84,7 @@ module.exports = {
 		}),
 		new CleanWebpackPlugin('build', {}),
 		new HtmlWebpackPlugin({
-			inject: false,
-			template: './src/index.html',
-			filename: 'index.html'
+			template: './src/index.html'
 		}), new webpack.DefinePlugin({
             'BUILDTIME': JSON.stringify(new Date().toISOString())
         })
