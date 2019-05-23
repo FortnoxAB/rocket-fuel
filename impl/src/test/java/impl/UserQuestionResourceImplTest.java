@@ -55,22 +55,6 @@ public class UserQuestionResourceImplTest {
     }
 
     @Test
-    public void shouldReturnInternalServerErrorWhenPostQuestionFails() {
-        Question question = new Question();
-        when(questionDao.addQuestion(123, question)).thenReturn(Observable.error(new SQLException("poff")));
-        Auth auth = new Auth();
-        auth.setUserId(123);
-        try {
-            userQuestionResource.postQuestion(auth, question).toBlocking().singleOrDefault(null);
-            fail("expected exception");
-        } catch (WebException webException) {
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
-            assertEquals("failed to add question to database", webException.getError());
-        }
-    }
-
-
-    @Test
     public void shouldReturnInternalServerErrorWhenUpdateQuestionFails() {
         Question question = new Question();
         when(questionDao.updateQuestion(123, 123, question)).thenReturn(Observable.error(new SQLException("poff")));

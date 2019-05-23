@@ -2,6 +2,7 @@ package impl;
 
 import api.Question;
 import api.QuestionResource;
+import api.auth.Auth;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.QuestionDao;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
+import static rx.Observable.error;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 
 @Singleton
@@ -47,4 +49,15 @@ public class QuestionResourceImpl implements QuestionResource {
       return this.questionDao.getQuestionById(questionId).switchIfEmpty(
         exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not_found")));
 	}
+
+    @Override
+    public Observable<Question> postQuestion(Auth auth, Question question) {
+        return this.questionDao
+          .addQuestion(auth.getUserId(), question)
+            .map(longGeneratedKey -> {
+                question.setId(longGeneratedKey.getKey());
+                return question;
+            })
+          .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add question to database", throwable)));
+    }
 }

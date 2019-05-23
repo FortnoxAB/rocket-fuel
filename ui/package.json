@@ -2,7 +2,7 @@
   "name": "noxOverflow",
   "version": "1.0.0",
   "scripts": {
-    "dev": "webpack-dev-server --hot --mode development",
+    "dev": "webpack-dev-server -d --hot --mode development",
     "build": "webpack --mode production",
     "extract-sv": "ttag update i18n/sv.po src/",
     "extract-en": "ttag update i18n/en.po src/",

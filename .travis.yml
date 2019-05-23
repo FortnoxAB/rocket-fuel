@@ -10,10 +10,11 @@ branches:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
-script:
-  - mvn install sonar:sonar
 services:
   - docker
+
+script:
+  - mvn install sonar:sonar
 
 addons:
   sonarcloud:

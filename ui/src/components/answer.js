@@ -61,7 +61,7 @@ class Answer extends React.Component {
 						<p>{this.props.answer.answer}</p>
 					</div>
 					<div className="post-footer">
-						<div><i className="fa fa-user" /> {this.props.answer.user.name}</div>
+						<div><i className="fa fa-user" /> {this.props.answer.createdBy}</div>
 						<div><i className="fa fa-clock-o" /> {this.getTime()}</div>
 					</div>
 				</div>

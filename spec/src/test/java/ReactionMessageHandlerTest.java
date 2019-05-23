@@ -3,8 +3,6 @@ import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
 import api.User;
-import api.UserAnswerResource;
-import api.UserQuestionResource;
 import api.UserResource;
 import api.auth.Auth;
 import com.google.gson.JsonObject;
@@ -24,9 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ReactionMessageHandlerTest {
 
-    private static UserQuestionResource   userQuestionResource;
     private static QuestionResource       questionResource;
-    private static UserAnswerResource     userAnswerResource;
     private static AnswerResource         answerResource;
     private static UserResource           userResource;
     private static TestSetup              testSetup;
@@ -46,10 +42,9 @@ public class ReactionMessageHandlerTest {
             }
         });
 
-        userQuestionResource = testSetup.getInjector().getInstance(UserQuestionResource.class);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
+        questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         reactionMessageHandler = testSetup.getInjector().getInstance(ReactionMessageHandler.class);
-        userAnswerResource = testSetup.getInjector().getInstance(UserAnswerResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
     }
@@ -76,7 +71,7 @@ public class ReactionMessageHandlerTest {
 
         question.setSlackId(questionId);
 
-        userQuestionResource.postQuestion(as(user), question).toBlocking().singleOrDefault(null);
+        questionResource.postQuestion(as(user), question).toBlocking().singleOrDefault(null);
 
         Question questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().singleOrDefault(null);
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(0);
@@ -130,7 +125,7 @@ public class ReactionMessageHandlerTest {
         question.setSlackId(questionId);
 
         //Create and assert question in db
-        userQuestionResource.postQuestion(as(user), question).toBlocking().singleOrDefault(null);
+        questionResource.postQuestion(as(user), question).toBlocking().singleOrDefault(null);
         Question questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().singleOrDefault(null);
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(0);
 
@@ -141,9 +136,9 @@ public class ReactionMessageHandlerTest {
         answer.setUserId(user.getId());
         answer.setTitle("The title of the answer");
         answer.setSlackId(String.valueOf(currentTimeMillis+1));
-        AssertableSubscriber<Void> voidAssertableSubscriber = userAnswerResource.createAnswer(as(user), questionBySlackThreadId.getId(), answer).test().awaitTerminalEvent();
+        AssertableSubscriber<Answer> voidAssertableSubscriber = answerResource.answerQuestion(as(user), answer, questionBySlackThreadId.getId()).test().awaitTerminalEvent();
         voidAssertableSubscriber.assertNoErrors();
-        Answer storedAnswer = answerResource.getAnswers(questionBySlackThreadId.getId()).toBlocking().first();
+        Answer storedAnswer = answerResource.getAnswers(questionBySlackThreadId.getId()).toBlocking().first().get(0);
         assertThat(storedAnswer.getVotes()).isEqualTo(0);
 
 

@@ -3,6 +3,7 @@ package dao;
 import api.Question;
 import rx.Observable;
 import se.fortnox.reactivewizard.CollectionOptions;
+import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 
@@ -12,8 +13,9 @@ public interface QuestionDao {
     @Query("SELECT question.id, question.question, answer_accepted, question.title, question.bounty, question.votes, question.created_at, question,user_id, question.slack_id, \"user\".name as created_by FROM question  INNER JOIN \"user\" on \"user\".id = question.user_id WHERE question.user_id=:userId")
     Observable<Question> getQuestions(long userId, CollectionOptions collectionOptions);
 
-    @Update("INSERT INTO question (question, title, bounty, votes, created_at, user_id, slack_id) VALUES(:question.question, :question.title, :question.bounty, 0, NOW(), :userId, :question.slackId)")
-    Observable<Void> addQuestion(long userId, Question question);
+    @Update("INSERT INTO question (question, title, bounty, votes, created_at, user_id, slack_id) " +
+      " VALUES(:question.question, :question.title, :question.bounty, 0, NOW(), :userId, :question.slackId)")
+    Observable<GeneratedKey<Long>> addQuestion(long userId, Question question);
 
     @Update("UPDATE question " +
             "SET question=:question.question, bounty=:question.bounty, title=:question.title, votes=:question.votes " +
@@ -33,9 +35,9 @@ public interface QuestionDao {
     @Query("SELECT id, question, title, bounty, votes, answer_accepted, created_at, user_id, slack_id FROM question WHERE slack_id = :slackId")
     Observable<Question> getQuestionBySlackThreadId(String slackId);
 
-    @Update("UPDATE question set votes=votes+1 where slack_id = :threadId")
+    @Update("UPDATE question set votes=votes+1 WHERE slack_id = :threadId")
     Observable<Void> upVoteQuestion(String threadId);
 
-    @Update(value = "UPDATE question set votes=votes-1 where slack_id = :threadId")
+    @Update(value = "UPDATE question set votes=votes-1 WHERE slack_id = :threadId")
     Observable<Void> downVoteQuestion(String threadId);
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { withRouter } from 'react-router-dom';
 import { t } from 'ttag';
 import { googleClientId } from '../../config';
 import Button from '../components/button';
@@ -48,19 +49,27 @@ class SignInView extends React.Component {
 				this.signInUser(token);
 				return;
 			}
-			this.context.setState({
-				user: null,
-				loaded: true
-			});
+			this.updateUserInContext(null);
 		});
 	}
 
 	signInUser(token) {
 		User.signIn(token).then((user) => {
-			this.context.setState({
-				user: user,
-				loaded: true
+			this.updateUserInContext(user, token);
+				this.props.history.push('/');
+		})
+			.catch(() => {
+				this.updateUserInContext(null);
+				this.setState({
+					loaded: true
+				});
 			});
+	}
+
+	updateUserInContext(user, token = null) {
+		this.context.setState({
+			user: user,
+			token: token
 		});
 	}
 
@@ -81,6 +90,8 @@ class SignInView extends React.Component {
 	}
 }
 
-SignInView.contextType = AppContext;
+const WrappedSignInView = withRouter(SignInView);
 
-export default SignInView;
+WrappedSignInView.WrappedComponent.contextType = AppContext;
+
+export default WrappedSignInView;

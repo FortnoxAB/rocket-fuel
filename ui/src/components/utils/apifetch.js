@@ -30,6 +30,9 @@ function ApiFetch(options = {}) {
 			if (!response.ok) {
 				throw response;
 			}
+			if (response.status === 204) {
+				return {}
+			}
 			return response.json();
 		})
 		.then((response) => {

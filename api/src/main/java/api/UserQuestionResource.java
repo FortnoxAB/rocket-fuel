@@ -5,7 +5,6 @@
  import se.fortnox.reactivewizard.CollectionOptions;
 
  import javax.ws.rs.GET;
- import javax.ws.rs.POST;
  import javax.ws.rs.PUT;
  import javax.ws.rs.Path;
  import javax.ws.rs.PathParam;
@@ -37,13 +36,6 @@ public interface UserQuestionResource {
     @Path("{userId}/questions/{questionId}")
     @GET
     Observable<Question> getQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
-
-    /**
-     * Adds a question and links it to the given userId.
-     */
-    @Path("me/questions")
-    @POST
-    Observable<Void> postQuestion(Auth auth, Question question);
 
     /**
      * Updates the question with the given questionId

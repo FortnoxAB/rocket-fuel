@@ -18,7 +18,6 @@ import static rx.Observable.error;
 @Singleton
 public class UserQuestionResourceImpl implements UserQuestionResource {
 
-
     private final QuestionDao questionDao;
 
     @Inject
@@ -40,15 +39,6 @@ public class UserQuestionResourceImpl implements UserQuestionResource {
                 .getQuestion(userId, questionId)
                 .onErrorResumeNext(throwable ->
                     error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get question from database", throwable)));
-    }
-
-
-    @Override
-    public Observable<Void> postQuestion(Auth auth, Question question) {
-        return this.questionDao
-                .addQuestion(auth.getUserId(), question)
-                .onErrorResumeNext(throwable ->
-                    error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add question to database", throwable)));
     }
 
     @Override

@@ -5,7 +5,6 @@
  import se.fortnox.reactivewizard.jaxrs.PATCH;
 
  import javax.ws.rs.GET;
- import javax.ws.rs.POST;
  import javax.ws.rs.PUT;
  import javax.ws.rs.Path;
  import javax.ws.rs.PathParam;
@@ -26,16 +25,6 @@ public interface UserAnswerResource {
     @Path("{userId}/questions/{questionId}/answers")
     @GET
     Observable<List<Answer>> getAnswers(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
-
-    /**
-     * Creates a answer for a given question
-     * @param questionId The question shall be linked to the answer
-     * @param answer the answer body
-     * @return nothing
-     */
-    @Path("me/questions/{questionId}/answers")
-    @POST
-    Observable<Void> createAnswer(Auth auth, @PathParam("questionId") long questionId, Answer answer);
 
     /**
      * Updates a answer

@@ -76,7 +76,7 @@ public class UserResourceImpl implements UserResource {
                 .onErrorResumeNext(t -> addUserToDatabase(validOpenId.name, validOpenId.email))
                 .map(user -> {
                             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
-                            addAsCookie(applicationToken);
+                            addAsCookie(applicationToken, user);
                             return user;
                         }
                 ));
@@ -90,10 +90,10 @@ public class UserResourceImpl implements UserResource {
                 .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add user to the database", t)));
     }
 
-    private void addAsCookie(final ApplicationToken applicationToken) {
+    private void addAsCookie(final ApplicationToken applicationToken, User user) {
         Map<String, Object> headers = new HashMap<>();
         headers.put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
-        responseHeaderHolder.addHeaders(applicationToken, headers);
+        responseHeaderHolder.addHeaders(user, headers);
     }
 
 }

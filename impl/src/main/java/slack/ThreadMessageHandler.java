@@ -1,11 +1,10 @@
 package slack;
 
 import api.Answer;
+import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
 import api.User;
-import api.UserAnswerResource;
-import api.UserQuestionResource;
 import api.UserResource;
 import api.auth.Auth;
 import com.google.gson.JsonObject;
@@ -31,25 +30,21 @@ public class ThreadMessageHandler implements SlackMessageHandler {
     private static final String               SLACK_THREAD_ID = "thread_ts";
     private static final String               CHANNEL = "channel";
     private final        QuestionResource     questionResource;
-    private final        UserQuestionResource userQuestionResource;
     private final        SlackResource        slackResource;
     private final        UserResource         userResource;
-    private final        UserAnswerResource   userAnswerResource;
+    private final        AnswerResource       answerResource;
     private static final int                  DEFAULT_BOUNTY  = 50;
 
     @Inject
     public ThreadMessageHandler(QuestionResource questionResource,
         SlackResource slackResource,
         UserResource userResource,
-        UserAnswerResource userAnswerResource,
-        UserQuestionResource userQuestionResource
+        AnswerResource answerResource
     ) {
         this.questionResource = questionResource;
         this.slackResource = slackResource;
         this.userResource = userResource;
-        this.userAnswerResource = userAnswerResource;
-        this.userQuestionResource = userQuestionResource;
-
+        this.answerResource = answerResource;
     }
 
     @Override
@@ -117,7 +112,7 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                         question.setSlackId(mainMessageId);
                         question.setBounty(DEFAULT_BOUNTY);
 
-                        return first(userQuestionResource.postQuestion(as(userId), question).doOnError(throwable -> LOG.error("Could not post message to slack", throwable))).thenReturn(question);
+                        return first(questionResource.postQuestion(as(userId), question).doOnError(throwable -> LOG.error("Could not post message to slack", throwable))).thenReturn(question);
                     }));
     }
 
@@ -147,7 +142,7 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                     answer.setUserId(user.getId());
                     answer.setSlackId(message.get("ts").getAsString());
 
-                    return userAnswerResource.createAnswer(as(user.getId()), question.getId(), answer);
+                    return answerResource.answerQuestion(as(user.getId()), answer, question.getId()).ignoreElements().cast(Void.class);
                 }
         ));
     }

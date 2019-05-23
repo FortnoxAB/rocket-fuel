@@ -23,13 +23,13 @@
             <groupId>se.fortnox</groupId>
             <artifactId>rocket-fuel-api</artifactId>
             <version>${project.parent.version}</version>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>se.fortnox</groupId>
             <artifactId>rocket-fuel-spec</artifactId>
             <version>${project.parent.version}</version>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -50,6 +50,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

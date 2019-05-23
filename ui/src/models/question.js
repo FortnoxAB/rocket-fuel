@@ -38,3 +38,21 @@ export function searchQuestions(param) {
 		return response;
 	});
 }
+
+export function createQuestion(question, token) {
+	const options = {
+		url: `/api/questions`,
+		method: 'POST',
+		body: question,
+		headers: {
+			authorizationToken: token
+		}
+	};
+
+	return ApiFetch(options).then((response) => {
+		if (response.error) {
+			return 'err';
+		}
+		return response;
+	});
+}
