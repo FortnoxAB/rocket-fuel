@@ -18,7 +18,7 @@ slack:
   apiToken: <your-slack-app-api-token>
 
 openId:
-  issuer: https://accounts.google.com
+  issuer: accounts.google.com
   jwksUri: https://www.googleapis.com/oauth2/v3/certs
   clientId: <client-id-found-in-google-console-for-example>
 
