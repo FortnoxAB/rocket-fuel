@@ -14,7 +14,8 @@ services:
   - docker
 
 script:
-  - mvn install sonar:sonar
+  - mvn install
+  - sonar-scanner
 
 addons:
   sonarcloud:
