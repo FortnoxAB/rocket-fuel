@@ -13,8 +13,9 @@ after_success:
 services:
   - docker
 
+install: true
+
 script:
-  - mvn install
   - sonar-scanner
 
 addons:
