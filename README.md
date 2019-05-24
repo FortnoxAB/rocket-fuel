@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/FortnoxAB/rocket-fuel.svg?branch=master)](https://travis-ci.com/FortnoxAB/rocket-fuel)
 [![codecov](https://codecov.io/gh/FortnoxAB/rocket-fuel/branch/master/graph/badge.svg)](https://codecov.io/gh/FortnoxAB/rocket-fuel)
-[![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=rocket-fuel&metric=alert_status)](https://sonarcloud.io/dashboard?id=rocket-fuel)
+[![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=se.fortnox:rocket-fuel&metric=alert_status)](https://sonarcloud.io/dashboard?id=se.fortnox:rocket-fuel)
 
 Rocket fuel is a question/answer platform that you deploy with docker wherever you want. Its main goal is to spread knowledge.
 
