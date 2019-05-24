@@ -14,7 +14,7 @@ services:
   - docker
 
 script:
-  - mvn test
+  - mvn install
   - sonar-scanner
 
 addons:
