@@ -1,16 +1,16 @@
 import React from 'react';
 import { t } from 'ttag';
 import { withRouter } from 'react-router-dom';
-import FillPage from '../../components/utils/fillpage';
+import FillPage from '../../components/helpers/fillpage';
 import Loader from '../../components/utils/loader';
-import Markdown from '../../components/markdown';
-import InputField from '../../components/inputfield';
-import Button from '../../components/button';
-import Question from '../../components/question';
-import Answer from '../../components/answer';
+import Markdown from '../../components/helpers/markdown';
+import InputField from '../../components/forms/inputfield';
+import Button from '../../components/forms/button';
+import Question from '../../components/questions/question';
+import Answer from '../../components/questions/answer';
 import * as QuestionApi from '../../models/question';
 import * as AnswerApi from '../../models/answer';
-import { AppContext } from '../../appcontext';
+import { UserContext } from '../../usercontext';
 
 
 class QuestionView extends React.Component {
@@ -22,7 +22,8 @@ class QuestionView extends React.Component {
 			question: null,
 			answer: '',
 			answers: [],
-			postingAnswer: false
+			postingAnswer: false,
+            answerError: null
 		};
 	}
 
@@ -57,9 +58,16 @@ class QuestionView extends React.Component {
 	}
 
 	saveAnswer() {
+	    if (!this.state.answer || this.state.answer.trim().length <= 0) {
+            this.setState({
+                answerError: t`You cannot leave an empty answer.`
+            });
+            return;
+        }
 
 		this.setState({
-			postingAnswer: true
+			postingAnswer: true,
+            answerError: null
 		});
 
 		const answer = {
@@ -94,11 +102,16 @@ class QuestionView extends React.Component {
 
 		return(
 			<div className="answer-form">
+                <div className="padded-bottom">
+                    {t`Use Markdown in answer field.`} <a href="https://guides.github.com/features/mastering-markdown/" target="_blank">{t`Markdown-syntax`}</a>
+                </div>
 				<InputField
+                    label={t`Answer`}
 					type="textarea"
 					name="answer"
 					value={this.state.answer}
 					onChange={this.onChangeAnswer.bind(this)}
+                    errorMessage={this.state.answerError}
 				/>
 				<Button color="secondary" onClick={this.saveAnswer.bind(this)}>{t`Post answer`}</Button>
 			</div>
@@ -140,5 +153,5 @@ class QuestionView extends React.Component {
 }
 
 const WrappedQuestionView = withRouter(QuestionView);
-WrappedQuestionView.WrappedComponent.contextType = AppContext;
+WrappedQuestionView.WrappedComponent.contextType = UserContext;
 export default WrappedQuestionView;

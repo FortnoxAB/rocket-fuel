@@ -2,13 +2,13 @@
 	.contrast-color(@gray);
 	transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 	border: 0;
-	padding: 10px 15px;
+	padding: 10px 25px;
 	background-color: @gray;
 	color: @contrast-value;
 	display: inline-block;
 	cursor: pointer;
-	border-radius: @roundness;
-	// .material-shadow(2);
+	border-radius: 25px;
+    font-weight: 300;
 
 	.loader {
 		height: 1em;
@@ -66,15 +66,6 @@
 		}
 	}
 
-	&.google {
-		background-color: #2196F3;
-		color: #F5F5F5;
-
-		&:hover {
-			background-color: darken(#2196F3, 5%);
-		}
-	}
-
 	&.alternative {
 		background-color: transparent;
 		border: 1px solid @primary-color;
@@ -104,4 +95,14 @@
 			background-color: darken(@notification-success, 5%);
 		}
 	}
+
+    &.gradient {
+        background: linear-gradient(45deg, @gradient-one 0%,@gradient-two 100%);
+        color: @text-color-light;
+        background-size: 120% 120%;
+
+        &:hover {
+            background-position: 110%;
+        }
+    }
 }

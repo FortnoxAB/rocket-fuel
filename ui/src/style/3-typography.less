@@ -1,5 +1,5 @@
 h1, h2, h3 {
-	font-weight: 300;
+	font-weight: 700;
 	padding: 0;
 	margin: 0;
 	display: block;
@@ -22,4 +22,20 @@ h3 {
 
 .text-center {
 	text-align: center;
+}
+
+.text-light {
+    color: @text-color-light;
+
+    &-faded {
+        color: fade(@text-color-light, 80%);
+    }
+}
+
+.text-dark {
+    color: @text-color-dark;
+
+    &-faded {
+        color: fade(@text-color-dark, 80%);
+    }
 }

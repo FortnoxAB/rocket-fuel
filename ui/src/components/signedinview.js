@@ -1,20 +1,19 @@
 import React from 'react';
-import UserBar from './userbar';
-import MenuBar from './menubar';
-import QuickBar from './quickbar';
-import Footer from './footer';
+import Header from './layout/header';
+import MenuBar from './layout/menubar';
+import QuickBar from './layout/quickbar';
+import Footer from './layout/footer';
 
 class SignedInView extends React.Component {
 	render() {
 		return (
 			<div className="view">
-				<UserBar />
+				<Header />
 				<div className="main">
-					<MenuBar />
 					<div className="content">
 						{this.props.children}
 					</div>
-					<QuickBar />
+                    {/*<QuickBar />*/}
 				</div>
 				{/*
 				<div className="flex-grow">
