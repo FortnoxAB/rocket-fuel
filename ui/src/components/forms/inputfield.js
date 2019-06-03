@@ -84,6 +84,8 @@ class InputField extends React.Component {
             });
         }
 
+	    this.props.validate(this.props.value, this.props.name);
+
         this.props.onBlur();
     }
 
@@ -172,7 +174,8 @@ InputField.defaultProps = {
 	onClickAutocompleteItem: () => {},
 	endButton: null,
     rounded: false,
-    icon: ''
+    icon: '',
+    validate: () => {}
 };
 
 InputField.propTypes = {
@@ -193,7 +196,8 @@ InputField.propTypes = {
     onClickAutocompleteItem: PropTypes.func,
     endButton: PropTypes.string,
     rounded: PropTypes.bool,
-    icon: PropTypes.string
+    icon: PropTypes.string,
+    validate: PropTypes.func
 };
 
 export default InputField;

@@ -44,33 +44,28 @@ class CreateQuestionView extends React.Component {
 	}
 
 	saveThread() {
+	    let hasErrors = false;
+        this.validateAll();
+
 		this.setState({
-			postingThread:true
+			postingThread: true
 		});
 
-		const titleFromState = this.state.title.trim();
-        const questionFromState = this.state.question.trim();
-        const bountyFromState = this.state.bounty;
-
-		let errors = {};
-
-		if (titleFromState.length <= 0) {
-		    errors.title = t`The title cannot be empty.`;
+        if (Object.keys(this.state.error).length > 0) {
+            console.log(1);
         }
 
-        if (questionFromState.length <= 0) {
-            errors.question = t`The question cannot be empty.`;
-        }
+        Object.values(this.state.error).forEach((msg) => {
+            if (msg) {
+                hasErrors = true;
+            }
+        });
 
-        if (!bountyFromState || bountyFromState < 0) {
-            errors.bounty = t`Bounty must be zero or more.`;
-        }
-
-        if (Object.keys(errors).length > 0) {
+        if (hasErrors) {
             this.setState({
-                error: errors,
                 postingThread: false
             });
+
             return;
         }
 
@@ -98,6 +93,49 @@ class CreateQuestionView extends React.Component {
 		);
 	}
 
+	validateAll() {
+        this.validateTitle(this.state.title, 'title');
+        this.validateQuestion(this.state.question, 'question');
+        this.validateBounty(this.state.bounty, 'bounty');
+    }
+
+	validateTitle(value, fieldName) {
+	    let newError = null;
+        if (value.trim().length <= 0) {
+            newError = t`The title cannot be empty.`;
+        }
+        this.setError(fieldName, newError);
+    }
+
+    validateQuestion(value, fieldName) {
+        let newError = null;
+        if (value.trim().length <= 0) {
+            newError = t`The question cannot be empty.`;
+        }
+        this.setError(fieldName, newError);
+    }
+
+    validateBounty(value, fieldName) {
+        let newError = null;
+        if (!value || value < 0) {
+            newError = t`Bounty must be zero or more.`;
+        }
+        if (value.indexOf(".") !== -1) {
+            newError = t`Bounty cannot contain decimals.`;
+        }
+
+        this.setError(fieldName, newError);
+    }
+
+    setError(fieldName, errorMessage) {
+        const newErrors = this.state.error;
+        newErrors[fieldName] = errorMessage;
+
+        this.setState({
+            error: newErrors
+        });
+    }
+
 	render() {
 		if(this.state.postingThread) {
 			return <Loader fillPage />
@@ -118,6 +156,7 @@ class CreateQuestionView extends React.Component {
 						value={this.state.title}
                         errorMessage={this.state.error.title}
                         autocomplete="off"
+                        validate={this.validateTitle.bind(this)}
 					/>
 					<div className="padded-bottom">
 						{t`Use Markdown in question field.`} <a href="https://guides.github.com/features/mastering-markdown/" target="_blank">{t`Markdown-syntax`}</a>
@@ -131,6 +170,7 @@ class CreateQuestionView extends React.Component {
 						type="textarea"
 						value={this.state.question}
                         errorMessage={this.state.error.question}
+                        validate={this.validateQuestion.bind(this)}
 					/>
 					<InputField
 						className="padded-bottom"
@@ -141,6 +181,7 @@ class CreateQuestionView extends React.Component {
 						type="number"
 						value={this.state.bounty}
                         errorMessage={this.state.error.bounty}
+                        validate={this.validateBounty.bind(this)}
 					/>
 					<Button color="secondary" onClick={this.saveThread.bind(this)}>{t`Post question`}</Button>
 				</div>
