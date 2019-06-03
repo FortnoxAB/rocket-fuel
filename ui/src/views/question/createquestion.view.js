@@ -71,7 +71,7 @@ class CreateQuestionView extends React.Component {
 
 		const question = {
 			title: this.state.title,
-			question: this.state.description,
+			question: this.state.question,
 			bounty: this.state.bounty
 		};
 
@@ -96,7 +96,7 @@ class CreateQuestionView extends React.Component {
 	validateAll() {
         this.validateTitle(this.state.title, 'title');
         this.validateQuestion(this.state.question, 'question');
-        this.validateBounty(this.state.bounty, 'bounty');
+        // this.validateBounty(this.state.bounty, 'bounty');
     }
 
 	validateTitle(value, fieldName) {
@@ -172,7 +172,7 @@ class CreateQuestionView extends React.Component {
                         errorMessage={this.state.error.question}
                         validate={this.validateQuestion.bind(this)}
 					/>
-					<InputField
+                    {/*<InputField
 						className="padded-bottom"
 						placeholder={t`Bounty`}
 						onChange={this.handleChangeBounty.bind(this)}
@@ -182,7 +182,7 @@ class CreateQuestionView extends React.Component {
 						value={this.state.bounty}
                         errorMessage={this.state.error.bounty}
                         validate={this.validateBounty.bind(this)}
-					/>
+					/>*/}
 					<Button color="secondary" onClick={this.saveThread.bind(this)}>{t`Post question`}</Button>
 				</div>
 				{this.renderPreview()}
