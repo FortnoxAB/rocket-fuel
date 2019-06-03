@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -24,12 +25,12 @@ const reactConfig = {
 };
 module.exports = {
 	entry: {
-		main: ['@babel/polyfill', './src/index.js']
+		rocketfuel: ['@babel/polyfill', './src/index.js']
 	},
 	output: {
 		publicPath: '/',
 		path: path.resolve(__dirname, 'dist'),
-		filename: `rocketfuel.js`
+		filename: '[name].js'
 	},
 	module: {
 		rules: [
@@ -79,6 +80,9 @@ module.exports = {
 			filename: 'style.css'
 		}),
 		new CleanWebpackPlugin('dist', {}),
+        new CopyPlugin([
+            { from: './config.js', to: 'config.js' }
+        ]),
 		new HtmlWebpackPlugin({
 			inject: false,
 			hash: true,

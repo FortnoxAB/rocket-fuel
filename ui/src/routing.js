@@ -14,7 +14,7 @@ import FaqView from './views/faq.view';
 import CreateQuestionView from './views/question/createquestion.view';
 import PageNotFoundView from './views/pagenotfound.view';
 
-import { googleClientId } from '../config';
+// import { googleClientId } from '../config';
 import * as User from './models/user';
 import Loader from './components/utils/loader';
 
@@ -33,7 +33,7 @@ class Routing extends React.Component {
     componentWillMount() {
         gapi.load('auth2', () => {
             gapi.auth2.init({
-                client_id: googleClientId
+                client_id: window.googleClientId
             });
             this.GoogleAuth = gapi.auth2.getAuthInstance();
             this.setupSignInListener();
