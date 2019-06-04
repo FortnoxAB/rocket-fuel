@@ -25,8 +25,7 @@ const reactConfig = {
 	]
 };
 
-const gitRevision = getRepoInfo().sha;
-const computedPublicPath = `/app/${gitRevision}/build`;
+const computedPublicPath = '/app/build';
 
 module.exports = {
 	entry: {

@@ -20,6 +20,7 @@
         <reactivewizard.version>1.6.0</reactivewizard.version>
         <antrun.plugin.version>1.7</antrun.plugin.version>
         <sonar.coverage.jacoco.xmlReportPaths>report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <docker.image-tag>${project.version}</docker.image-tag>
     </properties>
 
     <repositories>
@@ -200,9 +201,15 @@
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>2.3.1</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.7</version>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
-
     </build>
-
 </project>

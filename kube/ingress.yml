@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rocket-fuel
+  labels:
+    app: rocket-fuel
+    team: "rocket"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /api
+            backend:
+              serviceName: rocket-fuel
+              servicePort: 8080
+          - path: /app
+            backend:
+              serviceName: rocket-fuel
+              servicePort: 80
