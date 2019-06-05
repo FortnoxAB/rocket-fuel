@@ -20,7 +20,6 @@
         <reactivewizard.version>1.6.0</reactivewizard.version>
         <antrun.plugin.version>1.7</antrun.plugin.version>
         <sonar.coverage.jacoco.xmlReportPaths>report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <docker.image-tag>${project.version}</docker.image-tag>
     </properties>
 
     <repositories>

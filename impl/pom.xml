@@ -138,12 +138,7 @@
                 <configuration>
                     <images>
                         <image>
-                            <name>jesperlahdevirta/rocket-fuel</name>
-                            <build>
-                                <tags>
-                                    <tag>${docker.image-tag}</tag>
-                                </tags>
-                            </build>
+                            <name>jesperlahdevirta/rocket-fuel:${project.version}</name>
                         </image>
                     </images>
                 </configuration>
