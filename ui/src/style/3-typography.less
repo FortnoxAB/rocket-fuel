@@ -1,25 +1,41 @@
 h1, h2, h3 {
-	font-weight: 300;
-	padding: 0;
-	margin: 0;
-	display: block;
+    font-weight: 700;
+    padding: 0;
+    margin: 0;
+    display: block;
 }
 
 h1 {
-	font-size: 3em;
-	margin-bottom: 30px;
+    font-size: 3em;
+    margin-bottom: 30px;
 }
 
 h2 {
-	font-size: 2em;
-	margin-bottom: 15px;
+    font-size: 2em;
+    margin-bottom: 15px;
 }
 
 h3 {
-	font-size: 1.5em;
-	margin-bottom: 15px;
+    font-size: 1.5em;
+    margin-bottom: 15px;
 }
 
 .text-center {
-	text-align: center;
+    text-align: center;
+}
+
+.text-light {
+    color: @text-color-light;
+
+    &-faded {
+        color: fade(@text-color-light, 80%);
+    }
+}
+
+.text-dark {
+    color: @text-color-dark;
+
+    &-faded {
+        color: fade(@text-color-dark, 80%);
+    }
 }

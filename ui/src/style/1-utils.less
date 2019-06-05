@@ -1,106 +1,176 @@
 span.coins {
-	.contrast-color(@secondary-color);
-	display: flex;
-	align-items: center;
-	padding: 3px;
-	border-radius: @roundness;
-	background-color: @secondary-color;
-	color: @contrast-value;
+    .contrast-color(@primary-color);
+    display: flex;
+    align-items: center;
+    padding: 3px;
+    background-color: @primary-color;
+    color: @contrast-value;
 
-	.amount {
-		margin-right: 2px;
-	}
+    .amount {
+        margin-right: 2px;
+    }
 
-	.fa {
-		font-size: .6em;
-		color: #FBC02D;
-	}
+    .fa {
+        font-size: .6em;
+        color: #FBC02D;
+    }
 }
 
 .padded {
-	padding: 20px;
+    padding: 20px;
 
-	&-vertical {
-		padding: 20px 0;
-	}
+    &-large {
+        padding: 35px;
+    }
 
-	&-horizontal {
-		padding: 0 20px;
-	}
+    &-vertical {
+        padding: 20px 0;
 
-	&-bottom {
-		padding-bottom: 20px;
-	}
+        &-large {
+            padding: 35px 0;
+        }
+    }
 
-	&-top {
-		padding-top: 20px;
-	}
+    &-horizontal {
+        padding: 0 20px;
+
+        &-large {
+            padding: 0 35px;
+        }
+    }
+
+    &-bottom {
+        padding-bottom: 20px;
+
+        &-large {
+            padding-bottom: 35px;
+        }
+    }
+
+    &-top {
+        padding-top: 20px;
+
+        &-large {
+            padding-top: 35px;
+        }
+    }
 }
 
 .tag {
-	.contrast-color(@secondary-color);
-	font-size: 10px;
-	flex-grow: 0;
-	display: inline-block;
-	padding: 3px;
-	border-radius: @roundness;
-	background-color: @secondary-color;
-	color: @contrast-value;
-	margin-right: 2px;
+    .contrast-color(@secondary-color);
+    font-size: 10px;
+    flex-grow: 0;
+    display: inline-block;
+    padding: 3px;
+    border-radius: @roundness;
+    background-color: @secondary-color;
+    color: @contrast-value;
+    margin-right: 2px;
 }
 
 .relative {
-	position: relative;
+    position: relative;
 }
 
 .form {
-	flex-grow: 1;
+    flex-grow: 1;
 }
 
 .info-square {
-	.contrast-color(@notification-info);
-	padding: 20px;
-	background-color: @notification-warning;
-	max-width: 300px;
-	color: @contrast-value;
+    .contrast-color(@notification-info);
+    padding: 20px;
+    background-color: @notification-warning;
+    max-width: 300px;
+    color: @contrast-value;
 }
 
 .graph {
-	height: 300px;
-	width: 500px;
+    height: 300px;
+    width: 500px;
 }
 
 .underlined {
-	margin-bottom: 10px;
-	padding-bottom: 10px;
-	border-bottom: 1px solid @primary-color;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid @primary-color;
 }
 
 .faded {
-	opacity: .5;
+    opacity: .5;
 }
 
 .pointer {
-	cursor: pointer;
+    cursor: pointer;
+}
+
+.certificate, .trophy {
+    font-size: 1em;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: fade(contrast(@background-color, @text-color-dark, @text-color-light, 43%), 10%);
+}
+
+.trophy {
+    &.active {
+        color: #FFCA28;
+    }
 }
 
 .certificate {
-	position: relative;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	margin-top: .15em;
+    &.active {
+        color: #2196F3;
 
-	.fa-certificate {
-		font-size: 1em;
-		z-index: 1;
-		color: #2196F3;
-	}
+        .fa-check {
+            font-size: .6em;
+            position: absolute;
+            z-index: 1;
+            color: #E3F2FD;
+            display: block;
+        }
+    }
 
-	.fa-check {
-		font-size: .6em;
-		position: absolute;
-		z-index: 1;
-		color: #E3F2FD;
-	}
+    .fa-certificate {
+        z-index: 1;
+    }
+
+    .fa-check {
+        display: none;
+    }
+}
+
+.fullscreen-video {
+    filter: blur(5px);
+    z-index: -1;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+}
+
+.gradient-light {
+    background: linear-gradient(45deg, @background-color 0%, darken(@background-color, 15%) 100%);
+    .contrast-color(@background-color);
+    color: @contrast-value;
+}
+
+.gradient-primary {
+    background: linear-gradient(45deg, @primary-color 0%, darken(@primary-color, 5%) 100%);
+    .contrast-color(darken(@primary-color, 5%));
+    color: @contrast-value;
+}
+
+.gradient-secondary {
+    background: linear-gradient(45deg, @secondary-color 0%, darken(@secondary-color, 5%) 100%);
+    .contrast-color(@secondary-color);
+    color: @contrast-value;
+}
+
+.gradient-alternative {
+    background: linear-gradient(45deg, @gradient-one 0%, @gradient-two 100%);
+    .contrast-color(@gradient-one);
+    color: @contrast-value;
 }

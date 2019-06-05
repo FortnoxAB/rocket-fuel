@@ -72,8 +72,7 @@ public class UserResourceImpl implements UserResource {
         return openIdValidator.validate(openIdToken).flatMap(validOpenId ->
                 userDao.getUserByEmail(validOpenId.email)
                 .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
-                .single()
-                .onErrorResumeNext(t -> addUserToDatabase(validOpenId.name, validOpenId.email))
+                .switchIfEmpty(addUserToDatabase(validOpenId.name, validOpenId.email))
                 .map(user -> {
                             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
                             addAsCookie(applicationToken, user);

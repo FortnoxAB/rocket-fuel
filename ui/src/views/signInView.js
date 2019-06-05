@@ -1,97 +1,37 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { t } from 'ttag';
-import { googleClientId } from '../../config';
-import Button from '../components/button';
-import Loader from '../components/utils/loader';
+import Button from '../components/forms/button';
 import Logo from '../components/utils/logo';
-import * as User from '../models/user';
-import { AppContext } from '../appcontext';
+import { UserContext } from '../usercontext';
+import src from '../images/space-bg.mp4';
 
 class SignInView extends React.Component {
-	constructor(props) {
-		super(props);
-		this.GoogleAuth = null;
-		this.GoogleUser = null;
+    constructor(props) {
+        super(props);
+    }
 
-		this.state = {
-			loaded: false
-		};
-	}
-
-	componentDidMount() {
-		gapi.load('auth2', () => {
-			gapi.auth2.init({
-				client_id: googleClientId
-			});
-			this.GoogleAuth = gapi.auth2.getAuthInstance();
-			this.setupSignInListener();
-
-			this.GoogleAuth.then(() => {
-				this.GoogleUser = this.GoogleAuth.currentUser.get();
-
-				if (this.GoogleUser.isSignedIn()) {
-					const token = this.GoogleUser.getAuthResponse().id_token;
-					this.signInUser(token);
-					return;
-				}
-				this.setState({
-					loaded: true
-				});
-			});
-		});
-	}
-
-	setupSignInListener() {
-		this.GoogleAuth.isSignedIn.listen((isSignedIn) => {
-			if (isSignedIn) {
-				const token = this.GoogleUser.getAuthResponse().id_token;
-				this.signInUser(token);
-				return;
-			}
-			this.updateUserInContext(null);
-		});
-	}
-
-	signInUser(token) {
-		User.signIn(token).then((user) => {
-			this.updateUserInContext(user, token);
-				this.props.history.push('/');
-		})
-			.catch(() => {
-				this.updateUserInContext(null);
-				this.setState({
-					loaded: true
-				});
-			});
-	}
-
-	updateUserInContext(user, token = null) {
-		this.context.setState({
-			user: user,
-			token: token
-		});
-	}
-
-	onSignIn() {
-		this.GoogleAuth.signIn();
-	}
-
-	render() {
-		if (!this.state.loaded) {
-			return <Loader fillPage />
-		}
-		return (
-			<div className="center-center fill-page flex-column">
-				<Logo size="large" />
-				<Button color="google" onClick={this.onSignIn.bind(this)}>{t`Login`} <i className="fa fa-google" /> </Button>
-			</div>
-		);
-	}
+    render() {
+        return (
+            <div className="fill-page center-center flex-column">
+                <video autoPlay muted loop className="fullscreen-video">
+                    <source src={src} type="video/mp4" />
+                </video>
+                <Logo size="large" className="text-light" />
+                <Button color="gradient"
+                        onClick={this.props.onSignIn.bind(this)}>{t`Sign in`}</Button>
+            </div>
+        );
+    }
 }
+
+SignInView.defaultProps = {
+    onSignIn: () => {
+    }
+};
 
 const WrappedSignInView = withRouter(SignInView);
 
-WrappedSignInView.WrappedComponent.contextType = AppContext;
+WrappedSignInView.WrappedComponent.contextType = UserContext;
 
 export default WrappedSignInView;

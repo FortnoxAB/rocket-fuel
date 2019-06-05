@@ -12,9 +12,9 @@ public interface UserDao {
             "VALUES(:user.email, :user.name);\n")
     Observable<Integer> insertUser(User user);
 
-    @Query(value = "SELECT * from \"user\" where email = :email", maxLimit = 1)
+    @Query(value = "SELECT * from \"user\" where email = :email LIMIT 1")
     Observable<User> getUserByEmail(String email);
 
-    @Query(value = "SELECT * from \"user\" where id = :userId", maxLimit = 1)
+    @Query(value = "SELECT * from \"user\" where id = :userId LIMIT 1")
     Observable<User> getUserById(long userId);
 }

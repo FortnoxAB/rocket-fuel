@@ -1,84 +1,188 @@
 .question-card, .card {
-	@input-border-color: contrast(@background-color, lighten(@background-color, 5%), darken(@background-color, 5%), 43%);
+    transition: .2s;
+    .contrast-color(@card-background-color);
+    margin-bottom: 15px;
+    padding: 20px;
+    background-color: @card-background-color;
+    color: @contrast-value;
 
-	.contrast-color(@input-border-color);
-	margin-bottom: 15px;
-	margin-top: 15px;
-	padding: 20px;
-	background-color: @input-border-color;
-	color: @contrast-value;
-	// .material-shadow(2);
-	border-radius: @roundness;
+    &:hover {
+        z-index: 1;
+        .material-shadow(2);
+        position: relative;
+        transform: scale(1.01);
+    }
 }
+
 .question-card {
-	border: 1px solid transparent;
-	position: relative;
+    padding: 0;
+    display: flex;
+    align-items: stretch;
 
-	.body {
-		align-items: center;
-		display: flex;
-		justify-content: space-between;
+    .body {
+        padding: 10px;
+        padding-left: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
-		.coins {
-			border-radius: 0;
-			font-size: .8em;
-			position: absolute;
-			top: -2px;
-			right: 20px;
-			border-bottom-left-radius: @roundness;
-			border-bottom-right-radius: @roundness;
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
 
-			.amount:before {
-				content: '+';
+    .marks {
+        padding: 15px;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        font-size: 3em;
+
+        > * {
+            padding: 5px;
+        }
+    }
+
+    .coins {
+        .gradient-primary;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 65px;
+        overflow: hidden;
+        flex-shrink: 0;
+        flex-grow: 0;
+    }
+
+    .title {
+        padding-bottom: 5px;
+        font-size: 1.5em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .user {
+        @text-color: contrast(@card-background-color, fade(@text-color-light, 50%), fade(@text-color-dark, 50%), 43%);
+        color: @text-color;
+        font-size: .8em;
+    }
+
+    &.small {
+        font-size: 1em;
+        justify-content: space-between;
+        align-items: stretch;
+        margin-bottom: 0;
+
+        + .small {
+            .contrast-color(@card-background-color);
+            border-top: 1px solid @contrast-color;
+        }
+
+        .body {
+            flex-direction: row;
+            justify-content: space-between;
+            flex-grow: 1;
+            padding: 10px;
+        }
+
+        .title {
+            font-size: 1em;
+            padding: 0;
+        }
+
+        &:hover {
+            transform: scale(1);
+        }
+
+        .marks {
+            padding: 5px;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            font-size: 1em;
+
+            &:first-child {
+                margin: 0;
+                padding: 0;
+            }
+
+            > * {
+                padding: 5px;
+            }
+        }
+    }
+
+    /*
+			.body {
+				align-items: center;
+				display: flex;
+				justify-content: space-between;
+
+				.coins {
+					border-radius: 0;
+					font-size: .8em;
+					position: absolute;
+					top: -2px;
+					right: 20px;
+					border-bottom-left-radius: @roundness;
+					border-bottom-right-radius: @roundness;
+
+					.amount:before {
+						content: '+';
+					}
+				}
+
+				.title {
+					display: flex;
+					@title-color: contrast(@background-color, lighten(@background-color, 5%), darken(@background-color, 5%), 43%);
+					.contrast-color(@title-color);
+					color: @contrast-value;
+					text-decoration: none;
+					font-size: 2em;
+				}
+
+				.title-text {
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+				}
 			}
-		}
 
-		.title {
-			display: flex;
-			@title-color: contrast(@background-color, lighten(@background-color, 5%), darken(@background-color, 5%), 43%);
-			.contrast-color(@title-color);
-			color: @contrast-value;
-			text-decoration: none;
-			font-size: 2em;
-		}
+			.user {
+				font-size: .7em;
+			}
 
-		.title-text {
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-	}
+			 .question-footer {
+				padding-top: 10px;
+				align-items: center;
+			}
 
-	.user {
-		font-size: .7em;
-	}
+			&.answered {
+				transition: .3s;
+				border-color: @notification-success;
+			}
 
-	 .question-footer {
-		padding-top: 10px;
-		align-items: center;
-	}
+			&.small {
+				justify-content: space-between;
+				align-items: center;
+				padding: 5px;
 
-	&.answered {
-		transition: .3s;
-		border-color: @notification-success;
-	}
+				.title {
+					font-size: 1em;
+				}
 
-	&.small {
-		justify-content: space-between;
-		align-items: center;
-		padding: 5px;
+				.user, .coins, .question-footer {
+					display: none;
+				}
+			}
 
-		.title {
-			font-size: 1em;
-		}
-
-		.user, .coins, .question-footer {
-			display: none;
-		}
-	}
-
-	.certificate {
-		font-size: .8em;
-		margin-right: 10px;
-	}
+			.certificate {
+				font-size: .8em;
+				margin-right: 10px;
+			}
+		 */
 }

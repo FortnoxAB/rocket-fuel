@@ -1,0 +1,107 @@
+@arrow-size: 6px;
+
+.dropdown {
+    transition: .2s;
+    position: absolute;
+    width: 0px;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    top: 80%;
+
+    .arrow {
+        position: absolute;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: @arrow-size;
+        border-left-color: transparent;
+        border-right-color: transparent;
+        border-top-color: transparent;
+        border-bottom-color: @gray-dark-more;
+        top: -(@arrow-size * 2);
+        content: '';
+    }
+
+    .content {
+        position: relative;
+        background-color: @gray-dark-more;
+        color: @text-color-light;
+        min-width: 200px;
+    }
+
+    li {
+
+        a {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            padding: 10px 15px;
+        }
+
+        &:hover {
+            background-color: @primary-color;
+        }
+    }
+
+    &.closed {
+        display: none;
+    }
+
+    &.open {
+        top: calc(100% + 10px);
+        opacity: 1;
+    }
+}
+
+/*
+.dropdown {
+    position: absolute;
+    transition: .5s;
+    top: 100%;
+    left: 0;
+    opacity: 0;
+    display: block;
+
+    .content {
+        position: relative;
+        background-color: @gray-dark-more;
+        color: @text-color-light;
+        min-width: 200px;
+    }
+
+    .arrow {
+        position: absolute;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: @arrow-size;
+        border-left-color: transparent;
+        border-right-color: transparent;
+        border-top-color: transparent;
+        border-bottom-color: @gray-dark-more;
+        top: -(@arrow-size * 2);
+        content: '';
+    }
+
+    li {
+        padding: 10px 15px;
+
+        &:hover {
+            background-color: @primary-color;
+        }
+    }
+
+    &.closed {
+        display: none;
+    }
+
+    &.open {
+        top: calc(100% + 10px);
+        opacity: 1;
+        display: block;
+    }
+}
+*/
