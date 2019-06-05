@@ -40,7 +40,7 @@ class Routing extends React.Component {
 
             this.GoogleAuth.then(() => {
                 this.GoogleUser = this.GoogleAuth.currentUser.get();
-                const googleId = this.GoogleUser.getId();
+                const googleId  = this.GoogleUser.getId();
                 if (!googleId) {
                     this.setState({
                         loaded: true

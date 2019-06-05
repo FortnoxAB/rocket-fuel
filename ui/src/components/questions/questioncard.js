@@ -7,57 +7,57 @@ import Coins from '../utils/coins';
 import Trophy from '../utils/trophy';
 
 class QuestionCard extends React.Component {
-	constructor(props) {
-		super(props);
-	}
+    constructor(props) {
+        super(props);
+    }
 
-	getTime() {
-		return moment(this.props.question.createdAt).fromNow();
-	}
+    getTime() {
+        return moment(this.props.question.createdAt).fromNow();
+    }
 
-	getState() {
-		if (this.props.question.answerAccepted) {
-			return 'answered';
-		}
+    getState() {
+        if (this.props.question.answerAccepted) {
+            return 'answered';
+        }
 
-		return 'unanswered';
-	}
+        return 'unanswered';
+    }
 
-	printCertificate() {
-		const hasAccepted = this.props.question.answerAccepted;
-		return <Certificate active={hasAccepted} />;
-	}
+    printCertificate() {
+        const hasAccepted = this.props.question.answerAccepted;
+        return <Certificate active={hasAccepted} />;
+    }
 
     printTrophy() {
         const hasEnoughVotes = this.props.question.votes > 20;
         return <Trophy active={hasEnoughVotes} />;
     }
 
-	getClasses() {
-		let classes = 'question-card';
-		if (this.props.small) {
-			classes = `${classes} small`;
-		}
-		return classes;
-	}
+    getClasses() {
+        let classes = 'question-card';
+        if (this.props.small) {
+            classes = `${classes} small`;
+        }
+        return classes;
+    }
 
-	renderTags() {
-		if (this.props.hideTags) {
-			return null;
-		}
+    renderTags() {
+        if (this.props.hideTags) {
+            return null;
+        }
 
-		return (
-			<div className="tags">
-				<div className="tag">JavaScript</div>
-				<div className="tag">ReactJs</div>
-				<div className="tag">Frontend</div>
-			</div>
-		);
-	}
+        return (
+            <div className="tags">
+                <div className="tag">JavaScript</div>
+                <div className="tag">ReactJs</div>
+                <div className="tag">Frontend</div>
+            </div>
+        );
+    }
 
-	render() {
-	    return (
-	        <div className={`${this.getClasses()} ${this.getState()}`}>
+    render() {
+        return (
+            <div className={`${this.getClasses()} ${this.getState()}`}>
                 {/*<Coins amount={this.props.question.bounty} />*/}
                 <div className="marks">
                     {this.printCertificate()}
@@ -75,14 +75,14 @@ class QuestionCard extends React.Component {
                 </div>
             </div>
         );
-	}
+    }
 }
 
 QuestionCard.defaultProps = {
-	user: {},
-	question: {},
-	small: false,
-	hideTags: false
+    user: {},
+    question: {},
+    small: false,
+    hideTags: false
 };
 
 export default QuestionCard;

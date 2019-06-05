@@ -3,34 +3,34 @@ import PropTypes from 'prop-types';
 import TextareaAutosize from 'react-autosize-textarea';
 
 class InputField extends React.Component {
-	constructor(props) {
-		super(props);
+    constructor(props) {
+        super(props);
 
-		this.state = {
-		    active: false
+        this.state = {
+            active: false
         };
-	}
+    }
 
-	componentWillMount() {
-	    if (this.props.value.length > 0) {
-	        this.setState({
+    componentWillMount() {
+        if (this.props.value.length > 0) {
+            this.setState({
                 active: true
             });
         }
     }
 
     printErrorMessage() {
-		if (!this.props.errorMessage) {
-			return null;
-		}
-		return <div className="error-message">{this.props.errorMessage}</div>;
-	}
+        if (!this.props.errorMessage) {
+            return null;
+        }
+        return <div className="error-message">{this.props.errorMessage}</div>;
+    }
 
-	getClassName() {
-		let className = `input-wrap ${this.props.className}`;
-		if (this.props.errorMessage) {
-			className = `${className} error`;
-		}
+    getClassName() {
+        let className = `input-wrap ${this.props.className}`;
+        if (this.props.errorMessage) {
+            className = `${className} error`;
+        }
         if (this.props.rounded) {
             className = `${className} rounded`;
         }
@@ -40,37 +40,37 @@ class InputField extends React.Component {
         if (this.state.active) {
             className = `${className} active`;
         }
-		return className;
-	}
+        return className;
+    }
 
-	printDropDown() {
-		if (this.props.autoCompleteItems.length === 0) {
-			return null;
-		}
-		return (
-			<ul className="field-auto-complete">
-				{this.props.autoCompleteItems.filter(
-					(item) => {
-						return item[this.props.autoCompleteKey].toLowerCase().includes(this.props.value.toLowerCase())
-					}).map(
-					(item, index) => {
-						return (
-							<li key={index} onClick={this.onClickAutocompleteItem.bind(this, item)}>
-								{item[this.props.autoCompleteKey]}
-							</li>
-						);
-					})
-				}
-			</ul>
-		);
-	}
+    printDropDown() {
+        if (this.props.autoCompleteItems.length === 0) {
+            return null;
+        }
+        return (
+            <ul className="field-auto-complete">
+                {this.props.autoCompleteItems.filter(
+                    (item) => {
+                        return item[this.props.autoCompleteKey].toLowerCase().includes(this.props.value.toLowerCase())
+                    }).map(
+                    (item, index) => {
+                        return (
+                            <li key={index} onClick={this.onClickAutocompleteItem.bind(this, item)}>
+                                {item[this.props.autoCompleteKey]}
+                            </li>
+                        );
+                    })
+                }
+            </ul>
+        );
+    }
 
-	onClickAutocompleteItem(item) {
-		this.props.onClickAutocompleteItem(item);
-	}
+    onClickAutocompleteItem(item) {
+        this.props.onClickAutocompleteItem(item);
+    }
 
-	onFocus() {
-	    this.setState({
+    onFocus() {
+        this.setState({
             active: true
         });
 
@@ -78,104 +78,110 @@ class InputField extends React.Component {
     }
 
     onBlur() {
-	    if (this.props.value.length <= 0) {
+        if (this.props.value.length <= 0) {
             this.setState({
                 active: false
             });
         }
 
-	    this.props.validate(this.props.value, this.props.name);
+        this.props.validate(this.props.value, this.props.name);
 
         this.props.onBlur();
     }
 
-	getInputType() {
-		if (this.props.type.toLowerCase() === 'textarea') {
-			return (
-				<TextareaAutosize
-					rows={10}
-					maxRows={30}
-					onChange={this.props.onChange}
-					value={this.props.value}
-					name={this.props.name}
-					onKeyPress={this.props.onKeyPress}
-					autoComplete={this.props.autocomplete}
+    getInputType() {
+        if (this.props.type.toLowerCase() === 'textarea') {
+            return (
+                <TextareaAutosize
+                    rows={10}
+                    maxRows={30}
+                    onChange={this.props.onChange}
+                    value={this.props.value}
+                    name={this.props.name}
+                    onKeyPress={this.props.onKeyPress}
+                    autoComplete={this.props.autocomplete}
                     onBlur={this.onBlur.bind(this)}
                     onFocus={this.onFocus.bind(this)}
-				/>
-			);
-		}
+                />
+            );
+        }
 
-		return (
-			<input
-				type={this.props.type}
-				onChange={this.props.onChange}
-				value={this.props.value}
-				name={this.props.name}
-				onKeyPress={this.props.onKeyPress}
-				autoComplete={this.props.autocomplete}
-				disabled={this.props.disabled}
-				onBlur={this.onBlur.bind(this)}
-				onFocus={this.onFocus.bind(this)}
-			/>
-		);
-	}
+        return (
+            <input
+                type={this.props.type}
+                onChange={this.props.onChange}
+                value={this.props.value}
+                name={this.props.name}
+                onKeyPress={this.props.onKeyPress}
+                autoComplete={this.props.autocomplete}
+                disabled={this.props.disabled}
+                onBlur={this.onBlur.bind(this)}
+                onFocus={this.onFocus.bind(this)}
+            />
+        );
+    }
 
-	getLabel() {
-		if (!this.props.label) {
-			return null;
-		}
+    getLabel() {
+        if (!this.props.label) {
+            return null;
+        }
 
-		return (
-			<div className="label">
-				{this.props.label}
-			</div>
-		);
-	}
+        return (
+            <div className="label">
+                {this.props.label}
+            </div>
+        );
+    }
 
-	getIcon() {
+    getIcon() {
         if (!this.props.icon) {
             return null;
         }
 
         return (
-          <i className={`fa ${this.props.icon}`} />
+            <i className={`fa ${this.props.icon}`} />
         );
     }
 
-	render() {
-		return (
-			<div className={this.getClassName()} ref={node => this.node = node}>
-				{this.getLabel()}
+    render() {
+        return (
+            <div className={this.getClassName()} ref={node => this.node = node}>
+                {this.getLabel()}
                 {this.getIcon()}
-				{this.getInputType()}
-				{this.printErrorMessage()}
-				{this.printDropDown()}
-			</div>
-		);
-	}
+                {this.getInputType()}
+                {this.printErrorMessage()}
+                {this.printDropDown()}
+            </div>
+        );
+    }
 }
 
 InputField.defaultProps = {
-	onBlur: () => {},
-	onFocus: () => {},
-	type: 'text',
-	label: '',
-	value: '',
-	onChange: () => {},
-	onKeyPress: () => {},
-	name: '',
-	autocomplete: 'on',
-	disabled: false,
-	errorMessage: null,
-	className: '',
-	autoCompleteItems: [],
-	autoCompleteKey: '',
-	onClickAutocompleteItem: () => {},
-	endButton: null,
+    onBlur: () => {
+    },
+    onFocus: () => {
+    },
+    type: 'text',
+    label: '',
+    value: '',
+    onChange: () => {
+    },
+    onKeyPress: () => {
+    },
+    name: '',
+    autocomplete: 'on',
+    disabled: false,
+    errorMessage: null,
+    className: '',
+    autoCompleteItems: [],
+    autoCompleteKey: '',
+    onClickAutocompleteItem: () => {
+    },
+    endButton: null,
     rounded: false,
     icon: '',
-    validate: () => {}
+    validate: () => {
+    }
 };
 
 InputField.propTypes = {

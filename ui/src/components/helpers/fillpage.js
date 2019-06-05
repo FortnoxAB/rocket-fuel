@@ -1,21 +1,21 @@
 import React from 'react';
 
 class FillPage extends React.Component {
-	getClasses() {
+    getClasses() {
 
-	}
+    }
 
-	render() {
-		return (
-			<div className="center-center fill-page ignore-position">
-				{this.props.children}
-			</div>
-		);
-	}
+    render() {
+        return (
+            <div className="center-center fill-page ignore-position">
+                {this.props.children}
+            </div>
+        );
+    }
 }
 
 FillPage.defaultProps = {
-	fullView: false
+    fullView: false
 };
 
 export default FillPage;

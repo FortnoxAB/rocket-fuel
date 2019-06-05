@@ -1,106 +1,106 @@
 span.coins {
-	.contrast-color(@primary-color);
-	display: flex;
-	align-items: center;
-	padding: 3px;
-	background-color: @primary-color;
-	color: @contrast-value;
+    .contrast-color(@primary-color);
+    display: flex;
+    align-items: center;
+    padding: 3px;
+    background-color: @primary-color;
+    color: @contrast-value;
 
-	.amount {
-		margin-right: 2px;
-	}
+    .amount {
+        margin-right: 2px;
+    }
 
-	.fa {
-		font-size: .6em;
-		color: #FBC02D;
-	}
+    .fa {
+        font-size: .6em;
+        color: #FBC02D;
+    }
 }
 
 .padded {
-	padding: 20px;
+    padding: 20px;
 
     &-large {
         padding: 35px;
     }
 
-	&-vertical {
-		padding: 20px 0;
+    &-vertical {
+        padding: 20px 0;
 
         &-large {
             padding: 35px 0;
         }
-	}
+    }
 
-	&-horizontal {
-		padding: 0 20px;
+    &-horizontal {
+        padding: 0 20px;
 
         &-large {
             padding: 0 35px;
         }
-	}
+    }
 
-	&-bottom {
-		padding-bottom: 20px;
+    &-bottom {
+        padding-bottom: 20px;
 
         &-large {
             padding-bottom: 35px;
         }
-	}
+    }
 
-	&-top {
-		padding-top: 20px;
+    &-top {
+        padding-top: 20px;
 
         &-large {
             padding-top: 35px;
         }
-	}
+    }
 }
 
 .tag {
-	.contrast-color(@secondary-color);
-	font-size: 10px;
-	flex-grow: 0;
-	display: inline-block;
-	padding: 3px;
-	border-radius: @roundness;
-	background-color: @secondary-color;
-	color: @contrast-value;
-	margin-right: 2px;
+    .contrast-color(@secondary-color);
+    font-size: 10px;
+    flex-grow: 0;
+    display: inline-block;
+    padding: 3px;
+    border-radius: @roundness;
+    background-color: @secondary-color;
+    color: @contrast-value;
+    margin-right: 2px;
 }
 
 .relative {
-	position: relative;
+    position: relative;
 }
 
 .form {
-	flex-grow: 1;
+    flex-grow: 1;
 }
 
 .info-square {
-	.contrast-color(@notification-info);
-	padding: 20px;
-	background-color: @notification-warning;
-	max-width: 300px;
-	color: @contrast-value;
+    .contrast-color(@notification-info);
+    padding: 20px;
+    background-color: @notification-warning;
+    max-width: 300px;
+    color: @contrast-value;
 }
 
 .graph {
-	height: 300px;
-	width: 500px;
+    height: 300px;
+    width: 500px;
 }
 
 .underlined {
-	margin-bottom: 10px;
-	padding-bottom: 10px;
-	border-bottom: 1px solid @primary-color;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid @primary-color;
 }
 
 .faded {
-	opacity: .5;
+    opacity: .5;
 }
 
 .pointer {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .certificate, .trophy {
@@ -131,13 +131,13 @@ span.coins {
         }
     }
 
-	.fa-certificate {
-		z-index: 1;
-	}
+    .fa-certificate {
+        z-index: 1;
+    }
 
-	.fa-check {
-		display: none;
-	}
+    .fa-check {
+        display: none;
+    }
 }
 
 .fullscreen-video {
@@ -152,7 +152,7 @@ span.coins {
 }
 
 .gradient-light {
-    background: linear-gradient(45deg, @background-color 0%,darken(@background-color, 15%) 100%);
+    background: linear-gradient(45deg, @background-color 0%, darken(@background-color, 15%) 100%);
     .contrast-color(@background-color);
     color: @contrast-value;
 }

@@ -7,25 +7,27 @@ import { UserContext } from '../usercontext';
 import src from '../images/space-bg.mp4';
 
 class SignInView extends React.Component {
-	constructor(props) {
-		super(props);
-	}
+    constructor(props) {
+        super(props);
+    }
 
     render() {
-		return (
-			<div className="fill-page center-center flex-column">
+        return (
+            <div className="fill-page center-center flex-column">
                 <video autoPlay muted loop className="fullscreen-video">
                     <source src={src} type="video/mp4" />
                 </video>
-				<Logo size="large" className="text-light" />
-				<Button color="gradient" onClick={this.props.onSignIn.bind(this)}>{t`Sign in`}</Button>
-			</div>
-		);
-	}
+                <Logo size="large" className="text-light" />
+                <Button color="gradient"
+                        onClick={this.props.onSignIn.bind(this)}>{t`Sign in`}</Button>
+            </div>
+        );
+    }
 }
 
 SignInView.defaultProps = {
-    onSignIn: () => {}
+    onSignIn: () => {
+    }
 };
 
 const WrappedSignInView = withRouter(SignInView);

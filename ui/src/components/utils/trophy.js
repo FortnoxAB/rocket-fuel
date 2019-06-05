@@ -12,7 +12,7 @@ Trophy.defaultProps = {
 };
 
 Trophy.propTypes = {
-  active: PropTypes.bool
+    active: PropTypes.bool
 };
 
 export default Trophy;

@@ -13,7 +13,7 @@ class Dropdown extends React.Component {
         };
         this.closingTimeout;
 
-        this.resize = this.resizeEvent.bind(this);
+        this.resize  = this.resizeEvent.bind(this);
         this.onClick = this.onClickEvent.bind(this);
     }
 
@@ -33,28 +33,28 @@ class Dropdown extends React.Component {
     }
 
     onClickEvent(e) {
-        if(!this.dropdownNode.parentElement.contains(e.target) || this.isNodeTagLink(e.target)) {
+        if (!this.dropdownNode.parentElement.contains(e.target) || this.isNodeTagLink(e.target)) {
             this.props.close();
         }
     }
 
     resizeEvent() {
-        const content = this.contentNode;
-        const dropdownParent = this.dropdownNode.parentElement;
+        const content                 = this.contentNode;
+        const dropdownParent          = this.dropdownNode.parentElement;
         const dropdownParentRectangle = dropdownParent.getBoundingClientRect();
-        const arrow = this.arrowNode;
+        const arrow                   = this.arrowNode;
 
-        let left = dropdownParentRectangle.left + dropdownParentRectangle.width/2;
+        let left = dropdownParentRectangle.left + dropdownParentRectangle.width / 2;
 
         if (left + content.offsetWidth > window.innerWidth) {
-            left = window.innerWidth - content.offsetWidth/2;
+            left = window.innerWidth - content.offsetWidth / 2;
         }
 
-        if (left < content.offsetWidth/2) {
-            left = content.offsetWidth/2;
+        if (left < content.offsetWidth / 2) {
+            left = content.offsetWidth / 2;
         }
 
-        arrow.style.left = `${dropdownParentRectangle.left + dropdownParentRectangle.width/2}px`;
+        arrow.style.left   = `${dropdownParentRectangle.left + dropdownParentRectangle.width / 2}px`;
         content.style.left = `${left}px`;
     }
 
@@ -103,13 +103,19 @@ class Dropdown extends React.Component {
     }
 
     render() {
-        return(
+        return (
             <div
                 className={`dropdown ${this.getClasses()}`}
-                ref={(node) => { this.dropdownNode = node; }}
+                ref={(node) => {
+                    this.dropdownNode = node;
+                }}
             >
-                <div className="arrow" ref={(node) => { this.arrowNode = node; }} />
-                <div className="content" ref={(node) => { this.contentNode = node; }}>
+                <div className="arrow" ref={(node) => {
+                    this.arrowNode = node;
+                }} />
+                <div className="content" ref={(node) => {
+                    this.contentNode = node;
+                }}>
                     {this.props.children}
                 </div>
             </div>
@@ -125,7 +131,8 @@ Dropdown.propTypes = {
 
 Dropdown.defaultProps = {
     isOpen: false,
-    close: () => {}
+    close: () => {
+    }
 };
 
 export default Dropdown;
