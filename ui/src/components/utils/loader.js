@@ -1,5 +1,5 @@
 import React from 'react';
-import FillPage from '../../components/utils/fillpage';
+import FillPage from '../../components/helpers/fillpage';
 
 class Loader extends React.Component {
 	getColor(){

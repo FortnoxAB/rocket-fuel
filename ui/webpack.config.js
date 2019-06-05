@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -29,12 +30,13 @@ const computedPublicPath = '/app/build';
 
 module.exports = {
 	entry: {
-		main: ['@babel/polyfill', './src/index.js']
+		rocketfuel: ['@babel/polyfill', './src/index.js']
 	},
 	output: {
 		publicPath: computedPublicPath,
-		path: path.resolve(__dirname, 'build')
-	},
+		path: path.resolve(__dirname, 'build'),
+        filename: '[name].js'
+    },
 	module: {
 		rules: [
 			{
@@ -73,7 +75,7 @@ module.exports = {
 				}
 			},
 			{
-				test: /\.(ttf|eot|svg|jpg|png)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+				test: /\.(ttf|eot|svg|jpg|png|mp4)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
 				loader: 'file-loader'
 			}
 		]
@@ -84,11 +86,18 @@ module.exports = {
 			filename: 'style.css'
 		}),
 		new CleanWebpackPlugin('build', {}),
-		new HtmlWebpackPlugin({
-			template: './src/index.html'
-		}), new webpack.DefinePlugin({
+        new CopyPlugin([
+            { from: './config.js', to: 'config.js' }
+        ]),
+        new webpack.DefinePlugin({
             'BUILDTIME': JSON.stringify(new Date().toISOString())
-        })
+        }),
+		new HtmlWebpackPlugin({
+			inject: false,
+			hash: true,
+			template: './src/index.html',
+			filename: 'index.html'
+		})
 	],
 	devServer: {
 		port: 8083,

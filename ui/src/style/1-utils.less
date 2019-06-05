@@ -1,10 +1,9 @@
 span.coins {
-	.contrast-color(@secondary-color);
+	.contrast-color(@primary-color);
 	display: flex;
 	align-items: center;
 	padding: 3px;
-	border-radius: @roundness;
-	background-color: @secondary-color;
+	background-color: @primary-color;
 	color: @contrast-value;
 
 	.amount {
@@ -20,20 +19,40 @@ span.coins {
 .padded {
 	padding: 20px;
 
+    &-large {
+        padding: 35px;
+    }
+
 	&-vertical {
 		padding: 20px 0;
+
+        &-large {
+            padding: 35px 0;
+        }
 	}
 
 	&-horizontal {
 		padding: 0 20px;
+
+        &-large {
+            padding: 0 35px;
+        }
 	}
 
 	&-bottom {
 		padding-bottom: 20px;
+
+        &-large {
+            padding-bottom: 35px;
+        }
 	}
 
 	&-top {
 		padding-top: 20px;
+
+        &-large {
+            padding-top: 35px;
+        }
 	}
 }
 
@@ -84,23 +103,74 @@ span.coins {
 	cursor: pointer;
 }
 
+.certificate, .trophy {
+    font-size: 1em;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: fade(contrast(@background-color, @text-color-dark, @text-color-light, 43%), 10%);
+}
+
+.trophy {
+    &.active {
+        color: #FFCA28;
+    }
+}
+
 .certificate {
-	position: relative;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	margin-top: .15em;
+    &.active {
+        color: #2196F3;
+
+        .fa-check {
+            font-size: .6em;
+            position: absolute;
+            z-index: 1;
+            color: #E3F2FD;
+            display: block;
+        }
+    }
 
 	.fa-certificate {
-		font-size: 1em;
 		z-index: 1;
-		color: #2196F3;
 	}
 
 	.fa-check {
-		font-size: .6em;
-		position: absolute;
-		z-index: 1;
-		color: #E3F2FD;
+		display: none;
 	}
+}
+
+.fullscreen-video {
+    filter: blur(5px);
+    z-index: -1;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+}
+
+.gradient-light {
+    background: linear-gradient(45deg, @background-color 0%,darken(@background-color, 15%) 100%);
+    .contrast-color(@background-color);
+    color: @contrast-value;
+}
+
+.gradient-primary {
+    background: linear-gradient(45deg, @primary-color 0%, darken(@primary-color, 5%) 100%);
+    .contrast-color(darken(@primary-color, 5%));
+    color: @contrast-value;
+}
+
+.gradient-secondary {
+    background: linear-gradient(45deg, @secondary-color 0%, darken(@secondary-color, 5%) 100%);
+    .contrast-color(@secondary-color);
+    color: @contrast-value;
+}
+
+.gradient-alternative {
+    background: linear-gradient(45deg, @gradient-one 0%, @gradient-two 100%);
+    .contrast-color(@gradient-one);
+    color: @contrast-value;
 }

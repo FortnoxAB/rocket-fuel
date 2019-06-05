@@ -1,8 +1,16 @@
+@input-background-color: fade(#FFFFFF, 80%);
+@input-placeholder-color: contrast(@background-color, lighten(@background-color, 30%), darken(@background-color, 30%), 43%);
+
 .input-wrap {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
 	position: relative;
+    font-size: @font-size;
+    flex-direction: column;
 
 	&.error {
-		input {
+		input, textarea {
 			border-color: @notification-error;
 			border-bottom: none;
 		}
@@ -18,11 +26,16 @@
 	}
 
 	.label {
+        pointer-events: none;
+        color: @input-placeholder-color;
+        transition: .2s;
+        position: absolute;
 		display: block;
-		margin: 12px 0 5px 0;
+        top: 12px;
+        left: 12px;
 	}
 
-	.field-auto-complete {
+    .field-auto-complete {
 		margin-top: 2px;
 		z-index: 2;
 		position: absolute;
@@ -47,15 +60,34 @@
 		}
 	}
 
+    &.rounded input {
+        border-radius: 45px;
+    }
+
+    &.has-icon {
+        input {
+            padding-left: 30px;
+        }
+
+        .label {
+            left: 30px;
+        }
+
+        .fa {
+            color: @input-placeholder-color;
+
+            position: absolute;
+            left: 12px;
+        }
+    }
+
 	input, textarea {
-		@input-background-color: contrast(@background-color, lighten(@background-color, 2%), darken(@background-color, 2%), 43%);
 		@input-border-color: contrast(@background-color, lighten(@background-color, 10%), darken(@background-color, 10%), 43%);
 		.contrast-color(@input-background-color);
-		// height: auto;
 		vertical-align: middle;
-		font-size: @font-size;
+		font-size: 1em;
 		font-family: @default-font;
-		padding: 10px;
+        padding: 17px 12px 7px 12px;
 		transition: .2s;
 		width: 100%;
 		background-color: @input-background-color;
@@ -63,30 +95,41 @@
 		color: @contrast-value;
 		outline: none;
 		resize: none;
-		border-radius: @roundness;
-
-		&::placeholder {
-			@input-placeholder-color: contrast(@background-color, lighten(@background-color, 20%), darken(@background-color, 20%), 43%);
-
-			color: @input-placeholder-color;
-		}
 
 		&:focus {
-			box-shadow: 0 0 1px 2px fade(@primary-color, 50%);
+            @focus-color: contrast(@background-color, @text-color-light, @text-color-dark, 43%);
+			border-color: @focus-color;
 		}
 	}
+
+    &.active {
+        .label {
+            color: @primary-color;
+            top: 0;
+            padding: 4px 0;
+            font-size: .65em;
+        }
+    }
 }
 
 .lg {
-	label {
-		font-size: 20px;
-	}
+    font-size: 1.6em;
 
-	input, textarea {
-		font-size: 30px;
-	}
+    &.has-icon {
+        input, textarea {
+            padding-left: 50px
+        }
 
-	input {
-		height: 60px;
-	}
+        .label {
+            left: 50px;
+        }
+
+        &.active .label {
+            font-size: .5em;
+        }
+
+        .fa {
+            left: 20px;
+        }
+    }
 }

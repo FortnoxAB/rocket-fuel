@@ -1,8 +1,8 @@
 import React from 'react';
 import { t } from 'ttag';
 import Loader from '../components/utils/loader';
-import QuestionCard from '../components/questioncard';
-import { AppContext } from '../appcontext';
+import QuestionCard from '../components/questions/questioncard';
+import { UserContext } from '../usercontext';
 import * as Question from '../models/question';
 
 class HomeView extends React.Component {
@@ -60,6 +60,6 @@ class HomeView extends React.Component {
 	}
 }
 
-HomeView.contextType = AppContext;
+HomeView.contextType = UserContext;
 
 export default HomeView;

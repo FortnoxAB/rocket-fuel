@@ -1,10 +1,10 @@
 import React from 'react';
 import { t } from 'ttag';
 import { withRouter, NavLink } from 'react-router-dom';
-import QuestionCard from '../../components/questioncard';
+import QuestionCard from '../../components/questions/questioncard';
 import Loader from '../../components/utils/loader';
-import Button from '../../components/button';
-import InputField from '../../components/inputfield';
+import Button from '../../components/forms/button';
+import InputField from '../../components/forms/inputfield';
 import * as Question from '../../models/question';
 
 class QuestionsView extends React.Component {
@@ -26,7 +26,7 @@ class QuestionsView extends React.Component {
 	}
 
 	handleChange(node) {
-		const value = node.target.value.trim();
+	    const value = node.target.value;
 		clearTimeout(this.searchTimer);
 
 		const name = node.target.name;
@@ -88,7 +88,7 @@ class QuestionsView extends React.Component {
 		}
 
 		const searchResult = this.state.searchResult.map((question, index) => {
-			return  <QuestionCard key={index} question={question} />;
+			return  <QuestionCard small key={index} question={question} />;
 		});
 		return (
 			<div className="underlined">
@@ -106,20 +106,23 @@ class QuestionsView extends React.Component {
 		}
 		return (
 			<div>
-				<div className="padded-bottom flex-end">
+                <div className="padded-bottom">
+                    <InputField
+                        label={t`Search questions`}
+                        onChange={this.handleChange.bind(this)}
+                        name="searchStr"
+                        value={this.state.searchStr}
+                        autocomplete="off"
+                        rounded
+                        icon="fa-search"
+                        className="lg"
+                    />
+                </div>
+
+				<div className="flex-end padded-bottom">
 					<NavLink to="/create/thread">
 						<Button color="secondary"><i className="fa fa-pencil" /> {t`New question`}</Button>
 					</NavLink>
-				</div>
-
-				<div className="flex-grow padded-bottom">
-					<InputField
-						placeholder={t`Search questions`}
-						onChange={this.handleChange.bind(this)}
-						name="searchStr"
-						value={this.state.searchStr}
-						className="flex-grow"
-					/>
 				</div>
 
 				<div>
