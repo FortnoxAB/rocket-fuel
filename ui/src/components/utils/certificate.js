@@ -13,7 +13,7 @@ Certificate.defaultProps = {
 };
 
 Certificate.propTypes = {
-  active: PropTypes.bool
+    active: PropTypes.bool
 };
 
 export default Certificate;

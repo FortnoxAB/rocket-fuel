@@ -5,17 +5,17 @@ import QuickBar from './layout/quickbar';
 import Footer from './layout/footer';
 
 class SignedInView extends React.Component {
-	render() {
-		return (
-			<div className="view">
-				<Header />
-				<div className="main">
-					<div className="content">
-						{this.props.children}
-					</div>
+    render() {
+        return (
+            <div className="view">
+                <Header />
+                <div className="main">
+                    <div className="content">
+                        {this.props.children}
+                    </div>
                     {/*<QuickBar />*/}
-				</div>
-				{/*
+                </div>
+                {/*
 				<div className="flex-grow">
 					<div className="main">
 						<div className="flex-no-shrink">
@@ -29,9 +29,9 @@ class SignedInView extends React.Component {
 					</div>
 				</div>
 				*/}
-			</div>
-		);
-	}
+            </div>
+        );
+    }
 }
 
 export default SignedInView;

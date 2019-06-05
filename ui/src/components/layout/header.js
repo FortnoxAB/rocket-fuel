@@ -24,13 +24,13 @@ class Header extends React.Component {
         });
     }
 
-	getUser() {
-		return <span>{this.context.state.user.name}</span>
-	}
+    getUser() {
+        return <span>{this.context.state.user.name}</span>
+    }
 
-	navigateToMain() {
-		this.props.history.push('/');
-	}
+    navigateToMain() {
+        this.props.history.push('/');
+    }
 
     toggleDropdown() {
         this.setState({
@@ -51,16 +51,17 @@ class Header extends React.Component {
         console.log('logout');
     }
 
-	render() {
-		return (
-			<div>
-				<div className="header-row">
+    render() {
+        return (
+            <div>
+                <div className="header-row">
                     <div className="flex">
-					    <Logo onClick={this.navigateToMain.bind(this)} className="pointer" size="small" color="light" />
-					    <MenuBar />
+                        <Logo onClick={this.navigateToMain.bind(this)} className="pointer"
+                              size="small" color="light" />
+                        <MenuBar />
                     </div>
                     <div className="flex-grow">
-                    {/*<InputField
+                        {/*<InputField
                         type="text"
                         rounded
                         icon="fa-search"
@@ -69,7 +70,7 @@ class Header extends React.Component {
                         onChange={this.handleChange.bind(this)}
                     />*/}
                     </div>
-					<div>
+                    <div>
                         <div className="user" onClick={this.toggleDropdown.bind(this)}>
                             <div className="name">
                                 <i className="fa fa-user" /> {this.getUser()}
@@ -84,12 +85,12 @@ class Header extends React.Component {
                                 <li><a onClick={this.logoutUser.bind(this)}>{t`Logout`}</a></li>
                             </ul>
                         </Dropdown>
-					</div>
-				</div>
-				<div className="header-row-placeholder" />
-			</div>
-		);
-	}
+                    </div>
+                </div>
+                <div className="header-row-placeholder" />
+            </div>
+        );
+    }
 }
 
 export default withRouter(Header);

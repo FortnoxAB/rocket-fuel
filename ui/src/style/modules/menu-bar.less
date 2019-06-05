@@ -2,35 +2,35 @@
     display: flex;
     align-self: stretch;
 
-	ul {
+    ul {
         display: flex;
 
-		li {
-			.contrast-color(@background-color);
-			cursor: pointer;
-			color: fade(@contrast-value, 70%);
+        li {
+            .contrast-color(@background-color);
+            cursor: pointer;
+            color: fade(@contrast-value, 70%);
             display: flex;
 
-			a {
-				transition: .2s;
-				text-decoration: none;
-				color: inherit;
+            a {
+                transition: .2s;
+                text-decoration: none;
+                color: inherit;
                 display: flex;
                 align-items: center;
                 align-self: stretch;
                 padding: 0 15px;
                 border-bottom: 2px solid transparent;
 
-				&.active {
+                &.active {
                     color: @contrast-value;
                     border-color: @primary-color;
-				}
+                }
 
-				&:hover:not(.active) {
+                &:hover:not(.active) {
                     color: @contrast-value;
                     border-color: fade(@primary-color, 60%);
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 }
