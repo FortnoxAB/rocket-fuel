@@ -13,7 +13,7 @@ spec:
             backend:
               serviceName: rocket-fuel
               servicePort: 8080
-          - path: /app
+          - path: /rocket-fuel
             backend:
               serviceName: rocket-fuel
               servicePort: 80
