@@ -4,7 +4,7 @@ node('deploy-kubernetes'){
 	stage( 'Checkout'){
 		checkout scm
 	}
-	def gitTag = "${GIT_TAG}"
+	def gitTag = "${VERSION_TO_DEPLOY}"
 	def credId = "${CLUSTER_CREDENTIALS}"
 	def cluster = "${CLUSTER}"
 	def kubeEnv = ""

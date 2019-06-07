@@ -13,7 +13,8 @@ spec:
             backend:
               serviceName: rocket-fuel
               servicePort: 8080
-          - path: /rocket-fuel
+          - path: /
             backend:
               serviceName: rocket-fuel
               servicePort: 80
+      host: fuel.fnox.se

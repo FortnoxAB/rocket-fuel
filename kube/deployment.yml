@@ -24,7 +24,8 @@ spec:
         - name: fortnox-kube-pull-secret
       containers:
         - name: rocket-fuel-ui
-          image: "jesperlahdevirta/rocket-fuel-ui:{{.Version}}"
+          image: "docker.io/jesperlahdevirta/rocket-fuel-ui:{{.Version}}"
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           readinessProbe:
@@ -49,7 +50,8 @@ spec:
               cpu: 50m
               memory: 50Mi
         - name: rocket-fuel
-          image: "jesperlahdevirta/rocket-fuel:{{.Version}}"
+          image: "docker.io/jesperlahdevirta/rocket-fuel:{{.Version}}"
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           resources:

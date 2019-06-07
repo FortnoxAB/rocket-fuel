@@ -59,7 +59,7 @@
                 <configuration>
                     <images>
                         <image>
-                            <name>jesperlahdevirta/rocket-fuel-ui:${project.version}</name>
+                            <name>docker.io/jesperlahdevirta/rocket-fuel-ui:${project.version}</name>
                         </image>
                     </images>
                 </configuration>

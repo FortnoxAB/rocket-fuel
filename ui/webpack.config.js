@@ -25,7 +25,7 @@ const reactConfig = {
     ]
 };
 
-const computedPublicPath = '/rocket-fuel/build';
+const computedPublicPath = '/build';
 
 module.exports = {
 	entry: {

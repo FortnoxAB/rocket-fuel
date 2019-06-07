@@ -25,5 +25,5 @@
 	"templateParameters": {
 		"hasDb": "yes"
 	},
-    "host": "rocket-fuel.fnox.se"
+    "host": "fuel.fnox.se"
 }

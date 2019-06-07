@@ -138,7 +138,7 @@
                 <configuration>
                     <images>
                         <image>
-                            <name>jesperlahdevirta/rocket-fuel:${project.version}</name>
+                            <name>docker.io/jesperlahdevirta/rocket-fuel:${project.version}</name>
                         </image>
                     </images>
                 </configuration>
