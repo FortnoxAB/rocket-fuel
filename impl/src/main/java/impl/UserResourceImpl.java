@@ -4,6 +4,7 @@ import api.User;
 import api.UserResource;
 import api.auth.ApplicationToken;
 import api.auth.Auth;
+import auth.application.ApplicationTokenConfig;
 import auth.openid.OpenIdValidator;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -23,19 +24,18 @@ import static rx.Observable.error;
 public class UserResourceImpl implements UserResource {
 
     private final ResponseHeaderHolder responseHeaderHolder;
-
     private final UserDao userDao;
-
     private final OpenIdValidator openIdValidator;
-
     private final ApplicationTokenCreator applicationTokenCreator;
+    private final ApplicationTokenConfig applicationTokenConfig;
 
     @Inject
-    public UserResourceImpl(UserDao userDao, ResponseHeaderHolder responseHeaderHolder, OpenIdValidator openIdValidator, ApplicationTokenCreator applicationTokenCreator) {
+    public UserResourceImpl(UserDao userDao, ResponseHeaderHolder responseHeaderHolder, OpenIdValidator openIdValidator, ApplicationTokenCreator applicationTokenCreator, ApplicationTokenConfig applicationTokenConfig) {
         this.userDao = userDao;
         this.responseHeaderHolder = responseHeaderHolder;
         this.openIdValidator = openIdValidator;
         this.applicationTokenCreator = applicationTokenCreator;
+        this.applicationTokenConfig = applicationTokenConfig;
     }
 
     @Override
@@ -91,7 +91,7 @@ public class UserResourceImpl implements UserResource {
 
     private void addAsCookie(final ApplicationToken applicationToken, User user) {
         Map<String, Object> headers = new HashMap<>();
-        headers.put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + "localhost" + ";");
+        headers.put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + applicationTokenConfig.getDomain() + ";");
         responseHeaderHolder.addHeaders(user, headers);
     }
 

@@ -49,6 +49,12 @@ spec:
             requests:
               cpu: 50m
               memory: 50Mi
+          env:
+            - name: DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: domain
         - name: rocket-fuel
           image: "docker.io/jesperlahdevirta/rocket-fuel:{{.Version}}"
           imagePullPolicy: Always
@@ -114,6 +120,11 @@ spec:
                 secretKeyRef:
                   name: rocket-fuel
                   key: application.token
+            - name: DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: domain
             - name: SLACK_ENABLED
               valueFrom:
                 configMapKeyRef:

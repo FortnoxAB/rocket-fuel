@@ -12,6 +12,7 @@ database:
 
 applicationTokenConfig:
     secret: {{ .Env.APPLICATION_TOKEN }}
+    domain:  {{ .Env.DOMAIN }}
 
 slack:
     botUserToken: {{ .Env.SLACK_BOT_TOKEN }}
@@ -32,5 +33,5 @@ logging:
         se.fortnox.reactivewizard.jaxrs.JaxRsResource: INFO
     appenders:
         stdout:
-            layout: org.apache.log4j.SimpleLayout
+            layout: net.logstash.log4j.JSONEventLayoutV1
             threshold: INFO
