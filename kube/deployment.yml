@@ -50,11 +50,11 @@ spec:
               cpu: 50m
               memory: 50Mi
           env:
-            - name: DOMAIN
+            - name: OPENID_CLIENT_ID
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: rocket-fuel
-                  key: domain
+                  key: openid.client_id
         - name: rocket-fuel
           image: "docker.io/jesperlahdevirta/rocket-fuel:{{.Version}}"
           imagePullPolicy: Always

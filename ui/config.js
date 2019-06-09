@@ -1,1 +1,1 @@
-window.googleClientId = '{{ .Env.DOMAIN }}';
+window.googleClientId = '{{ .Env.OPENID_CLIENT_ID }}';

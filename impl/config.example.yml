@@ -21,7 +21,7 @@ slack:
 openId:
   issuer: accounts.google.com
   jwksUri: https://www.googleapis.com/oauth2/v3/certs
-  clientId: 921310387394-ci437tfrcc4r1o30hqs3mrnmrpp40oj0.apps.googleusercontent.com
+  clientId: <client-id-found-in-google-console-for-example>
 
 logging:
   additivity:
