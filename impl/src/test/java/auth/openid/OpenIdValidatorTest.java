@@ -4,6 +4,7 @@ import auth.ClockProvider;
 import auth.Jwk;
 import auth.JwkResource;
 import auth.JwkResponse;
+import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.interfaces.Clock;
 import com.google.common.collect.ImmutableList;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -22,37 +23,39 @@ import java.util.Date;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static rx.Observable.just;
 import static se.fortnox.reactivewizard.test.TestUtil.matches;
 
 public class OpenIdValidatorTest {
 
     private static final String OPEN_ID = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjdkNjgwZDhjNzBkNDRlOTQ3MTMzY2JkNDk5ZWJj" +
-            "MWE2MWMzZDVhYmMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI5MjE" +
-            "zMTAzODczOTQtY2k0Mzd0ZnJjYzRyMW8zMGhxczNtcm5tcnBwNDBvajAuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhd" +
-            "WQiOiI5MjEzMTAzODczOTQtY2k0Mzd0ZnJjYzRyMW8zMGhxczNtcm5tcnBwNDBvajAuYXBwcy5nb29nbGV1c2VyY29udGVudC5" +
-            "jb20iLCJzdWIiOiIxMDU0MzE0NDE1NTA3MjI0OTY2NDMiLCJlbWFpbCI6Implc3Blci5sYWhkZXZpcnRhQGdtYWlsLmNvbSIsI" +
-            "mVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoidVdfZkYzcDN1SkxMMmJhYjFNUVllZyIsIm5hbWUiOiJKZXNwZXIgRXJ" +
-            "sYW5kc3NvbiIsInBpY3R1cmUiOiJodHRwczovL2xoNS5nb29nbGV1c2VyY29udGVudC5jb20vLTNXb2U4RWdzcWtzL0FBQUFBQ" +
-            "UFBQUFJL0FBQUFBQUFBQUtBLzVlY1oxVS1tZEpBL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJKZXNwZXIiLCJmYW1" +
-            "pbHlfbmFtZSI6IkVybGFuZHNzb24iLCJsb2NhbGUiOiJzdiIsImlhdCI6MTU1MDYxMDAwOSwiZXhwIjoxNTUwNjEzNjA5fQ.rf" +
-            "5GuX5kFdz3DNgXW7zvH_XF5YOwzEk-H7PHrvaSXYD6knU6ARmAmGnRCK0sWmOvGEKt9R-99NY0O7gS1ynsKpQr2EIwdilCR8rW" +
-            "2V3fcfvWZGQPc6vTp8ntNl3oWqe4sPBYm3pBzsWEr9Jm81LHsWieUzohvwA1KtVX1sxt21iFtKcS9-zSoX9JebRqs-DpnqlPaF" +
-            "v42mN9wsap7oY1D1Xy_4-KWxujBuaLHhXjxv4My_MLR5crw1qeLotE1S4hI8edgYwntUz9Txd3wBfT-oVKFBbagMA81F5XMd9E" +
-            "vDhiKjgg-Naz05ptZoOcvQJ4rWAqaXfmuejq4u1AKqHiMQ";
+        "MWE2MWMzZDVhYmMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI5MjE" +
+        "zMTAzODczOTQtY2k0Mzd0ZnJjYzRyMW8zMGhxczNtcm5tcnBwNDBvajAuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhd" +
+        "WQiOiI5MjEzMTAzODczOTQtY2k0Mzd0ZnJjYzRyMW8zMGhxczNtcm5tcnBwNDBvajAuYXBwcy5nb29nbGV1c2VyY29udGVudC5" +
+        "jb20iLCJzdWIiOiIxMDU0MzE0NDE1NTA3MjI0OTY2NDMiLCJlbWFpbCI6Implc3Blci5sYWhkZXZpcnRhQGdtYWlsLmNvbSIsI" +
+        "mVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoidVdfZkYzcDN1SkxMMmJhYjFNUVllZyIsIm5hbWUiOiJKZXNwZXIgRXJ" +
+        "sYW5kc3NvbiIsInBpY3R1cmUiOiJodHRwczovL2xoNS5nb29nbGV1c2VyY29udGVudC5jb20vLTNXb2U4RWdzcWtzL0FBQUFBQ" +
+        "UFBQUFJL0FBQUFBQUFBQUtBLzVlY1oxVS1tZEpBL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJKZXNwZXIiLCJmYW1" +
+        "pbHlfbmFtZSI6IkVybGFuZHNzb24iLCJsb2NhbGUiOiJzdiIsImlhdCI6MTU1MDYxMDAwOSwiZXhwIjoxNTUwNjEzNjA5fQ.rf" +
+        "5GuX5kFdz3DNgXW7zvH_XF5YOwzEk-H7PHrvaSXYD6knU6ARmAmGnRCK0sWmOvGEKt9R-99NY0O7gS1ynsKpQr2EIwdilCR8rW" +
+        "2V3fcfvWZGQPc6vTp8ntNl3oWqe4sPBYm3pBzsWEr9Jm81LHsWieUzohvwA1KtVX1sxt21iFtKcS9-zSoX9JebRqs-DpnqlPaF" +
+        "v42mN9wsap7oY1D1Xy_4-KWxujBuaLHhXjxv4My_MLR5crw1qeLotE1S4hI8edgYwntUz9Txd3wBfT-oVKFBbagMA81F5XMd9E" +
+        "vDhiKjgg-Naz05ptZoOcvQJ4rWAqaXfmuejq4u1AKqHiMQ";
 
-    private JwkResource jwkResource = mock(JwkResource.class);
-    private Appender appender;
+    private JwkResource         jwkResource = mock(JwkResource.class);
+    private Appender            appender;
     private OpenIdConfiguration openIdConfiguration;
-    private ClockProvider clockProvider;
+    private ClockProvider       clockProvider;
 
     @Before
     public void beforeEach() throws NoSuchFieldException, IllegalAccessException {
         appender = LoggingMockUtil.createMockedLogAppender(OpenIdValidator.class);
         openIdConfiguration = getValidOpenIdConfiguration();
         Date currentTime = getValidTimeInterval();
-        clockProvider = () -> (Clock) () -> currentTime;
+        clockProvider = () -> (Clock)() -> currentTime;
 
         JwkResponse jwkResponse = new JwkResponse();
         jwkResponse.setKeys(ImmutableList.of(getValidJwk()));
@@ -83,9 +86,9 @@ public class OpenIdValidatorTest {
     public void shouldNotValidateExpiredJWT() {
 
         // given a time when the jwt has expired
-        long milliseconds = LocalDateTime.parse("2019-02-19T23:14:17.290").toInstant(ZoneOffset.UTC).toEpochMilli();
-        Date currentTime = new Date(milliseconds);
-        ClockProvider clockProvider = () -> (Clock) () -> currentTime;
+        long          milliseconds  = LocalDateTime.parse("2019-02-19T23:14:17.290").toInstant(ZoneOffset.ofHours(1)).toEpochMilli();
+        Date          currentTime   = new Date(milliseconds);
+        ClockProvider clockProvider = () -> (Clock)() -> currentTime;
 
         // when
         OpenIdValidator openIdValidator = new OpenIdValidator(openIdConfiguration, jwkResource, clockProvider);
@@ -96,7 +99,43 @@ public class OpenIdValidatorTest {
             assertThat(log.getLevel().toString()).isEqualTo("INFO");
             assertThat(log.getMessage().toString()).contains("failed to verify token");
         }));
+    }
 
+    @Test
+    public void shouldAllowOneMinutesLeeway() {
+        // given a time that is almost outside of the leeway timespan
+        long milliseconds = LocalDateTime.parse("2019-02-19T21:59:09.290").toInstant(ZoneOffset.ofHours(1)).toEpochMilli();
+        Date toEarly      = new Date(milliseconds);
+        ClockProvider clockProvider = () -> (Clock)() -> toEarly;
+
+        OpenIdValidator openIdValidator = new OpenIdValidator(openIdConfiguration, jwkResource, clockProvider);
+
+        // when
+        openIdValidator.validate(OPEN_ID).toBlocking().single();
+
+        // then validation shall yield no errors
+        assertThat(openIdValidator).isNotNull();
+    }
+
+    @Test
+    public void shouldNotAllowMoreThanOneMinutesLeeway() {
+        // given a time that just passed outisde of the leeway timespan
+        long milliseconds = LocalDateTime.parse("2019-02-19T21:59:08.290").toInstant(ZoneOffset.ofHours(1)).toEpochMilli();
+        Date toEarly      = new Date(milliseconds);
+
+        ClockProvider clockProvider = () -> (Clock)() -> toEarly;
+
+        // when
+        OpenIdValidator openIdValidator = new OpenIdValidator(openIdConfiguration, jwkResource, clockProvider);
+
+        try {
+            openIdValidator.validate(OPEN_ID).toBlocking().single();
+            fail("excepted exception");
+        } catch (WebException e) {
+            // then
+            assertThat(e.getCause()).isNotNull();
+            assertThat(e.getCause()).isInstanceOf(InvalidClaimException.class);
+        }
 
     }
 
@@ -173,22 +212,21 @@ public class OpenIdValidatorTest {
 
     private Jwk getValidJwk() {
         Jwk jwk = new Jwk();
-
         jwk.setId("7d680d8c70d44e947133cbd499ebc1a61c3d5abc");
         jwk.setType("RSA");
         jwk.setAlgorithm("RS256");
         jwk.setUsage("sig");
         jwk.setAdditionalAttributes("n", "2K7epoJWl_B68lRUi1txaa0kEuIK4WHiHpi1yC4kPyu48d046yLlrwuvbQMbog2YTOZdV" +
-                "oG1D4zlWKHuVY00O80U1ocFmBl3fKVrUMakvHru0C0mAcEUQo7ItyEX7rpOVYtxlrVk6G8PY4" +
-                "EK61EB-Xe35P0zb2AMZn7Tvm9-tLcccqYlrYBO4SWOwd5uBSqc_WcNJXgnQ-9sYEZ0JUMhKZel" +
-                "EMrpX72hslmduiz-LMsXCnbS7jDGcUuSjHXVLM9tb1SQynx5Xz9xyGeN4rQLnFIKvgwpiqnvLpbMo6" +
-                "grhJwrz67d1X6MwpKtAcqZ2V2v4rQsjbblNH7GzF8ZsfOaqw");
+            "oG1D4zlWKHuVY00O80U1ocFmBl3fKVrUMakvHru0C0mAcEUQo7ItyEX7rpOVYtxlrVk6G8PY4" +
+            "EK61EB-Xe35P0zb2AMZn7Tvm9-tLcccqYlrYBO4SWOwd5uBSqc_WcNJXgnQ-9sYEZ0JUMhKZel" +
+            "EMrpX72hslmduiz-LMsXCnbS7jDGcUuSjHXVLM9tb1SQynx5Xz9xyGeN4rQLnFIKvgwpiqnvLpbMo6" +
+            "grhJwrz67d1X6MwpKtAcqZ2V2v4rQsjbblNH7GzF8ZsfOaqw");
         jwk.setAdditionalAttributes("e", "AQAB");
         return jwk;
     }
 
     private Date getValidTimeInterval() {
-        long milliseconds = LocalDateTime.parse("2019-02-19T21:14:17.290").toInstant(ZoneOffset.UTC).toEpochMilli();
+        long milliseconds = LocalDateTime.parse("2019-02-19T22:14:17.290").toInstant(ZoneOffset.ofHours(1)).toEpochMilli();
         return new Date(milliseconds);
     }
 

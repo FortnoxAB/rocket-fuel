@@ -39,10 +39,10 @@ public class OpenIdValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpenIdValidator.class);
 
-    private final JwkResource jwkResource;
+    private final JwkResource         jwkResource;
     private final OpenIdConfiguration openIdConfiguration;
-    private final ClockProvider clockProvider;
-
+    private final ClockProvider       clockProvider;
+    private final long                LEEWAY_SECONDS = 60;
 
     @Inject
     public OpenIdValidator(OpenIdConfiguration openIdConfiguration, JwkResource jwkResource, ClockProvider clockProvider) {
@@ -64,7 +64,7 @@ public class OpenIdValidator {
     public Observable<ImmutableOpenIdToken> validate(@NotNull String openIdToken) {
         return verify(openIdToken)
                 .map(this::asImmutableOpenIdToken)
-                .onErrorResumeNext(e -> exception(() -> new WebException(HttpResponseStatus.UNAUTHORIZED)));
+                .onErrorResumeNext(e -> exception(() -> new WebException(HttpResponseStatus.UNAUTHORIZED, e)));
     }
 
     private ImmutableOpenIdToken asImmutableOpenIdToken(DecodedJWT decodedOpenId) {
@@ -98,7 +98,7 @@ public class OpenIdValidator {
         JWTVerifier.BaseVerification verification = (JWTVerifier.BaseVerification) JWT.require(rsa)
                 .withIssuer(issuer)
                 .withAudience(openIdConfiguration.getClientId())
-                .acceptLeeway(Long.MAX_VALUE); // Don't check for expiration.
+                .acceptLeeway(LEEWAY_SECONDS);
         return verification.build(clockProvider.getClock());
     }
 
