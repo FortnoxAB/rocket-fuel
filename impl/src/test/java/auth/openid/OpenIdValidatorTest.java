@@ -4,6 +4,7 @@ import auth.ClockProvider;
 import auth.Jwk;
 import auth.JwkResource;
 import auth.JwkResponse;
+import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.interfaces.Clock;
 import com.google.common.collect.ImmutableList;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -132,7 +133,8 @@ public class OpenIdValidatorTest {
             fail("excepted exception");
         } catch (WebException e) {
             // then
-            assertThat(e.getCause().getMessage()).contains("The Token can't be used before Tue Feb 19 22:00:09");
+            assertThat(e.getCause()).isNotNull();
+            assertThat(e.getCause()).isInstanceOf(InvalidClaimException.class);
         }
 
     }
