@@ -132,7 +132,7 @@ public class OpenIdValidatorTest {
             fail("excepted exception");
         } catch (WebException e) {
             // then
-            assertThat(e.getCause().getMessage()).isEqualTo("The Token can't be used before Tue Feb 19 22:00:09 CET 2019.");
+            assertThat(e.getCause().getMessage()).contains("The Token can't be used before Tue Feb 19 22:00:09");
         }
 
     }
