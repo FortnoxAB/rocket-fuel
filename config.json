@@ -1,0 +1,29 @@
+{
+	"serviceName": "rocket-fuel",
+	"apiEndpoints": [
+		"/api"
+	],
+	"frontendEndpoint": "app",
+	"frontendPath": "ui",
+	"language": "java",
+	"types": [
+		"backend"
+	],
+    "environments": {
+        "default": {
+            "replicas": "2",
+            "ui.replicas": "2",
+            "ui.versions": "2"
+        },
+        "prod": {
+            "replicas": "3",
+            "ui.replicas": "2",
+            "ui.versions": "2"
+        }
+    },
+	"team": "rocket",
+	"templateParameters": {
+		"hasDb": "yes"
+	},
+    "host": "fuel.fnox.se"
+}

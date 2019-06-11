@@ -42,9 +42,11 @@ public class UserResourceTest {
         openIdValidator = mock(OpenIdValidator.class);
         ApplicationTokenConfig applicationTokenConfig = new ApplicationTokenConfig();
         applicationTokenConfig.setSecret("my-test-secret-that-is-valid");
+        applicationTokenConfig.setDomain(".rocket-fuel");
         DateProvider dateProvider = new DateProviderImpl();
         ApplicationTokenCreator applicationTokenCreator = new ApplicationTokenCreator(applicationTokenConfig, dateProvider);
-        userResource = new UserResourceImpl(userDao, responseHeaderHolder, openIdValidator, applicationTokenCreator);
+
+        userResource = new UserResourceImpl(userDao, responseHeaderHolder, openIdValidator, applicationTokenCreator, applicationTokenConfig);
     }
 
     @After
@@ -107,7 +109,7 @@ public class UserResourceTest {
         String setCookieHeader = (String) mapArgumentCaptor.getValue().get("Set-Cookie");
         assertTrue(setCookieHeader.contains("application="));
         assertTrue(setCookieHeader.contains("application="));
-        assertTrue(setCookieHeader.contains("; path=/; domain=localhost;"));
+        assertTrue(setCookieHeader.contains("; path=/; domain=.rocket-fuel;"));
 
     }
 

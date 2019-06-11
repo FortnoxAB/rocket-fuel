@@ -3,6 +3,7 @@ const CopyPlugin           = require('copy-webpack-plugin');
 const HtmlWebpackPlugin    = require('html-webpack-plugin');
 const CleanWebpackPlugin   = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const webpack = require('webpack');
 
 const reactConfig = {
     presets: [
@@ -23,77 +24,87 @@ const reactConfig = {
         '@babel/plugin-proposal-class-properties'
     ]
 };
-module.exports    = {
-    entry: {
-        rocketfuel: ['@babel/polyfill', './src/index.js']
-    },
-    output: {
-        publicPath: '/',
-        path: path.resolve(__dirname, 'dist'),
+
+const computedPublicPath = '/build';
+
+module.exports = {
+	entry: {
+		rocketfuel: ['@babel/polyfill', './src/index.js']
+	},
+	output: {
+		publicPath: computedPublicPath,
+        path: path.resolve(__dirname, 'build'),
         filename: '[name].js'
     },
-    module: {
-        rules: [
-            {
-                test: /\.js$/,
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-                options: reactConfig
-            },
-            {
-                test: /\.po$/,
-                use: [
-                    { loader: 'json-loader' },
-                    { loader: 'po-gettext-loader' }
-                ]
-            },
-            {
-                test: /\.less$/,
-                use: [
-                    {
-                        loader: MiniCssExtractPlugin.loader,
-                        options: {
-                            publicPath: '../'
-                        }
-                    },
-                    'css-loader',
-                    'less-loader'
-                ]
-            },
-            {
-                test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 1000,
-                    minetype: 'application/font-woff'
-                }
-            },
-            {
-                test: /\.(ttf|eot|svg|jpg|png|mp4)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: 'file-loader'
-            }
-        ]
-    },
-    devtool: 'source-map', // TODO: Check production flag -> false
-    plugins: [
-        new MiniCssExtractPlugin({
-            filename: 'style.css'
-        }),
-        new CleanWebpackPlugin('dist', {}),
+	module: {
+		rules: [
+			{
+				test: /\.js$/,
+				exclude: /node_modules/,
+				loader: 'babel-loader',
+				options: reactConfig
+			},
+			{
+				test: /\.po$/,
+				use: [
+					{ loader: 'json-loader' },
+					{ loader: 'po-gettext-loader' }
+				]
+			},
+			{
+				test: /\.less$/,
+				use: [
+					{
+						loader: MiniCssExtractPlugin.loader,
+						options: {
+							publicPath: '../'
+						}
+					},
+					'css-loader',
+					'less-loader'
+				]
+			},
+			{
+				test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+				loader: 'url-loader',
+				options: {
+					limit: 1000,
+                    publicPath: computedPublicPath,
+					minetype: 'application/font-woff'
+				}
+			},
+			{
+				test: /\.(ttf|eot|svg|jpg|png|mp4)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+				loader: 'file-loader'
+			}
+		]
+	},
+	devtool: 'source-map', // TODO: Check production flag -> false
+	plugins: [
+		new MiniCssExtractPlugin({
+			filename: 'style.css'
+		}),
+		new CleanWebpackPlugin('build', {}),
         new CopyPlugin([
             { from: './config.js', to: 'config.js' }
         ]),
-        new HtmlWebpackPlugin({
-            inject: false,
-            hash: true,
-            template: './src/index.html',
-            filename: 'index.html'
-        })
-    ],
-    devServer: {
-        port: 8083,
-        publicPath: '/',
-        historyApiFallback: true,
+        new webpack.DefinePlugin({
+            'BUILDTIME': JSON.stringify(new Date().toISOString())
+        }),
+		new HtmlWebpackPlugin({
+			inject: false,
+			hash: true,
+			template: './src/index.html',
+			filename: 'index.html'
+		})
+	],
+	devServer: {
+		port: 8083,
+		publicPath: computedPublicPath,
+        contentBase: path.resolve(__dirname, 'build'),
+        historyApiFallback: {
+            index: computedPublicPath + '/index.html'
+        },
         proxy: {
             '/api/**': {
                 target: 'http://localhost:8080',

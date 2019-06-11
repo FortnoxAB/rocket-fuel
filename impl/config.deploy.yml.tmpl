@@ -1,0 +1,37 @@
+liquibase-database:
+    user:  {{ .Env.DB_USER }}
+    schema: {{ .Env.DB_SCHEMA }}
+    password: {{ .Env.DB_PASSWORD }}
+    url: jdbc:postgresql://{{ .Env.DB_HOST }}/{{ .Env.DB_NAME }}?prepareThreshold=0&ApplicationName={{ .Env.HOSTNAME }}
+
+database:
+    user:  {{ .Env.DB_USER }}
+    schema: {{ .Env.DB_SCHEMA }}
+    password: {{ .Env.DB_PASSWORD }}
+    url: jdbc:postgresql://{{ .Env.DB_HOST }}/{{ .Env.DB_NAME }}?prepareThreshold=0&ApplicationName={{ .Env.HOSTNAME }}
+
+applicationTokenConfig:
+    secret: {{ .Env.APPLICATION_TOKEN }}
+    domain:  {{ .Env.DOMAIN }}
+
+slack:
+    botUserToken: {{ .Env.SLACK_BOT_TOKEN }}
+    apiToken:  {{ .Env.SLACK_API_TOKEN }}
+    enabled: {{ .Env.SLACK_ENABLED }}
+
+openId:
+    issuer: {{ .Env.OPENID_ISSUER }}
+    jwksUri: {{ .Env.OPENID_JWK_URI }}
+    clientId: {{ .Env.OPENID_CLIENT_ID }}
+
+logging:
+    additivity:
+        com.fortnox.reactivewizard.ReactiveWizardServer: false
+        se.fortnox.reactivewizard.jaxrs.JaxRsResource: false
+    levels:
+        com.fortnox.reactivewizard.ReactiveWizardServer: INFO
+        se.fortnox.reactivewizard.jaxrs.JaxRsResource: INFO
+    appenders:
+        stdout:
+            layout: net.logstash.log4j.JSONEventLayoutV1
+            threshold: INFO

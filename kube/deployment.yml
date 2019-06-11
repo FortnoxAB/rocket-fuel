@@ -1,0 +1,157 @@
+---
+apiVersion: extensions/v1beta1 # for versions before 1.8.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: rocket-fuel
+  labels:
+    app: rocket-fuel
+    version: "{{.Version}}"
+    team: "{{.Team}}"
+spec:
+  replicas: {{ .Config "replicas" }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: rocket-fuel
+  template:
+    metadata:
+      labels:
+        app: rocket-fuel
+        version: "{{.Version}}"
+        team: "{{.Team}}"
+    spec:
+      imagePullSecrets:
+        - name: fortnox-kube-pull-secret
+      containers:
+        - name: rocket-fuel-ui
+          image: "docker.io/jesperlahdevirta/rocket-fuel-ui:{{.Version}}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /rocket-fuel/health.html
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 3
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /rocket-fuel/health.html
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 3
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 200m
+              memory: 100Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          env:
+            - name: OPENID_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: rocket-fuel
+                  key: openid.client_id
+        - name: rocket-fuel
+          image: "docker.io/jesperlahdevirta/rocket-fuel:{{.Version}}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: 500m
+              memory: 500Mi
+            requests:
+              cpu: 50m
+              memory: 250Mi
+          env:
+            - name: MALLOC_ARENA_MAX
+              value: "4"
+            - name: ROUTE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: route
+                  key: route.host
+            - name: ENV_CONTEXT
+              valueFrom:
+                configMapKeyRef:
+                  name: route
+                  key: environment
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: logging
+                  key: redis.host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: logging
+                  key: redis.port
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: db.host
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rocket-fuel
+                  key: db.user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rocket-fuel
+                  key: db.password
+            - name: DB_SCHEMA
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: db.schema
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: db.name
+            - name: APPLICATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: rocket-fuel
+                  key: application.token
+            - name: DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: domain
+            - name: SLACK_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: slack.enabled
+            - name: OPENID_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: openid.issuer
+            - name: OPENID_JWK_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: openid.jwk_uri
+            - name: OPENID_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: rocket-fuel
+                  key: openid.client_id
+            - name: SLACK_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: rocket-fuel
+                  key: slack.bot_token
+            - name: SLACK_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: rocket-fuel
+                  key: slack.api_token

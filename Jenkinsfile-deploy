@@ -1,0 +1,20 @@
+library 'whatsout'
+
+node('deploy-kubernetes'){
+	stage( 'Checkout'){
+		checkout scm
+	}
+	def gitTag = "${VERSION_TO_DEPLOY}"
+	def credId = "${CLUSTER_CREDENTIALS}"
+	def cluster = "${CLUSTER}"
+	def kubeEnv = ""
+	tag = gitTag.replaceFirst('v', '')
+	wrap([$class: 'KubectlBuildWrapper', serverUrl: cluster, credentialsId: credId ]) {
+		stage('deploy-backend') {
+			sh 'fnxctl deploy '+tag
+		}
+		kubeEnv = sh(script: 'kubectl get configmap route -o go-template --template="{{ .data.environment }}"', returnStdout: true).trim()
+	}
+
+    setDeployed(tag, 'se.fortnox', 'rocket-fuel', kubeEnv)
+}

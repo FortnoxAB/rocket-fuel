@@ -15,6 +15,18 @@ public class ApplicationTokenConfig {
     @Min(value=10, message = "application token must be at least 10 characters long")
     private String secret;
 
+    @NotNull
+    @NotEmpty
+    private String domain;
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
     public String getSecret() {
         return secret;
     }

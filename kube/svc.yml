@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rocket-fuel
+  labels:
+    app: rocket-fuel
+    team: "rocket"
+    collect-metrics: "true"
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+    - port: 80
+      protocol: TCP
+      name: http-ui
+  selector:
+    app: rocket-fuel
+
