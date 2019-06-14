@@ -25,7 +25,7 @@ const reactConfig = {
     ]
 };
 
-const computedPublicPath = '/build';
+const computedPublicPath = '/build/';
 
 module.exports = {
 	entry: {
