@@ -22,6 +22,12 @@
         <sonar.coverage.jacoco.xmlReportPaths>report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
+    <scm>
+        <connection>scm:git:git@github.com:FortnoxAB/rocket-fuel.git</connection>
+        <developerConnection>scm:git:git@github.com:FortnoxAB/rocket-fuel.git</developerConnection>
+        <url>https://github.com/FortnoxAB/rocket-fuel/tree/master</url>
+    </scm>
+
     <repositories>
         <repository>
             <id>oss-sonatype</id>
