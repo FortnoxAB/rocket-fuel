@@ -2,10 +2,16 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: rocket-fuel
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
   labels:
     app: rocket-fuel
     team: "rocket"
 spec:
+  tls:
+    - hosts:
+        - fuel.fnox.se
+      secretName: fnox.se
   rules:
     - http:
         paths:
