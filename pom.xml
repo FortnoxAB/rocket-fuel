@@ -15,18 +15,34 @@
         <module>ui</module>
         <module>report</module>
     </modules>
+
     <properties>
         <slf4j.version>1.7.22</slf4j.version>
         <reactivewizard.version>1.6.0</reactivewizard.version>
         <antrun.plugin.version>1.7</antrun.plugin.version>
         <sonar.coverage.jacoco.xmlReportPaths>report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <project.scm.id>my-scm-server</project.scm.id>
     </properties>
+
+    <url>https://github.com/FortnoxAB/rocket-fuel</url>
+
+    <organization>
+        <name>Fortnox AB</name>
+        <url>http://www.fortnox.se</url>
+    </organization>
 
     <scm>
         <connection>scm:git:git@github.com:FortnoxAB/rocket-fuel.git</connection>
         <developerConnection>scm:git:git@github.com:FortnoxAB/rocket-fuel.git</developerConnection>
         <url>https://github.com/FortnoxAB/rocket-fuel/tree/master</url>
     </scm>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
 
     <repositories>
         <repository>
