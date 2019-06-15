@@ -52,7 +52,7 @@ First make sure you are on a updated master branch without any local commits. Th
 
 Then in the root of the project type the following:
 
-`````mvn release:prepare````` 
+````mvn release:prepare```` 
 
 Now its time to do a real release scm release.
 
@@ -60,6 +60,6 @@ Now its time to do a real release scm release.
 
 The first step in the release proccess has been made. You can now run:
 
-`````mvn deploy`````
+````mvn deploy````
 
 This will push the images to dockerhub. A complete release has now been performed.
