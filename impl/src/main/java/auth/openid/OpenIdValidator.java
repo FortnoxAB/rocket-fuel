@@ -38,11 +38,11 @@ import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 public class OpenIdValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpenIdValidator.class);
+    private static final long LEEWAY_SECONDS = 60;
 
     private final JwkResource         jwkResource;
     private final OpenIdConfiguration openIdConfiguration;
     private final ClockProvider       clockProvider;
-    private final long                LEEWAY_SECONDS = 60;
 
     @Inject
     public OpenIdValidator(OpenIdConfiguration openIdConfiguration, JwkResource jwkResource, ClockProvider clockProvider) {

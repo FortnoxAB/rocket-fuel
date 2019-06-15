@@ -8,6 +8,8 @@ import com.google.inject.Singleton;
 import dao.AnswerDao;
 import dao.QuestionDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
@@ -19,6 +21,8 @@ import static java.util.Arrays.asList;
 
 @Singleton
 public class AnswerResourceImpl implements AnswerResource {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AnswerResourceImpl.class);
 
     private final AnswerDao       answerDao;
     private final QuestionDao     questionDao;
@@ -52,6 +56,7 @@ public class AnswerResourceImpl implements AnswerResource {
     public Observable<List<Answer>> getAnswers(long questionId) {
         return answerDao.getAnswers(questionId).toList().doOnError(throwable -> {
             System.out.println(throwable.getMessage());
+            LOG.error("Failed to get answers for question: " + questionId, throwable);
         });
     }
 

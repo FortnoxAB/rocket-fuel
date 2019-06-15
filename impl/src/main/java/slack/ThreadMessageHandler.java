@@ -1,11 +1,6 @@
 package slack;
 
-import api.Answer;
-import api.AnswerResource;
-import api.Question;
-import api.QuestionResource;
-import api.User;
-import api.UserResource;
+import api.*;
 import api.auth.Auth;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
@@ -16,10 +11,7 @@ import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static rx.Observable.concat;
-import static rx.Observable.error;
-import static rx.Observable.merge;
-import static rx.Observable.zip;
+import static rx.Observable.*;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
 @Singleton
@@ -148,7 +140,8 @@ public class ThreadMessageHandler implements SlackMessageHandler {
     }
 
     /**
-     * TODO figure out how to create a title from the message
+     * Gets the title from the message.
+     *
      * @param message the message from slack
      * @return the title
      */
