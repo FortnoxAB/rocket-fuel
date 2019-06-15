@@ -21,7 +21,7 @@
         <reactivewizard.version>1.6.0</reactivewizard.version>
         <antrun.plugin.version>1.7</antrun.plugin.version>
         <sonar.coverage.jacoco.xmlReportPaths>report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <project.scm.id>my-scm-server</project.scm.id>
+        <autoVersionSubmodules>true</autoVersionSubmodules>
     </properties>
 
     <url>https://github.com/FortnoxAB/rocket-fuel</url>
