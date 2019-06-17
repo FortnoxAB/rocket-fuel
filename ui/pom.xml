@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
         <groupId>se.fortnox</groupId>
         <artifactId>rocket-fuel</artifactId>
-		<version>0.1.3-SNAPSHOT</version>
+		<version>0.1.3</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -22,27 +20,25 @@
 						<phase>package</phase>
 						<configuration>
 							<target>
-								<delete dir="dist"/>
-								<mkdir dir="dist"/>
+								<delete dir="dist" />
+								<mkdir dir="dist" />
 								<condition property="npm_executable" value="npm.cmd">
-									<os family="windows"/>
+									<os family="windows" />
 								</condition>
 								<condition property="npm_executable" value="npm">
-									<os family="unix"/>
+									<os family="unix" />
 								</condition>
 								<condition property="run_line" value="run build">
-									<os family="windows"/>
+									<os family="windows" />
 								</condition>
 								<condition property="run_line" value="run build">
-									<os family="unix"/>
+									<os family="unix" />
 								</condition>
-								<exec dir="${project.basedir}" executable="${npm_executable}"
-								      failonerror="true">
-									<arg line="install"/>
+								<exec dir="${project.basedir}" executable="${npm_executable}" failonerror="true">
+									<arg line="install" />
 								</exec>
-								<exec dir="${project.basedir}" executable="${npm_executable}"
-								      failonerror="true">
-									<arg line="${run_line}"/>
+								<exec dir="${project.basedir}" executable="${npm_executable}" failonerror="true">
+									<arg line="${run_line}" />
 								</exec>
 							</target>
 						</configuration>

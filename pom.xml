@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>se.fortnox</groupId>
     <artifactId>rocket-fuel</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.3-SNAPSHOT</version>
+    <version>0.1.3</version>
     <modules>
         <module>api</module>
         <module>impl</module>
@@ -35,7 +33,8 @@
         <connection>scm:git:git@github.com:FortnoxAB/rocket-fuel.git</connection>
         <developerConnection>scm:git:git@github.com:FortnoxAB/rocket-fuel.git</developerConnection>
         <url>https://github.com/FortnoxAB/rocket-fuel/tree/master</url>
-    </scm>
+      <tag>rocket-fuel-0.1.3</tag>
+  </scm>
 
     <licenses>
         <license>
