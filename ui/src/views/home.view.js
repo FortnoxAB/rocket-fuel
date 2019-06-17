@@ -25,7 +25,6 @@ class HomeView extends React.Component {
         const latestQuestions = Question.getLatestQuestion();
 
         Promise.all([userQuestions, latestQuestions]).then((response) => {
-            console.log(latestQuestions);
             this.setState({
                 userQuestions: response[0],
                 latestQuestions: response[1],
@@ -36,18 +35,6 @@ class HomeView extends React.Component {
                 loaded: true
             });
         });
-        /*
-        Question.getQuestionsFromUser(user.id).then((questions) => {
-            this.setState({
-                questions: questions,
-                loaded: true
-            });
-        });
-
-        Question.getLatestQuestion().then((questions) => {
-            console.log(questions);
-        });
-         */
     }
 
     getUserQuestions() {
