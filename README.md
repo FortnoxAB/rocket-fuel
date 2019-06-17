@@ -46,20 +46,16 @@ The tests inside the spec module requires docker and at least two gigabytes of f
 
 #### Release
 
-When a feature or bug has been merged, a release can be made. The release consists of two steps. The first one is the typical scm release performed with maven release pluging. The second step pushes the docker images to dockerhub. Both steps must be made, otherwise the release will not be considered successful.
+When a feature or bug has been merged, a release can be made. The release will be executed with the maven release plugin.
 
-First make sure you are on a updated master branch without any local commits. The branch should be identical to the remote master. Make sure you have ssh keys in place. Only ssh is supported currently. You need to make sure you have access to dockerhub. You will need to provide credentials in your settings.xml file for this. 
+To perform a release, first make sure you are on a updated master branch without any local commits. The branch should be identical to the remote master. Make sure you have ssh keys in place for git. Only ssh is supported currently. You need to make sure you have access to dockerhub. You will need to provide credentials in your settings.xml file for this. You can read on fabric8 documentation for the maven docker plugin about how to provide credentials.
 
-Then in the root of the project type the following:
+Then in the root of the project type the following to prepare for a release:
 
 ```mvn release:prepare``` 
 
-Now its time to do a real scm release.
+Now its time to do a real a release.
 
 ```mvn release:perform```
 
-The first step in the release proccess has been made. You can now run:
-
-```mvn deploy```
-
-This will push the images to dockerhub. A complete release has now been performed.
+A complete release has now been performed. You can now make the release official at github.
