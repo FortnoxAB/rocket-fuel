@@ -74,7 +74,7 @@ public class AnswerResourceImpl implements AnswerResource {
 
         return answerDao.getQuestionIdByAnswer(answerId)
             .flatMap(questionId -> {
-                Observable<Integer> markAnswerAsAccepted = answerDao.markAsAccepted(auth.getUserId(), answerId);
+                Observable<Integer> markAnswerAsAccepted = answerDao.markAsAccepted(answerId);
                 Observable<Integer> markQuestionAsAccepted = questionDao.markAsAnswered(auth.getUserId(), questionId);
 
                 List<Observable<Integer>> acceptances = asList(markAnswerAsAccepted, markQuestionAsAccepted);
