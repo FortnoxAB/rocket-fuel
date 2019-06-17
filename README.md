@@ -54,7 +54,7 @@ Then in the root of the project type the following to prepare for a release:
 
 ```mvn release:prepare``` 
 
-Now its time to do a real a release.
+Now its time to do a real release.
 
 ```mvn release:perform```
 
