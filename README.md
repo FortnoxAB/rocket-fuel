@@ -44,7 +44,7 @@ run maven clean package in the root folder. It will execute all the tests and ge
 
 The tests inside the spec module requires docker and at least two gigabytes of free space. The reason is that a postgres container is used to test the sql queries.
 
-#### Release 
+#### Release
 
 When a feature or bug has been merged, a release can be made. The release consists of two steps. The first one is the typical scm release performed with maven release pluging. The second step pushes the docker images to dockerhub. Both steps must be made, otherwise the release will not be considered successful.
 
@@ -54,11 +54,12 @@ Then in the root of the project type the following:
 
 ```mvn release:prepare``` 
 
-Now its time to do a real release scm release.
+Now its time to do a real scm release.
 
 ```mvn release:perform```
 
 The first step in the release proccess has been made. You can now run:
+
 ```mvn deploy```
 
 This will push the images to dockerhub. A complete release has now been performed.
