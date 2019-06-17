@@ -61,10 +61,10 @@ public class ThreadMessageHandler implements SlackMessageHandler {
 
                 //No thread found -> create new
                 .onErrorResumeNext(throwable -> {
-                    if (throwable instanceof WebException
-                        && NOT_FOUND.equals(((WebException)throwable).getStatus())) {
-                        return createQuestionAndPostToSlack(message);
-
+                    if (throwable instanceof WebException) {
+                        if(NOT_FOUND.equals(((WebException)throwable).getStatus())){
+                            return createQuestionAndPostToSlack(message);
+                        }
                     }
                     return error(throwable);
                 })
@@ -149,7 +149,6 @@ public class ThreadMessageHandler implements SlackMessageHandler {
     }
 
     /**
-     * Gets the title from the message.
      *
      * @param message the message from slack
      * @return the title
