@@ -40,7 +40,7 @@ public class QuestionResourceImplTest {
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
-            assertEquals("failed to add question to database", webException.getError());
+            assertEquals("failed.to.add.question.to.database", webException.getError());
         }
     }
 

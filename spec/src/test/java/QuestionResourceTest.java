@@ -53,7 +53,7 @@ public class QuestionResourceTest {
             questionResource.getLatestQuestion(null).toBlocking().single();
             fail("Should have thrown exception");
         } catch(WebException e) {
-            assertThat(e.getError()).isEqualTo("failed to get latest questions");
+            assertThat(e.getError()).isEqualTo("failed.to.get.latest.questions");
         }
     }
 

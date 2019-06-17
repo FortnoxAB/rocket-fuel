@@ -15,7 +15,7 @@ public interface QuestionDao {
     @Query("SELECT question.id, question.question, answer_accepted, question.title, question.bounty, question.votes, question.created_at, question,user_id, question.slack_id, \"user\".name as created_by " +
         "FROM question " +
         "INNER JOIN \"user\" on \"user\".id = question.user_id " +
-        "ORDER BY question.id DESC " +
+        "ORDER BY question.created_at DESC " +
         "LIMIT :limit")
     Observable<Question> getLatestQuestions(Integer limit);
 

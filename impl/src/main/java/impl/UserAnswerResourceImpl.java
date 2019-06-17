@@ -33,14 +33,14 @@ public class UserAnswerResourceImpl implements UserAnswerResource {
     @Override
     public Observable<List<Answer>> getAnswers(long userId, long questionId) {
         return answerDao.getAnswers(userId, questionId).toList()
-                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get answers from database", throwable)));
+                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.get.answers.from.database", throwable)));
 
     }
 
     @Override
     public Observable<Void> updateAnswer(Auth auth, long questionId, long answerId, Answer answer) {
         return answerDao.updateAnswer(auth.getUserId(), questionId, answerId, answer)
-                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to update answer", throwable)));
+                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.update.answer", throwable)));
     }
 
     @Override
@@ -48,6 +48,6 @@ public class UserAnswerResourceImpl implements UserAnswerResource {
         Observable<Integer> markQuestionAsAnswered = this.questionDao.markAsAnswered(auth.getUserId(), questionId);
         Observable<Integer> markAnswerAsAnswered = this.answerDao.markAsAccepted(auth.getUserId(), answerId);
         return this.daoTransactions.executeTransaction(markQuestionAsAnswered, markAnswerAsAnswered)
-                .onErrorResumeNext(e -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to mark question as answered", e)));
+                .onErrorResumeNext(e -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.mark.question.as.answered", e)));
     }
 }

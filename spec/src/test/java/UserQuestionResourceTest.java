@@ -119,7 +119,7 @@ public class UserQuestionResourceTest {
         test.awaitTerminalEvent();
 
         test.assertError(WebException.class);
-        assertThat(((WebException)test.getOnErrorEvents().get(0)).getError()).isEqualTo("not found");
+        assertThat(((WebException)test.getOnErrorEvents().get(0)).getError()).isEqualTo("not.found");
     }
 
 

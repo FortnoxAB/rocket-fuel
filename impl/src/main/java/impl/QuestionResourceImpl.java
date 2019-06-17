@@ -43,13 +43,13 @@ public class QuestionResourceImpl implements QuestionResource {
     @Override
     public Observable<Question> getQuestionBySlackThreadId(String slackThreadId) {
         return this.questionDao.getQuestionBySlackThreadId(slackThreadId).switchIfEmpty(
-            exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not found")));
+            exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not.found")));
     }
 
 	@Override
 	public Observable<Question> getQuestionById(long questionId) {
       return this.questionDao.getQuestionById(questionId).switchIfEmpty(
-        exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not found")));
+        exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not.found")));
 	}
 
     @Override
@@ -58,7 +58,7 @@ public class QuestionResourceImpl implements QuestionResource {
             limit = 10;
         }
         return this.questionDao.getLatestQuestions(limit).toList().onErrorResumeNext(e ->
-            error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get latest questions", e))
+            error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.get.latest.questions", e))
         );
     }
 
@@ -70,6 +70,6 @@ public class QuestionResourceImpl implements QuestionResource {
                 question.setId(longGeneratedKey.getKey());
                 return question;
             })
-          .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add question to database", throwable)));
+          .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
     }
 }

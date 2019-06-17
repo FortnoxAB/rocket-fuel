@@ -44,7 +44,7 @@ public class UserAnswerResourceImplTest {
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
-            assertEquals("failed to get answers from database", webException.getError());
+            assertEquals("failed.to.get.answers.from.database", webException.getError());
         }
     }
 
@@ -59,7 +59,7 @@ public class UserAnswerResourceImplTest {
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
-            assertEquals("failed to update answer", webException.getError());
+            assertEquals("failed.to.update.answer", webException.getError());
         }
     }
 
@@ -73,7 +73,7 @@ public class UserAnswerResourceImplTest {
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
-            assertEquals("failed to mark question as answered", webException.getError());
+            assertEquals("failed.to.mark.question.as.answered", webException.getError());
         }
     }
 }
