@@ -106,6 +106,13 @@ class QuestionsView extends React.Component {
         }
         return (
             <div>
+                <div className="flex-end padded-bottom">
+                    <NavLink to="/create/thread">
+                        <Button color="secondary"><i className="fa fa-pencil" /> {t`New question`}
+                        </Button>
+                    </NavLink>
+                </div>
+
                 <div className="padded-bottom">
                     <InputField
                         label={t`Search questions`}
@@ -117,13 +124,6 @@ class QuestionsView extends React.Component {
                         icon="fa-search"
                         className="lg"
                     />
-                </div>
-
-                <div className="flex-end padded-bottom">
-                    <NavLink to="/create/thread">
-                        <Button color="secondary"><i className="fa fa-pencil" /> {t`New question`}
-                        </Button>
-                    </NavLink>
                 </div>
 
                 <div>

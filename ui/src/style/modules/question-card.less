@@ -18,6 +18,7 @@
     padding: 0;
     display: flex;
     align-items: stretch;
+    cursor: pointer;
 
     .body {
         padding: 10px;
@@ -96,6 +97,7 @@
 
         &:hover {
             transform: scale(1);
+            .material-shadow(1);
         }
 
         .marks {
@@ -115,74 +117,4 @@
             }
         }
     }
-
-    /*
-			.body {
-				align-items: center;
-				display: flex;
-				justify-content: space-between;
-
-				.coins {
-					border-radius: 0;
-					font-size: .8em;
-					position: absolute;
-					top: -2px;
-					right: 20px;
-					border-bottom-left-radius: @roundness;
-					border-bottom-right-radius: @roundness;
-
-					.amount:before {
-						content: '+';
-					}
-				}
-
-				.title {
-					display: flex;
-					@title-color: contrast(@background-color, lighten(@background-color, 5%), darken(@background-color, 5%), 43%);
-					.contrast-color(@title-color);
-					color: @contrast-value;
-					text-decoration: none;
-					font-size: 2em;
-				}
-
-				.title-text {
-					overflow: hidden;
-					text-overflow: ellipsis;
-					white-space: nowrap;
-				}
-			}
-
-			.user {
-				font-size: .7em;
-			}
-
-			 .question-footer {
-				padding-top: 10px;
-				align-items: center;
-			}
-
-			&.answered {
-				transition: .3s;
-				border-color: @notification-success;
-			}
-
-			&.small {
-				justify-content: space-between;
-				align-items: center;
-				padding: 5px;
-
-				.title {
-					font-size: 1em;
-				}
-
-				.user, .coins, .question-footer {
-					display: none;
-				}
-			}
-
-			.certificate {
-				font-size: .8em;
-				margin-right: 10px;
-			}
-		 */
 }

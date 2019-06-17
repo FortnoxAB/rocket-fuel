@@ -9,7 +9,8 @@ class HomeView extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            questions: [],
+            userQuestions: [],
+            latestQuestions: [],
             loaded: false
         };
     }
@@ -20,16 +21,43 @@ class HomeView extends React.Component {
 
     fetchQuestions() {
         const user = this.context.state.user;
+        const userQuestions = Question.getQuestionsFromUser(user.id);
+        const latestQuestions = Question.getLatestQuestion();
+
+        Promise.all([userQuestions, latestQuestions]).then((response) => {
+            console.log(latestQuestions);
+            this.setState({
+                userQuestions: response[0],
+                latestQuestions: response[1],
+                loaded: true
+            });
+        }).catch(() => {
+            this.setState({
+                loaded: true
+            });
+        });
+        /*
         Question.getQuestionsFromUser(user.id).then((questions) => {
             this.setState({
                 questions: questions,
                 loaded: true
             });
         });
+
+        Question.getLatestQuestion().then((questions) => {
+            console.log(questions);
+        });
+         */
     }
 
-    getUsersPost() {
-        return this.state.questions.map((question, index) => {
+    getUserQuestions() {
+        return this.state.userQuestions.map((question, index) => {
+            return <QuestionCard small key={index} question={question} />;
+        });
+    }
+
+    getLatestQuestions() {
+        return this.state.latestQuestions.map((question, index) => {
             return <QuestionCard small key={index} question={question} />;
         });
     }
@@ -48,11 +76,16 @@ class HomeView extends React.Component {
             <div>
                 <div className="user-space">
                     <h1>{this.getDisplayName()}</h1>
-
                 </div>
-                <div>
-                    <h3>{t`Your recent questions`}</h3>
-                    {this.getUsersPost()}
+                <div className="flex list-row">
+                    <div className="flex-basis-2">
+                        <h3>{t`Latest questions`}</h3>
+                        {this.getLatestQuestions()}
+                    </div>
+                    <div className="flex-basis-2">
+                        <h3>{t`Your recent questions`}</h3>
+                        {this.getUserQuestions()}
+                    </div>
                 </div>
             </div>
         )

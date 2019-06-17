@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
+import java.util.List;
+
 import static rx.Observable.error;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 
@@ -41,14 +43,24 @@ public class QuestionResourceImpl implements QuestionResource {
     @Override
     public Observable<Question> getQuestionBySlackThreadId(String slackThreadId) {
         return this.questionDao.getQuestionBySlackThreadId(slackThreadId).switchIfEmpty(
-            exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not_found")));
+            exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not found")));
     }
 
 	@Override
 	public Observable<Question> getQuestionById(long questionId) {
       return this.questionDao.getQuestionById(questionId).switchIfEmpty(
-        exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not_found")));
+        exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not found")));
 	}
+
+    @Override
+    public Observable<List<Question>> getLatestQuestion(Integer limit) {
+        if (limit == null) {
+            limit = 10;
+        }
+        return this.questionDao.getLatestQuestions(limit).toList().onErrorResumeNext(e ->
+            error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to get latest questions", e))
+        );
+    }
 
     @Override
     public Observable<Question> postQuestion(Auth auth, Question question) {
