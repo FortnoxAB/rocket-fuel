@@ -37,7 +37,7 @@ docker run --name rocketfuel-postgres -p 15432:5432 -e POSTGRES_PASSWORD=mysecre
 
 #### Running in intellij
 
-Import the project as a maven project. Intellij will probably fix this for you. To be able to run the application from intellij, you need to go to build , Preferences -> execution, deployment > compiler  > java compiler and type "-parameters" in the text box labeled "additional command line parameters". Then rebuild the project. Now you can add a run configuration. Add a application configuration. In the text field labeled "Main class" type "se.fortnox.reactivewizard.Main". In the text field labeled "Program arguments", type "db-migrate config.yml". The working directory should point to the impl module ( use the browse functionality).    
+Import the project as a maven project. Intellij will probably fix this for you. To be able to run the application from intellij, you need to go to build , Preferences -> execution, deployment > compiler  > java compiler and type "-parameters" in the text box labeled "additional command line parameters". Then rebuild the project. Now you can add a run configuration. Add a application configuration. In the text field labeled "Main class" type "se.fortnox.reactivewizard.Main". In the text field labeled "Program arguments", type "db-migrate config.yml". The working directory should point to the impl module ( use the browse functionality). Look in the dev.example.yml file for details regarding config.yml.    
 
 #### Compiling with maven
 run maven clean package in the root folder. It will execute all the tests and generate a fat jar for you, that you can execute with java -jar.
