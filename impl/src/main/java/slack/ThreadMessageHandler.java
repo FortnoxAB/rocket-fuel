@@ -58,19 +58,22 @@ public class ThreadMessageHandler implements SlackMessageHandler {
         return
             questionResource
                 .getQuestionBySlackThreadId(message.get(SLACK_THREAD_ID).getAsString())
-
                 //No thread found -> create new
                 .onErrorResumeNext(throwable -> {
-                    if (throwable instanceof WebException) {
-                        if(NOT_FOUND.equals(((WebException)throwable).getStatus())){
-                            return createQuestionAndPostToSlack(message);
-                        }
+                    if (isNotFoundException(throwable)) {
+                        return createQuestionAndPostToSlack(message);
                     }
                     return error(throwable);
                 })
                 .flatMap(question -> createAnswer(message));
     }
 
+    private static boolean isNotFoundException(Throwable throwable) {
+        if(throwable instanceof WebException) {
+            return NOT_FOUND.equals(((WebException)throwable).getStatus());
+        }
+        return false;
+    }
     private Observable<Question> createQuestionAndPostToSlack(JsonObject message) {
         return concat(createMainQuestion(message), postToSlack(message).cast(Question.class));
     }
