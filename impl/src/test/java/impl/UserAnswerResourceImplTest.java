@@ -6,6 +6,7 @@ import api.auth.Auth;
 import dao.AnswerDao;
 import dao.QuestionDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import rx.Observable;
@@ -14,6 +15,8 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.sql.SQLException;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -39,13 +42,12 @@ public class UserAnswerResourceImplTest {
     public void shouldThrowInternalServerErrorIfGetAnswersFails() {
         when(answerDao.getAnswers(123, 123)).thenReturn(Observable.error(new SQLException("poff")));
 
-        try {
-            userAnswerResource.getAnswers(123, 123).toBlocking().singleOrDefault(null);
-            fail("expected exception");
-        } catch (WebException webException) {
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
-            assertEquals("failed.to.get.answers.from.database", webException.getError());
-        }
+        assertThatExceptionOfType(WebException.class)
+            .isThrownBy(() -> userAnswerResource.getAnswers(123, 123).toBlocking().singleOrDefault(null))
+            .satisfies(e -> {
+                assertEquals(INTERNAL_SERVER_ERROR, e.getStatus());
+                assertEquals("failed.to.get.answers.from.database", e.getError());
+            });
     }
 
     @Test
@@ -54,26 +56,11 @@ public class UserAnswerResourceImplTest {
         when(answerDao.updateAnswer(123, 123, 123, answer)).thenReturn(Observable.error(new SQLException("poff")));
         Auth auth = new Auth();
         auth.setUserId(123);
-        try {
-            userAnswerResource.updateAnswer(auth, 123, 123, answer).toBlocking().singleOrDefault(null);
-            fail("expected exception");
-        } catch (WebException webException) {
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
-            assertEquals("failed.to.update.answer", webException.getError());
-        }
-    }
-
-    @Test
-    public void shouldThrowInternalServerErrorIfMarkAsAnsweredFails() {
-        when(daoTransactions.executeTransaction(any(), any())).thenReturn(Observable.error(new SQLException("poff")));
-        Auth auth = new Auth();
-        auth.setUserId(123);
-        try {
-            userAnswerResource.markAsAnswered(auth, 123, 123).toBlocking().singleOrDefault(null);
-            fail("expected exception");
-        } catch (WebException webException) {
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
-            assertEquals("failed.to.mark.question.as.answered", webException.getError());
-        }
+        assertThatExceptionOfType(WebException.class)
+            .isThrownBy(() -> userAnswerResource.updateAnswer(auth, 123, 123, answer).toBlocking().singleOrDefault(null))
+            .satisfies(e -> {
+                assertEquals(INTERNAL_SERVER_ERROR, e.getStatus());
+                assertEquals("failed.to.update.answer", e.getError());
+            });
     }
 }
