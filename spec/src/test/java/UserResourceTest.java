@@ -175,7 +175,7 @@ public class UserResourceTest {
             fail("expected exception");
         } catch (WebException e) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getStatus());
-            assertEquals("current user not found", e.getError());
+            assertEquals("current.user.not.found", e.getError());
         }
 
     }

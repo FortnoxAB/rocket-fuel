@@ -48,6 +48,12 @@
     }
 }
 
+.flex-basis {
+    &-2 {
+        flex-basis: 50%;
+    }
+}
+
 .main {
     display: flex;
     justify-content: center;
@@ -75,4 +81,15 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.list-row {
+    > div:not(:last-child) {
+        padding-right: 20px;
+    }
+}
+
+.login-view {
+    overflow: hidden;
+    position: relative;
 }

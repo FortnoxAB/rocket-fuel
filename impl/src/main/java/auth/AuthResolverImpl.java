@@ -23,7 +23,7 @@ import static rx.Observable.just;
 @Singleton
 public class AuthResolverImpl implements AuthResolver {
 	private static final Logger     LOG                             = LoggerFactory.getLogger(AuthResolverImpl.class);
-	private static final String     FAILURE_TO_AUTHENTICATE_REQUEST = "failure to authenticate request";
+	private static final String     FAILURE_TO_AUTHENTICATE_REQUEST = "failure.to.authenticate.request";
 	private static final String     APPLICATION_COOKIE              = "application";
 
 	private final JwtAuthResolver jwtAuthResolver;

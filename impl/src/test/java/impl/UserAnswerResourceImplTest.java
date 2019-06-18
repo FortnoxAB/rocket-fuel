@@ -46,7 +46,7 @@ public class UserAnswerResourceImplTest {
             .isThrownBy(() -> userAnswerResource.getAnswers(123, 123).toBlocking().singleOrDefault(null))
             .satisfies(e -> {
                 assertEquals(INTERNAL_SERVER_ERROR, e.getStatus());
-                assertEquals("failed to get answers from database", e.getError());
+                assertEquals("failed.to.get.answers.from.database", e.getError());
             });
     }
 
@@ -60,7 +60,7 @@ public class UserAnswerResourceImplTest {
             .isThrownBy(() -> userAnswerResource.updateAnswer(auth, 123, 123, answer).toBlocking().singleOrDefault(null))
             .satisfies(e -> {
                 assertEquals(INTERNAL_SERVER_ERROR, e.getStatus());
-                assertEquals("failed to update answer", e.getError());
+                assertEquals("failed.to.update.answer", e.getError());
             });
     }
 }

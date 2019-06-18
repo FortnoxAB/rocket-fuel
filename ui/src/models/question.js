@@ -13,6 +13,19 @@ export function getQuestionsFromUser(userId) {
     });
 }
 
+export function getLatestQuestion(limit = 10) {
+    const options = {
+        url: `/api/questions/latest?limit=${limit}`
+    };
+
+    return ApiFetch(options).then((response) => {
+        if (response.error) {
+            return 'err';
+        }
+        return response;
+    });
+}
+
 export function getQuestionById(id) {
     const options = {
         url: `/api/questions/${id}`

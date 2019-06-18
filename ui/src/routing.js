@@ -55,7 +55,10 @@ class Routing extends React.Component {
             if (isSignedIn) {
                 const token = this.GoogleUser.getAuthResponse().id_token;
                 this.signInUser(token);
+                return;
             }
+            document.cookie = 'application=; expires=' + new Date(0).toUTCString();
+            window.location.reload();
         });
     }
 
