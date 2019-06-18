@@ -36,14 +36,4 @@ public interface UserAnswerResource {
     @PUT
     @Path("me/questions/{questionId}/answers/{answerId}")
     Observable<Void> updateAnswer(Auth auth, @PathParam("questionId") long questionId, @PathParam("answerId") long answerId, Answer answer);
-
-    /**
-     * Marks a given answer as answered. The method will notify the question as well and mark the question as answered.
-     * @param questionId the question id
-     * @param answerId the answer id
-     * @return nothing
-     */
-    @PATCH
-    @Path("me/questions/{questionId}/answers/{answerId}/answered")
-    Observable<Void> markAsAnswered(Auth auth, @PathParam("questionId") long questionId, @PathParam("answerId") long answerId);
 }

@@ -10,8 +10,8 @@ import se.fortnox.reactivewizard.db.Update;
 public interface AnswerDao {
 
     @Update("UPDATE answer " +
-            "SET accepted=true WHERE id=:answerId AND user_id=:userId")
-    Observable<Integer> markAsAccepted(long userId, long answerId);
+            "SET accepted=true WHERE id=:answerId")
+    Observable<Integer> markAsAccepted(long answerId);
 
     @Query("SELECT answer.id, answer.user_id, answer.answer, answer.created_at, answer.accepted, answer.title, answer.votes , answer.slack_id, \"user\".\"name\"  AS created_by FROM answer \n" +
             "INNER JOIN \"user\" on \"user\".id = answer.user_id \n" +
