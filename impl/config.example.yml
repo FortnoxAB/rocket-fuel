@@ -25,7 +25,7 @@ database:
 # Contains configuration for the application token. The application token
 # is used as session in rocket fuel. The secret is used to verify the integrity
 # of the token. A random string is highly recommended. Even if the value in this
-# file will work. The domain is used  when the application cookie is created.
+# file will work. The domain is used when the application cookie is created.
 # The cookie will live in the domain defined here. For local
 # development it should probably be localhost.
 applicationTokenConfig:
