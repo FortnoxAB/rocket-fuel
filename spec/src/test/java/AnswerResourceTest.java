@@ -2,7 +2,6 @@ import api.Answer;
 import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
-import api.User;
 import api.UserResource;
 import api.auth.Auth;
 import org.junit.After;
@@ -11,11 +10,13 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import se.fortnox.reactivewizard.db.statement.MinimumAffectedRowsException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class AnswerResourceTest {
     private static QuestionResource questionResource;
@@ -24,7 +25,7 @@ public class AnswerResourceTest {
     @ClassRule
     public static  PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
     private static TestSetup           testSetup;
-    private static UserResource userResource;
+    private static UserResource        userResource;
 
     @BeforeClass
     public static void before() {
@@ -46,23 +47,24 @@ public class AnswerResourceTest {
 
     @Test
     public void markBothQuestionAndAnswerAsAccepted() {
-        User user = TestSetup.insertUser(userResource);
 
-        Auth  auth = new MockAuth(user.getId());
+        Auth questioner = newUser();
 
         Question question = new Question();
         question.setTitle("Question");
         question.setQuestion("Question");
 
-        Question returnedQuestion = questionResource.postQuestion(auth, question).toBlocking().singleOrDefault(null);
+        Question returnedQuestion = questionResource.postQuestion(questioner, question).toBlocking().singleOrDefault(null);
         assertThat(returnedQuestion).isNotNull();
+
+        Auth answerer = newUser();
 
         Answer answer = new Answer();
         answer.setAnswer("test");
-        Answer returnedAnswer = answerResource.answerQuestion(auth, answer, returnedQuestion.getId()).toBlocking().singleOrDefault(null);
+        Answer returnedAnswer = answerResource.answerQuestion(answerer, answer, returnedQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(returnedAnswer).isNotNull();
 
-        answerResource.markAsAcceptedAnswer(auth, returnedAnswer.getId()).toBlocking().singleOrDefault(null);
+        answerResource.markAsAcceptedAnswer(questioner, returnedAnswer.getId()).toBlocking().singleOrDefault(null);
 
         List<Answer> answers = answerResource.getAnswers(returnedQuestion.getId()).toBlocking().singleOrDefault(new ArrayList<>());
         assertThat(answers.size()).isEqualTo(1);
@@ -72,5 +74,26 @@ public class AnswerResourceTest {
         assertThat(questionFromDb.isAnswerAccepted()).isTrue();
     }
 
+    @Test
+    public void userCantAcceptAnswerToOtherUsersQuestion() {
+
+        Question question = new Question();
+        question.setTitle("Question");
+        question.setQuestion("Question");
+
+        Question returnedQuestion = questionResource.postQuestion(newUser(), question).toBlocking().singleOrDefault(null);
+        assertThat(returnedQuestion).isNotNull();
+
+        Answer answer = new Answer();
+        answer.setAnswer("test");
+        Answer returnedAnswer = answerResource.answerQuestion(newUser(), answer, returnedQuestion.getId()).toBlocking().singleOrDefault(null);
+
+        assertThatThrownBy(() -> answerResource.markAsAcceptedAnswer(newUser(), returnedAnswer.getId()).toBlocking().singleOrDefault(null))
+            .hasRootCauseInstanceOf(MinimumAffectedRowsException.class);
+    }
+
+    private Auth newUser() {
+        return new MockAuth(TestSetup.insertUser(userResource).getId());
+    }
 
 }

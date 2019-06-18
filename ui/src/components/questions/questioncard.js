@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 import moment from 'moment';
 
 import Certificate from '../utils/certificate';
@@ -55,9 +55,13 @@ class QuestionCard extends React.Component {
         );
     }
 
+    navigateToQuestion(questionId) {
+        this.props.history.push(`/question/${questionId}`);
+    }
+
     render() {
         return (
-            <div className={`${this.getClasses()} ${this.getState()}`}>
+            <div className={`${this.getClasses()} ${this.getState()}`} onClick={this.navigateToQuestion.bind(this, this.props.question.id)}>
                 {/*<Coins amount={this.props.question.bounty} />*/}
                 <div className="marks">
                     {this.printCertificate()}
@@ -65,9 +69,7 @@ class QuestionCard extends React.Component {
                 </div>
                 <div className="body">
                     <div className="title">
-                        <NavLink className="title" to={`/question/${this.props.question.id}`}>
-                            {this.props.question.title}
-                        </NavLink>
+                        {this.props.question.title}
                     </div>
                     <div className="user">
                         {this.props.question.createdBy}, {this.getTime()}
@@ -85,4 +87,4 @@ QuestionCard.defaultProps = {
     hideTags: false
 };
 
-export default QuestionCard;
+export default withRouter(QuestionCard);

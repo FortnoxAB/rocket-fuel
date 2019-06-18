@@ -13,7 +13,7 @@ class SignInView extends React.Component {
 
     render() {
         return (
-            <div className="fill-page center-center flex-column">
+            <div className="fill-page center-center flex-column login-view">
                 <video autoPlay muted loop className="fullscreen-video">
                     <source src={src} type="video/mp4" />
                 </video>

@@ -123,7 +123,7 @@ public class OpenIdValidator {
     private static Observable<RSAPublicKey> getPublicKeyByKeyId(String keyId, Map<String, Jwk> jwksById) {
         try {
             if (!jwksById.containsKey(keyId)) {
-                return Observable.error(new WebException(HttpResponseStatus.UNAUTHORIZED, "jwk key not found"));
+                return Observable.error(new WebException(HttpResponseStatus.UNAUTHORIZED, "jwk.key.not.found"));
             }
             return just((RSAPublicKey) jwksById.get(keyId).getPublicKey());
         } catch (InvalidPublicKeyException e) {

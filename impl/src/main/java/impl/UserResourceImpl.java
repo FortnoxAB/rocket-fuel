@@ -41,7 +41,7 @@ public class UserResourceImpl implements UserResource {
     @Override
     public Observable<User> getCurrent(Auth auth) {
         return userDao.getUserById(auth.getUserId())
-                .switchIfEmpty(error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "current user not found")));
+                .switchIfEmpty(error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "current.user.not.found")));
     }
 
     @Override
@@ -71,7 +71,7 @@ public class UserResourceImpl implements UserResource {
     public Observable<User> generateToken(@NotNull String openIdToken) {
         return openIdValidator.validate(openIdToken).flatMap(validOpenId ->
                 userDao.getUserByEmail(validOpenId.email)
-                .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to search for user", t)))
+                .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.search.for.user", t)))
                 .switchIfEmpty(addUserToDatabase(validOpenId.name, validOpenId.email))
                 .map(user -> {
                             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
@@ -86,7 +86,7 @@ public class UserResourceImpl implements UserResource {
         user.setName(name);
         user.setEmail(email);
         return userDao.insertUser(user).flatMap(ignore -> userDao.getUserByEmail(email))
-            .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed to add user to the database", t)));
+                .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.user.to.the.database", t)));
     }
 
     private void addAsCookie(final ApplicationToken applicationToken, User user) {

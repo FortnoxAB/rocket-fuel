@@ -8,7 +8,7 @@ class Answer extends React.Component {
     }
 
     getTime() {
-        return <i>{moment(this.props.answer.created).fromNow()}</i>;
+        return <i>{moment(this.props.answer.createdAt).fromNow()}</i>;
     }
 
     renderAccepted() {

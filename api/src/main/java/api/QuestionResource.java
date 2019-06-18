@@ -3,11 +3,8 @@ package api;
 import api.auth.Auth;
 import rx.Observable;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
+import java.util.List;
 
 @Path("api/questions")
 public interface QuestionResource {
@@ -46,6 +43,15 @@ public interface QuestionResource {
     @GET
     @Path("/{questionId}")
     Observable<Question> getQuestionById(@PathParam("questionId") long questionId);
+
+    /**
+     * Return a list of latest questions with a limit
+     * @param limit
+     * @return questions
+     */
+    @GET
+    @Path("/latest")
+    Observable<List<Question>> getLatestQuestion(@QueryParam("limit") Integer limit);
 
     /**
      * Adds a question and links it to the given userId.
