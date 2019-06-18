@@ -7,7 +7,7 @@
 # migrations are executed.
 # The configuration should be identical for the normal database
 # configuration. You should only provide connection information
-# to a a Postgres database, because its the only one supported.
+# to a a Postgres database, because it's the only one supported.
 liquibase-database:
   user: postgres
   schema: public
