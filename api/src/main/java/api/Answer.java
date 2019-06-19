@@ -7,6 +7,10 @@ public class Answer extends Post {
 
     private boolean accepted;
 
+    private long questionId;
+
+    private Question question;
+
     public String getAnswer() {
         return answer;
     }
@@ -14,7 +18,6 @@ public class Answer extends Post {
     public void setAnswer(String answer) {
         this.answer = answer;
     }
-
 
     public boolean isAccepted() {
         return accepted;
@@ -24,4 +27,19 @@ public class Answer extends Post {
         this.accepted = accepted;
     }
 
+    public long getQuestionId() {
+        return questionId;
+    }
+
+    public void setQuestionId(long questionId) {
+        this.questionId = questionId;
+    }
+
+    public Question getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
 }

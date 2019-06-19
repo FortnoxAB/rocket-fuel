@@ -10,13 +10,15 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-import se.fortnox.reactivewizard.db.statement.MinimumAffectedRowsException;
+import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static impl.AnswerResourceImpl.ERROR_NOT_OWNER_OF_QUESTION;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class AnswerResourceTest {
     private static QuestionResource questionResource;
@@ -88,8 +90,12 @@ public class AnswerResourceTest {
         answer.setAnswer("test");
         Answer returnedAnswer = answerResource.answerQuestion(newUser(), answer, returnedQuestion.getId()).toBlocking().singleOrDefault(null);
 
-        assertThatThrownBy(() -> answerResource.markAsAcceptedAnswer(newUser(), returnedAnswer.getId()).toBlocking().singleOrDefault(null))
-            .hasRootCauseInstanceOf(MinimumAffectedRowsException.class);
+        assertThatExceptionOfType(WebException.class)
+            .isThrownBy(() -> answerResource.markAsAcceptedAnswer(newUser(), returnedAnswer.getId()).toBlocking().singleOrDefault(null))
+            .satisfies(e -> {
+                assertThat(e.getStatus()).isEqualTo(BAD_REQUEST);
+                assertThat(e.getError()).isEqualTo(ERROR_NOT_OWNER_OF_QUESTION);
+            });
     }
 
     private Auth newUser() {

@@ -23,7 +23,8 @@ class QuestionView extends React.Component {
             answer: '',
             answers: [],
             postingAnswer: false,
-            answerError: null
+            answerError: null,
+            owned: false
         };
     }
 
@@ -39,19 +40,16 @@ class QuestionView extends React.Component {
     }
 
     loadThreadAndAnswers(questionId) {
-        QuestionApi.getQuestionById(questionId).then((question) => {
+        Promise.all([
+            QuestionApi.getQuestionById(questionId),
+            AnswerApi.getAnswersByQuestionId(questionId)
+        ]).then((resp) => {
             this.setState({
-                question: question
+                question: resp[0],
+                owned: this.context.state.user.id === resp[0].userId,
+                answers: resp[1],
+                loaded: true
             });
-
-            AnswerApi.getAnswersByQuestionId(questionId).then((resp) => {
-
-                this.setState({
-                    loaded: true,
-                    answers: resp
-                });
-            })
-
         }).catch(() => {
             this.props.history.replace('../404');
         });
@@ -86,7 +84,7 @@ class QuestionView extends React.Component {
     renderAnswers() {
         return this.state.answers.map((answer, index) => {
             return <Answer onAnswer={this.onAnswerAccepted.bind(this)}
-                           enableAnswer={!this.state.question.answerAccepted} answer={answer}
+                           enableAnswer={!this.state.question.answerAccepted && this.state.owned} answer={answer}
                            key={index} />;
         });
     }

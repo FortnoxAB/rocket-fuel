@@ -2,6 +2,7 @@ package dao;
 
 
 import api.Answer;
+import api.Question;
 import rx.Observable;
 import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
@@ -29,9 +30,6 @@ public interface AnswerDao {
         "WHERE slack_id=:slackId\n")
     Observable<Answer> getAnswer(String slackId);
 
-    @Query("SELECT question_id FROM answer WHERE id=:answerId")
-    Observable<Long> getQuestionIdByAnswer(Long answerId);
-
     @Update("INSERT INTO answer\n" +
             "(answer, title, votes, created_at, accepted, question_id, user_id, slack_id)\n" +
             "VALUES(:answer.answer, :answer.title, 0, NOW(), false, :questionId, :userId, :answer.slackId);\n")
@@ -48,4 +46,12 @@ public interface AnswerDao {
 
     @Update(value = "UPDATE answer SET votes=votes-1 WHERE slack_id = :threadId")
     Observable<Void> downVoteAnswer(String threadId);
+
+    @Query("SELECT a.id, a.user_id, a.answer, a.created_at, a.accepted, a.title, a.votes, a.slack_id, a.question_id, u.name AS created_by, " +
+        "q.user_id AS \"question.user_id\" " +
+        "FROM answer a " +
+        "INNER JOIN \"user\" u on u.id = a.user_id " +
+        "INNER JOIN question q on q.id = a.question_id " +
+        "WHERE a.id=:id")
+    Observable<Answer> getAnswerById(long id);
 }
