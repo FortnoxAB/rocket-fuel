@@ -23,6 +23,7 @@ import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 public class AnswerResourceImpl implements AnswerResource {
 
     public static final String ERROR_NOT_OWNER_OF_QUESTION = "not.owner.of.question";
+    public static final String ERROR_ANSWER_NOT_CREATED = "answer.not.created";
 
     private final AnswerDao       answerDao;
     private final QuestionDao     questionDao;
@@ -49,7 +50,7 @@ public class AnswerResourceImpl implements AnswerResource {
                 answer.setId(generatedKey.getKey());
                 return answer;
             }).onErrorResumeNext(throwable ->
-                error(new WebException(INTERNAL_SERVER_ERROR, throwable)));
+                error(new WebException(INTERNAL_SERVER_ERROR, ERROR_ANSWER_NOT_CREATED, throwable)));
     }
 
     @Override
@@ -81,8 +82,8 @@ public class AnswerResourceImpl implements AnswerResource {
                     return exception(() -> new WebException(BAD_REQUEST, ERROR_NOT_OWNER_OF_QUESTION));
                 }
                 Observable<Integer> markAnswerAsAccepted   = answerDao.markAsAccepted(answerId);
-                Observable<Integer> markQuestionAsAccepted = questionDao.markAsAnswered(auth.getUserId(), answer.getQuestionId());
-                return daoTransactions.executeTransaction(markAnswerAsAccepted, markQuestionAsAccepted);
+                Observable<Integer> markQuestionAsAnswered = questionDao.markAsAnswered(auth.getUserId(), answer.getQuestionId());
+                return daoTransactions.executeTransaction(markAnswerAsAccepted, markQuestionAsAnswered);
             });
     }
 }
