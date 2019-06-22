@@ -73,7 +73,7 @@ public class ReactionMessageHandlerTest {
 
         question.setSlackId(questionId);
 
-        questionResource.postQuestion(as(user), question).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(as(user), question).toBlocking().singleOrDefault(null);
 
         Question questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().singleOrDefault(null);
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(0);
@@ -127,7 +127,7 @@ public class ReactionMessageHandlerTest {
         question.setSlackId(questionId);
 
         //Create and assert question in db
-        questionResource.postQuestion(as(user), question).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(as(user), question).toBlocking().singleOrDefault(null);
         Question questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().singleOrDefault(null);
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(0);
 

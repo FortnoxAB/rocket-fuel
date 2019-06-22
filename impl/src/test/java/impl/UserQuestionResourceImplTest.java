@@ -91,7 +91,7 @@ public class UserQuestionResourceImplTest {
 
 
     @Test
-    public void shouldThrowInternalIfAnswerToDeleteCannotBeDeleted() {
+    public void shouldThrowInternalIfQuestionToDeleteCannotBeDeleted() {
         Question question = new Question();
         question.setUserId(123L);
         when(questionDao.deleteQuestion(123,  123)).thenReturn(Observable.error(new SQLException("poff")));

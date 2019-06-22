@@ -110,7 +110,7 @@
         </addColumn>
     </changeSet>
 
-    <changeSet id="add_contrain_for_questionid_and_answerId" author="">
+    <changeSet id="add_constrain_for_questionid_and_answerId" author="">
         <addUniqueConstraint columnNames="id, question_id"
                              constraintName="question_answer_unique_key"
                              tableName="answer"/>

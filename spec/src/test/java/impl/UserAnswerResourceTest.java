@@ -183,7 +183,7 @@ public class UserAnswerResourceTest {
         question.setVotes(3);
         question.setQuestion("my question");
 
-        questionResource.postQuestion(new MockAuth(createdUser.getId()), question).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(new MockAuth(createdUser.getId()), question).toBlocking().singleOrDefault(null);
 
         // then the question should be returned when asking for the users questions
         List<Question> questions = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single();

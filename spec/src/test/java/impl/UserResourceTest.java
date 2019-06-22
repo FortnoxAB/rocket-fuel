@@ -142,8 +142,6 @@ public class UserResourceTest {
 
     @Test
     public void shouldReturnNotFoundIfUserDoesNotExistWhenSearchingById() {
-
-        // when
         try {
             userResource.getUserById(1234).toBlocking().singleOrDefault(null);
             fail("expected exception");
@@ -154,19 +152,16 @@ public class UserResourceTest {
 
     @Test
     public void shouldReturnNotFoundIfUserDoesNotExistWhenSearchingByEmail() {
-
         try {
             userResource.getUserByEmail("random@email.com", false).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException e) {
             assertEquals(HttpResponseStatus.NOT_FOUND, e.getStatus());
         }
-
     }
 
     @Test
     public void shouldReturnInternalServerErrorIfUserInAuthCannotBeFound() {
-
         try {
             Auth auth = new Auth();
             auth.setUserId(33);

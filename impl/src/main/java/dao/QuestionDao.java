@@ -161,4 +161,33 @@ public interface QuestionDao {
         "WHERE " +
             "question.user_id = :userId AND question.id = :questionId")
     Observable<Void> deleteQuestion(long userId, long questionId);
+
+    @Query("" +
+        "SELECT DISTINCT " +
+            "question.id, " +
+            "question.question, " +
+            "answer_accepted, " +
+            "question.title, " +
+            "question.bounty, " +
+            "question.votes, " +
+            "question.created_at, " +
+            "question, " +
+            "question.user_id, " +
+            "\"user\".name as created_by " +
+        "FROM " +
+            "question " +
+        "INNER JOIN " +
+            "\"user\" on \"user\".id = question.user_id " +
+        "LEFT JOIN  " +
+            "answer on answer.question_id = question.id and answer.user_id = question.user_id " +
+        "WHERE  " +
+            "question.title like ('%' || :search || '%') " +
+        "OR " +
+            "question.question like ('%' || :search || '%') " +
+        "OR " +
+            "answer.title  like ('%' || :search || '%') " +
+        "ORDER BY  " +
+            "question.votes desc, " +
+            "question.created_at desc")
+    Observable<Question> getQuestions(String search);
 }

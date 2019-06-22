@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 import static rx.Observable.error;
@@ -63,7 +64,7 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<Question> postQuestion(Auth auth, Question question) {
+    public Observable<Question> createQuestion(Auth auth, Question question) {
         return this.questionDao
           .addQuestion(auth.getUserId(), question)
             .map(longGeneratedKey -> {
@@ -71,5 +72,14 @@ public class QuestionResourceImpl implements QuestionResource {
                 return question;
             })
           .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
+    }
+
+    @Override
+    public Observable<List<Question>> getQuestionsBySearchQuery(@NotNull String searchQuery) {
+        return questionDao.getQuestions(searchQuery)
+            .onErrorResumeNext(e -> {
+                LOG.error("failed to search for questions with search query: [" + searchQuery + "]");
+                return error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.search.for.questions" ,e));
+            }).toList();
     }
 }

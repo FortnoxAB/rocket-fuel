@@ -22,9 +22,6 @@ public interface UserQuestionResource {
 
     /**
      * Returns all questions for a given user
-     *
-     * Only title and question can be updated.
-     *
      */
     @Path("{userId}/questions")
     @GET
@@ -39,6 +36,9 @@ public interface UserQuestionResource {
 
     /**
      * Updates the question with the given questionId
+     *
+     * Only title and question can be updated.
+     * Requires the invoker to be the creator of the ques..
      */
     @PUT
     @Path("me/questions/{questionId}")
