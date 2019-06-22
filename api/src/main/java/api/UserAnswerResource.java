@@ -4,10 +4,7 @@
  import rx.Observable;
  import se.fortnox.reactivewizard.jaxrs.PATCH;
 
- import javax.ws.rs.GET;
- import javax.ws.rs.PUT;
- import javax.ws.rs.Path;
- import javax.ws.rs.PathParam;
+ import javax.ws.rs.*;
  import java.util.List;
 
 /**
@@ -28,12 +25,28 @@ public interface UserAnswerResource {
 
     /**
      * Updates a answer
-     * @param questionId the question that acts as parent for the answer
+     *
+     * Requires the invoker to be the creator of the answer.
+     *
+     * Only title and answer can be answered.
+     *
      * @param answerId the answers unique id
-     * @param answer the new state of the
+     * @param answer the new state of the answer
      * @return nothing
      */
     @PUT
-    @Path("me/questions/{questionId}/answers/{answerId}")
-    Observable<Void> updateAnswer(Auth auth, @PathParam("questionId") long questionId, @PathParam("answerId") long answerId, Answer answer);
+    @Path("me/answers/{answerId}")
+    Observable<Void> updateAnswer(Auth auth, @PathParam("answerId") long answerId, Answer answer);
+
+    /**
+     * Deletes an answer
+     *
+     * Requires the invoker to be the creator of the answer.
+     * @param auth
+     * @param answerId
+     * @return nothing
+     */
+    @DELETE
+    @Path("me/answers/{answerId}")
+    Observable<Void> deleteAnswer(Auth auth, @PathParam("answerId") long answerId);
 }

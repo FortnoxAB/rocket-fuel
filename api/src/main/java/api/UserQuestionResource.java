@@ -2,10 +2,10 @@
 
  import api.auth.Auth;
  import rx.Observable;
- import se.fortnox.reactivewizard.CollectionOptions;
 
  import javax.ws.rs.GET;
  import javax.ws.rs.PUT;
+ import javax.ws.rs.DELETE;
  import javax.ws.rs.Path;
  import javax.ws.rs.PathParam;
  import java.util.List;
@@ -23,12 +23,12 @@ public interface UserQuestionResource {
     /**
      * Returns all questions for a given user
      *
-     * Collection options can be used to limit the number questions returned to the client.
+     * Only title and question can be updated.
      *
      */
     @Path("{userId}/questions")
     @GET
-    Observable<List<Question>> getQuestions(@PathParam("userId") long userId, CollectionOptions collectionOptions);
+    Observable<List<Question>> getQuestions(@PathParam("userId") long userId);
 
     /**
      * Returns a specific question to the client
@@ -43,4 +43,12 @@ public interface UserQuestionResource {
     @PUT
     @Path("me/questions/{questionId}")
     Observable<Question> updateQuestion(Auth auth, @PathParam("questionId") long questionId, Question question);
+
+    /**
+     * Deletes a question. The answers connected to the question will be deleted as well.
+     * @param questionId the question to delete
+     */
+    @DELETE
+    @Path("me/questions/{questionId}")
+    Observable<Void> deleteQuestion(Auth auth, long questionId);
 }

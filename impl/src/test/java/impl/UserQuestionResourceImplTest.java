@@ -12,10 +12,14 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.sql.SQLException;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static rx.Observable.just;
 
 public class UserQuestionResourceImplTest {
 
@@ -30,10 +34,10 @@ public class UserQuestionResourceImplTest {
 
     @Test
     public void shouldReturnInternalServerErrorWhenGetQuestionsFails() {
-        when(questionDao.getQuestions(123, null)).thenReturn(Observable.error(new SQLException("poff")));
+        when(questionDao.getQuestions(123)).thenReturn(Observable.error(new SQLException("poff")));
 
         try {
-            userQuestionResource.getQuestions(123, null).toBlocking().singleOrDefault(null);
+            userQuestionResource.getQuestions(123).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException webException) {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
@@ -67,5 +71,39 @@ public class UserQuestionResourceImplTest {
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, webException.getStatus());
             assertEquals("failed.to.update.question.to.database", webException.getError());
         }
+    }
+
+    @Test
+    public void shouldThrowForbiddenIfQuestionIsNotCreatedByTheDeleter() {
+        Question question = new Question();
+        question.setUserId(444L);
+        when(questionDao.getQuestion(123)).thenReturn(just(question));
+        Auth auth = new Auth();
+        auth.setUserId(123);
+
+        assertThatExceptionOfType(WebException.class)
+            .isThrownBy(() -> userQuestionResource.deleteQuestion(auth, 123).toBlocking().singleOrDefault(null))
+            .satisfies(e -> {
+                assertEquals(FORBIDDEN, e.getStatus());
+                assertEquals("not.owner.of.question", e.getError());
+            });
+    }
+
+
+    @Test
+    public void shouldThrowInternalIfAnswerToDeleteCannotBeDeleted() {
+        Question question = new Question();
+        question.setUserId(123L);
+        when(questionDao.deleteQuestion(123,  123)).thenReturn(Observable.error(new SQLException("poff")));
+        when(questionDao.getQuestion(123)).thenReturn(just(question));
+        Auth auth = new Auth();
+        auth.setUserId(123);
+
+        assertThatExceptionOfType(WebException.class)
+            .isThrownBy(() -> userQuestionResource.deleteQuestion(auth, 123).toBlocking().singleOrDefault(null))
+            .satisfies(e -> {
+                assertEquals(INTERNAL_SERVER_ERROR, e.getStatus());
+                assertEquals("failed.to.delete.question", e.getError());
+            });
     }
 }

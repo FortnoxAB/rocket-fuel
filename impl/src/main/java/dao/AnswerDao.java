@@ -84,14 +84,11 @@ public interface AnswerDao {
     @Update(
         "UPDATE answer SET " +
             "answer=:answer.answer, " +
-            "title=:answer.title, " +
-            "votes=:answer.votes, " +
-            "accepted=:answer.accepted " +
+            "title=:answer.title " +
         "WHERE " +
             "answer.id=:answerId " +
-            "AND question_id=:questionId " +
             "AND answer.user_id=:userId")
-    Observable<Void> updateAnswer(long userId, long questionId, long answerId, Answer answer);
+    Observable<Void> updateAnswer(long userId, long answerId, Answer answer);
 
     @Update(
         "UPDATE answer SET " +
@@ -116,4 +113,11 @@ public interface AnswerDao {
         "INNER JOIN question q on q.id = a.question_id " +
         "WHERE a.id=:id")
     Observable<AnswerInternal> getAnswerById(long id);
+
+    @Update("" +
+        "DELETE FROM " +
+            "answer " +
+        "WHERE " +
+            "answer.user_id = :userId AND answer.id = :answerId")
+    Observable<Void> deleteAnswer(long userId, long answerId);
 }
