@@ -7,7 +7,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.AnswerDao;
 import dao.QuestionDao;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Observable;
 import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
@@ -15,10 +14,16 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 import java.util.List;
 import java.util.Objects;
 
-import static java.util.Arrays.asList;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static rx.Observable.error;
+import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 
 @Singleton
 public class AnswerResourceImpl implements AnswerResource {
+
+    public static final String ERROR_NOT_OWNER_OF_QUESTION = "not.owner.of.question";
+    public static final String ERROR_ANSWER_NOT_CREATED = "answer.not.created";
 
     private final AnswerDao       answerDao;
     private final QuestionDao     questionDao;
@@ -45,7 +50,7 @@ public class AnswerResourceImpl implements AnswerResource {
                 answer.setId(generatedKey.getKey());
                 return answer;
             }).onErrorResumeNext(throwable ->
-                Observable.error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, throwable)));
+                error(new WebException(INTERNAL_SERVER_ERROR, ERROR_ANSWER_NOT_CREATED, throwable)));
     }
 
     @Override
@@ -71,14 +76,14 @@ public class AnswerResourceImpl implements AnswerResource {
 
     @Override
     public Observable<Void> markAsAcceptedAnswer(Auth auth, long answerId) {
-
-        return answerDao.getQuestionIdByAnswer(answerId)
-            .flatMap(questionId -> {
-                Observable<Integer> markAnswerAsAccepted = answerDao.markAsAccepted(answerId);
-                Observable<Integer> markQuestionAsAccepted = questionDao.markAsAnswered(auth.getUserId(), questionId);
-
-                List<Observable<Integer>> acceptances = asList(markAnswerAsAccepted, markQuestionAsAccepted);
-                return this.daoTransactions.executeTransaction(acceptances);
+        return answerDao.getAnswerById(answerId)
+            .flatMap(answer -> {
+                if (answer.getQuestion().getUserId() != auth.getUserId()) {
+                    return exception(() -> new WebException(BAD_REQUEST, ERROR_NOT_OWNER_OF_QUESTION));
+                }
+                Observable<Integer> markAnswerAsAccepted   = answerDao.markAsAccepted(answerId);
+                Observable<Integer> markQuestionAsAnswered = questionDao.markAsAnswered(auth.getUserId(), answer.getQuestionId());
+                return daoTransactions.executeTransaction(markAnswerAsAccepted, markQuestionAsAnswered);
             });
     }
 }
