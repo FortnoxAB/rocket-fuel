@@ -92,7 +92,7 @@ public class AnswerResourceTest {
         // given a question
         Question question = newQuestion();
         Question returnedQuestion = questionResource.createQuestion(newUser(), question).toBlocking().singleOrDefault(null);
-        // and a answer
+        // and an answer
         Answer answer         = newAnswer();
         // when the current user tries to accept the question, that belongs to someone else
         Answer returnedAnswer = answerResource.answerQuestion(newUser(), answer, returnedQuestion.getId()).toBlocking().singleOrDefault(null);

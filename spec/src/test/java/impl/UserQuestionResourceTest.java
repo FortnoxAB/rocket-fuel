@@ -1,11 +1,11 @@
 package impl;
 
-import api.Question;
 import api.Answer;
+import api.AnswerResource;
+import api.Question;
 import api.QuestionResource;
 import api.User;
 import api.UserQuestionResource;
-import api.AnswerResource;
 import api.UserResource;
 import api.auth.Auth;
 import org.junit.After;
@@ -14,11 +14,11 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.util.List;
 
+import static impl.UserQuestionResourceImpl.QUESTION_NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -43,8 +43,8 @@ public class UserQuestionResourceTest {
     public static void before() {
         testSetup = new TestSetup(postgreSQLContainer);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
-      //  userQuestionResource = testSetup.getInjector().getInstance(UserQuestionResource.class);
-       questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
+        userQuestionResource = testSetup.getInjector().getInstance(UserQuestionResource.class);
+        questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
     }
 
@@ -79,7 +79,7 @@ public class UserQuestionResourceTest {
         Question insertedQuestion = questions.get(0);
         assertEquals("my question title", insertedQuestion.getTitle());
         assertEquals("my question", insertedQuestion.getQuestion());
-        assertEquals(new Integer(300),insertedQuestion.getBounty());
+        assertEquals(question.getBounty(),insertedQuestion.getBounty());
         assertEquals(createdUser.getId(), insertedQuestion.getUserId());
         assertNotNull(insertedQuestion.getId());
     }
@@ -102,7 +102,7 @@ public class UserQuestionResourceTest {
 
         assertEquals("my question title", selectedQuestion.getTitle());
         assertEquals("my question", selectedQuestion.getQuestion());
-        assertEquals(new Integer(300),selectedQuestion.getBounty());
+        assertEquals(Integer.valueOf(300),selectedQuestion.getBounty());
         assertEquals(createdUser.getId(), selectedQuestion.getUserId());
     }
 
@@ -120,18 +120,18 @@ public class UserQuestionResourceTest {
         mockAuth.setUserId(createdUser.getId());
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
-        long newQuestionId = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single().get(0).getId();
-        question.setBounty(400);
-        question.setTitle("new title");
-        question.setQuestion("new question body");
-        userQuestionResource.updateQuestion(mockAuth, newQuestionId, question).toBlocking().singleOrDefault(null);
+        Question storedQuestion = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single().get(0);
+        storedQuestion.setBounty(400);
+        storedQuestion.setTitle("new title");
+        storedQuestion.setQuestion("new question body");
+        userQuestionResource.updateQuestion(mockAuth, storedQuestion.getId(), storedQuestion).toBlocking().singleOrDefault(null);
         List<Question> questions = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question updatedQuestion = questions.get(0);
         assertEquals("new title", updatedQuestion.getTitle());
         assertEquals("new question body", updatedQuestion.getQuestion());
-        assertEquals(new Integer(300),updatedQuestion.getBounty());
+        assertEquals(question.getBounty(), updatedQuestion.getBounty());
         assertEquals(createdUser.getId(), updatedQuestion.getUserId());
     }
 
@@ -214,7 +214,7 @@ public class UserQuestionResourceTest {
             .isThrownBy(() -> userQuestionResource.deleteQuestion(auth,  nonExistingQuestionId).toBlocking().singleOrDefault(null))
             .satisfies(e -> {
                 assertEquals(NOT_FOUND, e.getStatus());
-                assertEquals("question.not.found", e.getError());
+                assertEquals(QUESTION_NOT_FOUND, e.getError());
             });
     }
 }

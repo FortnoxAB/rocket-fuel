@@ -114,7 +114,7 @@ public interface AnswerDao {
         "WHERE a.id=:id")
     Observable<AnswerInternal> getAnswerById(long id);
 
-    @Update("" +
+    @Update(
         "DELETE FROM " +
             "answer " +
         "WHERE " +

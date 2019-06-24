@@ -8,7 +8,7 @@ import se.fortnox.reactivewizard.db.Update;
 
 public interface QuestionDao {
 
-    @Query("" +
+    @Query(
         "SELECT " +
             "question.id, " +
             "question.question, " +
@@ -25,7 +25,7 @@ public interface QuestionDao {
             "\"user\" on \"user\".id = question.user_id WHERE question.user_id=:userId")
     Observable<Question> getQuestions(long userId);
 
-    @Query("" +
+    @Query(
         "SELECT " +
             "question.id, " +
             "question.question, " +
@@ -47,7 +47,7 @@ public interface QuestionDao {
             ":limit")
     Observable<Question> getLatestQuestions(Integer limit);
 
-    @Update("" +
+    @Update(
         "INSERT INTO " +
             "question (" +
             "question, " +
@@ -74,7 +74,7 @@ public interface QuestionDao {
             "WHERE question.id=:questionId AND question.user_id=:userId")
     Observable<Integer> updateQuestion(long userId, long questionId, Question question);
 
-    @Query("" +
+    @Query(
         "SELECT " +
             "id, " +
             "question, " +
@@ -91,7 +91,7 @@ public interface QuestionDao {
             "user_id = :userId AND id=:questionId")
     Observable<Question> getQuestion(long userId, long questionId);
 
-    @Query("" +
+    @Query(
         "SELECT " +
             "id, " +
             "question, " +
@@ -108,7 +108,7 @@ public interface QuestionDao {
             "id=:questionId")
     Observable<Question> getQuestion(long questionId);
 
-    @Query("" +
+    @Query(
         "SELECT " +
             "question.id, " +
             "question.question, " +
@@ -136,7 +136,7 @@ public interface QuestionDao {
             "question.id=:questionId AND question.user_id=:userId")
     Observable<Integer> markAsAnswered(long userId, long questionId);
 
-    @Query("" +
+    @Query(
         "SELECT " +
             "id, question, " +
             "title, bounty, " +
@@ -155,14 +155,14 @@ public interface QuestionDao {
     @Update(value = "UPDATE question set votes=votes-1 WHERE slack_id = :threadId")
     Observable<Void> downVoteQuestion(String threadId);
 
-    @Update("" +
+    @Update(
         "DELETE FROM " +
             "question " +
         "WHERE " +
             "question.user_id = :userId AND question.id = :questionId")
     Observable<Void> deleteQuestion(long userId, long questionId);
 
-    @Query("" +
+    @Query(
         "SELECT DISTINCT " +
             "question.id, " +
             "question.question, " +

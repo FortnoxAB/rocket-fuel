@@ -26,7 +26,9 @@ import slack.SlackRTMClient;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class TestSetup {
 
@@ -126,16 +128,20 @@ public class TestSetup {
     }
 
     @NotNull
-    public static final Question getQuestion(String title, String question) {
+    public static Question getQuestion(String title, String question) {
+        return getQuestion(title,question,300);
+    }
+
+    @NotNull
+    public static Question getQuestion(String title, String question, int bounty) {
         Question questionObject = new Question();
         questionObject.setAnswerAccepted(false);
-        questionObject.setBounty(300);
+        questionObject.setBounty(bounty);
         questionObject.setTitle(title);
         questionObject.setVotes(3);
         questionObject.setQuestion(question);
         return questionObject;
     }
-
     public static User insertUser(UserResource userResource) {
         final String generatedEmail = UUID.randomUUID().toString()+"@fortnox.se";
         User user = new User();

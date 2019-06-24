@@ -20,6 +20,7 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 import java.util.List;
 import java.util.UUID;
 
+import static impl.UserAnswerResourceImpl.ANSWER_NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -129,7 +130,9 @@ public class UserAnswerResourceTest {
         // then only the answer we want to delete should be deleted
         List<Answer> remainingAnswers = userAnswerResource.getAnswers(createdUser.getId(), question.getId()).toBlocking().single();
         assertThat(remainingAnswers.size()).isEqualTo(1);
-        assertThat(remainingAnswers.get(0).getTitle()).isEqualTo("title2");
+        assertThat(remainingAnswers)
+            .extracting(Answer::getTitle)
+            .containsExactly("title2");
     }
 
     @Test
@@ -141,7 +144,7 @@ public class UserAnswerResourceTest {
             .isThrownBy(() -> userAnswerResource.deleteAnswer(auth,  nonExistingAnswerId).toBlocking().singleOrDefault(null))
             .satisfies(e -> {
                 assertEquals(NOT_FOUND, e.getStatus());
-                assertEquals("answer.not.found", e.getError());
+                assertEquals(ANSWER_NOT_FOUND, e.getError());
             });
     }
 
@@ -201,10 +204,7 @@ public class UserAnswerResourceTest {
     }
 
     private static Answer createAnswer() {
-        Answer answer = new Answer();
-        answer.setTitle("this is an answer title");
-        answer.setAnswer("this is the body of the answer");
-        return answer;
+        return createAnswer("this is an answer title", "this is the body of the answer");
     }
     private static Answer createAnswer(String title, String answerBody) {
         Answer answer = new Answer();
