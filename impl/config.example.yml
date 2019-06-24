@@ -1,28 +1,57 @@
+# Template Configuration file for local development. You should make a copy of this file
+# and place it in the same folder. The copy of this file should be named config.yml. config.yml is
+# ignored by git and you can change that file without accidentally committing any changes to the
+# configuration ( see git ignore file in the root of the project ).
+
+# Your database connection configuration used when database
+# migrations are executed.
+# The configuration should be identical for the normal database
+# configuration. You should only provide connection information
+# to a a Postgres database, because it's the only one supported.
 liquibase-database:
   user: postgres
   schema: public
   password: mysecretpassword
   url: jdbc:postgresql://localhost:15432/rocket-fuel
 
+# Your database connection configuration used when the application is
+# up and running. It should be identical to the liquibase config.
 database:
   user: postgres
   schema: public
   password: mysecretpassword
   url: jdbc:postgresql://localhost:15432/rocket-fuel
 
+# Contains configuration for the application token. The application token
+# is used as session in rocket fuel. The secret is used to verify the integrity
+# of the token. A random string is highly recommended. Even if the value in this
+# file will work. The domain is used when the application cookie is created.
+# The cookie will live in the domain defined here. For local
+# development it should probably be localhost.
 applicationTokenConfig:
   secret: a-valid-but-not-secure-secret
   domain: <your-domain-where-the-application-is-hosted>
 
+# Contains configuration used for slack.
 slack:
   botUserToken: <your-slack-app-bot-user-token>
   apiToken: <your-slack-app-api-token>
 
+# Contains configuration for the openId used to validate the openId when users logs in.
+#
+# The only value you need to change is the clientId. Found on google developer console.
+# You will need to configure your openId to allow connections from rocket fuel. Typically
+# for local development, this means that you will need to allow https://localhost. You may as well
+# need to provide the port. If you run the application from something else than default https port.
+#
+# The settings issuer and jwkUri will only change if you are using some other openId provider.
 openId:
   issuer: accounts.google.com
   jwksUri: https://www.googleapis.com/oauth2/v3/certs
   clientId: <client-id-found-in-google-console-for-example>
 
+# Logging defines how the application will log. During development logs will be sent to standard out.
+# Threshold for log level can be configured here.
 logging:
   additivity:
     com.fortnox.reactivewizard.ReactiveWizardServer: false

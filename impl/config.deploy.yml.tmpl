@@ -1,3 +1,10 @@
+# Configuration template file used when the application is running in a docker container.
+# The variables you see here will be replaced by the environment variables with the same
+# name during startup. You will only make changes to this file if you are changing the configuration
+# for rocket-fuel running in docker.
+
+# For local development you should look into the config.example.yml, located in the same folder.
+# It describes how to configure rocket fuel.
 liquibase-database:
     user:  {{ .Env.DB_USER }}
     schema: {{ .Env.DB_SCHEMA }}
