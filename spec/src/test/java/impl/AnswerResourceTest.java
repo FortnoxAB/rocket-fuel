@@ -7,7 +7,6 @@ import api.QuestionResource;
 import api.UserResource;
 import api.auth.Auth;
 import dao.AnswerDao;
-import impl.AnswerResourceImpl;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
 import org.junit.After;
 import org.junit.Before;
