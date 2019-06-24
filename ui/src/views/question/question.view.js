@@ -39,7 +39,7 @@ class QuestionView extends React.Component {
         this.loadThreadAndAnswers(questionId);
     }
 
-    loadThreadAndAnswers(questionId) {
+        loadThreadAndAnswers(questionId) {
         Promise.all([
             QuestionApi.getQuestionById(questionId),
             AnswerApi.getAnswersByQuestionId(questionId)
@@ -84,7 +84,7 @@ class QuestionView extends React.Component {
     renderAnswers() {
         return this.state.answers.map((answer, index) => {
             return <Answer onAnswer={this.onAnswerAccepted.bind(this)}
-                           enableAnswer={!this.state.question.answerAccepted && this.state.owned} answer={answer}
+                           enableAccept={!this.state.question.answerAccepted && this.state.owned} answer={answer}
                            key={index} />;
         });
     }
