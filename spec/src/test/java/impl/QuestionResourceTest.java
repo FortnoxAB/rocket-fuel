@@ -1,7 +1,8 @@
+package impl;
+
 import api.*;
 import api.auth.Auth;
 import dao.QuestionDao;
-import impl.QuestionResourceImpl;
 import org.junit.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;

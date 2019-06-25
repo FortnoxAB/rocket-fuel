@@ -1,3 +1,5 @@
+package impl;
+
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
@@ -7,9 +9,6 @@ import auth.openid.OpenIdValidator;
 import dao.UserDao;
 import dates.DateProvider;
 import dates.DateProviderImpl;
-import impl.ApplicationTokenCreator;
-import impl.ResponseHeaderHolder;
-import impl.UserResourceImpl;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.*;
 import org.mockito.ArgumentCaptor;

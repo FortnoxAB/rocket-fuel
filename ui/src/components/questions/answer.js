@@ -16,7 +16,7 @@ class Answer extends React.Component {
             return <Certificate active />;
         }
 
-        if (!this.props.enableAnswer) {
+        if (!this.props.enableAccept) {
             return null;
         }
 
@@ -93,7 +93,7 @@ class Answer extends React.Component {
 
 Answer.defaultProps = {
     answer: null,
-    enableAnswer: true,
+    enableAccept: true,
     onAnswer: () => {
     }
 };
