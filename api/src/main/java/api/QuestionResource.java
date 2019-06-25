@@ -3,6 +3,7 @@ package api;
 import api.auth.Auth;
 import rx.Observable;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import java.util.List;
 
@@ -57,6 +58,12 @@ public interface QuestionResource {
      * Adds a question and links it to the given userId.
      */
     @POST
-    Observable<Question> postQuestion(Auth auth, Question question);
+    Observable<Question> createQuestion(Auth auth, Question question);
+
+    /**
+     * Acts like a universal search. It will return questions that can be related to the search term.
+     */
+    @GET
+    Observable<List<Question>> getQuestionsBySearchQuery(@QueryParam("search") @NotNull String searchQuery);
 
 }

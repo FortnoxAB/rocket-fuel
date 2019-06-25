@@ -18,6 +18,8 @@ class Answer extends React.Component {
                 answered={this.props.answer.accepted}
                 answerId={this.props.answer.id}
                 picture={this.props.answer.picture}
+                onDelete={this.props.onDeleteAnswer.bind(this)}
+                onEdit={this.props.onEditAnswer.bind(this)}
             />
         );
     }
@@ -25,9 +27,9 @@ class Answer extends React.Component {
 
 Answer.defaultProps = {
     answer: null,
-    enableAnswer: true,
-    onAnswer: () => {
-    }
+    enableAccept: true,
+    onEditAnswer: () => {},
+    onDeleteAnswer: () => {}
 };
 
 export default Answer;

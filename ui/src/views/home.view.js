@@ -39,13 +39,13 @@ class HomeView extends React.Component {
 
     getUserQuestions() {
         return this.state.userQuestions.map((question, index) => {
-            return <QuestionRow small key={index} question={question} />;
+            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
         });
     }
 
     getLatestQuestions() {
         return this.state.latestQuestions.map((question, index) => {
-            return <QuestionRow small key={index} question={question} />;
+            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
         });
     }
 

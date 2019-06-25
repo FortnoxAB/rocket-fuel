@@ -24,7 +24,8 @@ class QuestionView extends React.Component {
             answer: '',
             answers: [],
             postingAnswer: false,
-            answerError: null
+            answerError: null,
+            owned: false
         };
     }
 
@@ -40,19 +41,16 @@ class QuestionView extends React.Component {
     }
 
     loadThreadAndAnswers(questionId) {
-        QuestionApi.getQuestionById(questionId).then((question) => {
+        Promise.all([
+            QuestionApi.getQuestionById(questionId),
+            AnswerApi.getAnswersByQuestionId(questionId)
+        ]).then((resp) => {
             this.setState({
-                question: question
+                question: resp[0],
+                owned: this.context.state.user.id === resp[0].userId,
+                answers: resp[1],
+                loaded: true
             });
-
-            AnswerApi.getAnswersByQuestionId(questionId).then((resp) => {
-
-                this.setState({
-                    loaded: true,
-                    answers: resp
-                });
-            })
-
         }).catch(() => {
             this.props.history.replace('../404');
         });
@@ -93,10 +91,16 @@ class QuestionView extends React.Component {
             );
         }
         return this.state.answers.map((answer, index) => {
-            return <Answer onAnswer={this.onAnswerAccepted.bind(this)}
-                           enableAnswer={!this.state.question.answerAccepted}
-                           answer={answer}
-                           key={index} />;
+            return (
+                <Answer
+                    onAnswer={this.onAnswerAccepted.bind(this)}
+                    enableAnswer={!this.state.question.answerAccepted && this.state.owned}
+                    answer={answer}
+                    key={index}
+                    onDeleteAnswer={this.loadThreadAndAnswers.bind(this, this.props.match.params.id)}
+                    onEditAnswer={this.loadThreadAndAnswers.bind(this, this.props.match.params.id)}
+                />
+             );
         });
     }
 
@@ -107,10 +111,6 @@ class QuestionView extends React.Component {
     }
 
     renderAnswerForm() {
-        if (this.state.postingAnswer) {
-            return <Loader />;
-        }
-
         return (
             <div className="answer-form">
                 <InputField
@@ -122,8 +122,13 @@ class QuestionView extends React.Component {
                     onChange={this.onChangeAnswer.bind(this)}
                     errorMessage={this.state.answerError}
                 />
-                <Button color="secondary"
-                        onClick={this.saveAnswer.bind(this)}>{t`Post answer`}</Button>
+                <Button
+                    color="secondary"
+                    onClick={this.saveAnswer.bind(this)}
+                    loading={this.state.postingAnswer}
+                >
+                    {t`Post answer`}
+                </Button>
             </div>
         );
 

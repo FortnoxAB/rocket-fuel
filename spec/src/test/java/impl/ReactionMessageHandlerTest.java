@@ -1,3 +1,5 @@
+package impl;
+
 import api.Answer;
 import api.AnswerResource;
 import api.Question;
@@ -71,7 +73,7 @@ public class ReactionMessageHandlerTest {
 
         question.setSlackId(questionId);
 
-        questionResource.postQuestion(as(user), question).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(as(user), question).toBlocking().singleOrDefault(null);
 
         Question questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().singleOrDefault(null);
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(0);
@@ -125,7 +127,7 @@ public class ReactionMessageHandlerTest {
         question.setSlackId(questionId);
 
         //Create and assert question in db
-        questionResource.postQuestion(as(user), question).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(as(user), question).toBlocking().singleOrDefault(null);
         Question questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().singleOrDefault(null);
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(0);
 
@@ -134,7 +136,6 @@ public class ReactionMessageHandlerTest {
         Answer answer = new Answer();
         answer.setAnswer("test");
         answer.setUserId(user.getId());
-        answer.setTitle("The title of the answer");
         answer.setSlackId(String.valueOf(currentTimeMillis+1));
         AssertableSubscriber<Answer> voidAssertableSubscriber = answerResource.answerQuestion(as(user), answer, questionBySlackThreadId.getId()).test().awaitTerminalEvent();
         voidAssertableSubscriber.assertNoErrors();

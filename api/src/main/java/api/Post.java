@@ -6,10 +6,7 @@
   * or {@link Question}.
   */
  public abstract class Post {
-
-    private String title;
-
-     private Long id;
+    private Long id;
 
     private String createdBy;
 
@@ -22,14 +19,6 @@
     private Integer votes;
 
     private String slackId;
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
 
     public String getCreatedBy() {
         return createdBy;

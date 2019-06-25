@@ -31,7 +31,7 @@ export function signIn(token) {
 
 export function deleteQuestion(questionId) {
     const options = {
-        url: `/api/me/questions/${questionId}`,
+        url: `/api/users/me/questions/${questionId}`,
         method: 'DELETE'
     };
 
@@ -45,7 +45,7 @@ export function deleteQuestion(questionId) {
 
 export function updateQuestion(questionId, body) {
     const options = {
-        url: `/api/me/questions/${questionId}`,
+        url: `/api/users/me/questions/${questionId}`,
         method: 'PUT',
         body: body
     };
@@ -60,7 +60,7 @@ export function updateQuestion(questionId, body) {
 
 export function updateAnswer(answerId, body) {
     const options = {
-        url: `/api/me/answers/${answerId}`,
+        url: `/api/users/me/answers/${answerId}`,
         method: 'PUT',
         body: body
     };
@@ -75,7 +75,7 @@ export function updateAnswer(answerId, body) {
 
 export function deleteAnswer(answerId) {
     const options = {
-        url: `/api/me/answers/${answerId}`,
+        url: `/api/users/me/answers/${answerId}`,
         method: 'DELETE'
     };
 

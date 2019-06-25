@@ -83,7 +83,7 @@ class Header extends React.Component {
                             close={this.closeUserDropdown.bind(this)}
                         >
                             <ul>
-                                <li><a onClick={this.logoutUser.bind(this)}>{t`Logout`}</a></li>
+                                <li onClick={this.logoutUser.bind(this)}>{t`Logout`}</li>
                             </ul>
                         </Dropdown>
                     </div>

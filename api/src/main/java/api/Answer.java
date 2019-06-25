@@ -1,5 +1,4 @@
- package api;
-
+package api;
 
 public class Answer extends Post {
 
@@ -7,14 +6,13 @@ public class Answer extends Post {
 
     private boolean accepted;
 
-    public String getAnswer() {
-        return answer;
-    }
+    private long questionId;
+
+    public String getAnswer() { return answer; }
 
     public void setAnswer(String answer) {
         this.answer = answer;
     }
-
 
     public boolean isAccepted() {
         return accepted;
@@ -24,4 +22,11 @@ public class Answer extends Post {
         this.accepted = accepted;
     }
 
+    public long getQuestionId() {
+        return questionId;
+    }
+
+    public void setQuestionId(long questionId) {
+        this.questionId = questionId;
+    }
 }

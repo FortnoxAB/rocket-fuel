@@ -10,6 +10,7 @@ import Dropdown from '../utils/dropdown';
 import { t } from 'ttag';
 import Dialog from '../utils/dialog';
 import Button from '../forms/button';
+import * as User from '../../models/user';
 
 class QuestionRow extends React.Component {
     constructor(props) {
@@ -17,7 +18,8 @@ class QuestionRow extends React.Component {
 
         this.state = {
             user: null,
-            idDeleteQuestionDialogOpen: false
+            isDeleteQuestionDialogOpen: false,
+            isDeletingQuestion: false
         };
     }
 
@@ -97,13 +99,30 @@ class QuestionRow extends React.Component {
 
     deleteQuestion() {
         this.setState({
-            idDeleteQuestionDialogOpen: true
+            isDeleteQuestionDialogOpen: true
         });
     }
 
     closeDialog() {
         this.setState({
-            idDeleteQuestionDialogOpen: false
+            isDeleteQuestionDialogOpen: false
+        });
+    }
+
+    delete() {
+        this.setState({
+            isDeletingQuestion: true
+        });
+        User.deleteQuestion(this.props.question.id).then(() => {
+            this.setState({
+                isDeletingQuestion: false,
+                isDeleteQuestionDialogOpen: false
+            });
+            this.props.onDeleteQuestion();
+        }).catch(() => {
+            this.setState({
+                isDeletingQuestion: false
+            });
         });
     }
 
@@ -136,13 +155,13 @@ class QuestionRow extends React.Component {
     render() {
         return (
             <div className={`${this.getClasses()} ${this.getState()}`}>
-                <Dialog isOpen={this.state.idDeleteQuestionDialogOpen} title={t`Delete question`}>
+                <Dialog isOpen={this.state.isDeleteQuestionDialogOpen} title={t`Delete question`}>
                     <div className="padded-bottom-large">
                         <b>{this.props.question.title}</b> {t`will be deleted from Rocket fuel.`}
                     </div>
                     <div className="flex flex-end">
                         <Button onClick={this.closeDialog.bind(this)} text>{t`Cancel`}</Button>
-                        <Button text color="primary">{t`Delete`}</Button>
+                        <Button onClick={this.delete.bind(this)} loading={this.state.isDeletingQuestion} text color="primary">{t`Delete`}</Button>
                     </div>
                 </Dialog>
                 <div className="content" onClick={this.navigateToQuestion.bind(this, this.props.question.id)}>
@@ -170,7 +189,8 @@ QuestionRow.defaultProps = {
     user: {},
     question: {},
     small: false,
-    hideTags: false
+    hideTags: false,
+    onDeleteQuestion: () => {}
 };
 
 export default withRouter(QuestionRow);

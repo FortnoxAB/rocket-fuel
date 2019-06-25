@@ -1,3 +1,5 @@
+package impl;
+
 import api.auth.Auth;
 
 public class MockAuth extends Auth {

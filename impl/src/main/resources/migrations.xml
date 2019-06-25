@@ -110,11 +110,29 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_constrain_for_questionid_and_answerId" author="">
+        <addUniqueConstraint columnNames="id, question_id"
+                             constraintName="question_answer_unique_key"
+                             tableName="answer"/>
+    </changeSet>
+
+    <changeSet id="add_delete_on_cascade_between_question_and_answer" author="jesper.lahdevirta">
+        <addForeignKeyConstraint baseColumnNames="question_id"
+                                 baseTableName="answer"
+                                 constraintName="fk_question_answer_constrain"
+                                 onDelete="CASCADE"
+                                 onUpdate="NO ACTION"
+                                 referencedColumnNames="id"
+                                 referencedTableName="question"/>
+    </changeSet>
     <changeSet id="add_user_picture" author="tobias.friberg">
         <addColumn tableName="user">
             <column name="picture" type="VARCHAR" defaultValue="NULL">
                 <constraints nullable="true"/>
             </column>
         </addColumn>
+    </changeSet>
+    <changeSet id="drop_column_title_in_answers" author="tobias.friberg">
+        <dropColumn columnName="title" tableName="answer" />
     </changeSet>
 </databaseChangeLog>

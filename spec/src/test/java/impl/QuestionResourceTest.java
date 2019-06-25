@@ -1,10 +1,12 @@
+package impl;
+
 import api.*;
 import api.auth.Auth;
 import dao.QuestionDao;
-import impl.QuestionResourceImpl;
 import org.junit.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
+import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.sql.SQLException;
@@ -57,6 +59,33 @@ public class QuestionResourceTest {
         }
     }
 
+
+    @Test
+    public void shouldBePossibleToGetQuestionBySlackThreadId() {
+
+        User createdUser = TestSetup.insertUser(userResource);
+        Auth mockAuth = new MockAuth(createdUser.getId());
+
+        Question question      = TestSetup.getQuestion("my question title", "my question");
+        String   slackThreadId = String.valueOf(System.currentTimeMillis());
+        question.setSlackId(slackThreadId);
+
+        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        Question returnedQuestion = questionResource.getQuestionBySlackThreadId(slackThreadId).toBlocking().singleOrDefault(null);
+
+        assertThat(returnedQuestion.getSlackId()).isEqualTo(slackThreadId);
+    }
+
+    @Test
+    public void shouldReturnNotFoundWhenNoQuestionIsFoundForSlackThreadId() {
+
+        AssertableSubscriber<Question> test = questionResource.getQuestionBySlackThreadId(String.valueOf(System.currentTimeMillis())).test();
+        test.awaitTerminalEvent();
+
+        test.assertError(WebException.class);
+        assertThat(((WebException)test.getOnErrorEvents().get(0)).getError()).isEqualTo("not.found");
+    }
+
     @Test
     public void shouldListLatest10QuestionsAsDefault() {
         generateQuestions(20);
@@ -71,7 +100,7 @@ public class QuestionResourceTest {
 
         for (int i = 1; i <= questionsToGenerate; i++) {
             Question question = TestSetup.getQuestion("my question title " + i, "my question");
-            questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+            questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
         }
     }
 

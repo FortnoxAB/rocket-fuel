@@ -1,3 +1,5 @@
+package impl;
+
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
@@ -7,9 +9,6 @@ import auth.openid.OpenIdValidator;
 import dao.UserDao;
 import dates.DateProvider;
 import dates.DateProviderImpl;
-import impl.ApplicationTokenCreator;
-import impl.ResponseHeaderHolder;
-import impl.UserResourceImpl;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.*;
 import org.mockito.ArgumentCaptor;
@@ -146,8 +145,6 @@ public class UserResourceTest {
 
     @Test
     public void shouldReturnNotFoundIfUserDoesNotExistWhenSearchingById() {
-
-        // when
         try {
             userResource.getUserById(1234).toBlocking().singleOrDefault(null);
             fail("expected exception");
@@ -158,19 +155,16 @@ public class UserResourceTest {
 
     @Test
     public void shouldReturnNotFoundIfUserDoesNotExistWhenSearchingByEmail() {
-
         try {
             userResource.getUserByEmail("random@email.com", false).toBlocking().singleOrDefault(null);
             fail("expected exception");
         } catch (WebException e) {
             assertEquals(HttpResponseStatus.NOT_FOUND, e.getStatus());
         }
-
     }
 
     @Test
     public void shouldReturnInternalServerErrorIfUserInAuthCannotBeFound() {
-
         try {
             Auth auth = new Auth();
             auth.setUserId(33);

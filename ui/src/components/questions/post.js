@@ -26,8 +26,7 @@ class Post extends React.Component {
 
     componentDidMount() {
         this.setState({
-            votes: this.props.votes,
-            currentBody: this.props.body
+            votes: this.props.votes
         });
     }
 
@@ -136,6 +135,7 @@ class Post extends React.Component {
                     currentBody: this.state.answer,
                     postingToServer: false
                 });
+                this.props.onEdit();
             }).catch(() => {
             this.setState({
                 postingToServer: false
@@ -149,6 +149,7 @@ class Post extends React.Component {
                 this.setState({
                     isDeleteDialogOpen: false
                 });
+                this.props.onDelete();
             });
             return;
         }
@@ -156,6 +157,7 @@ class Post extends React.Component {
             this.setState({
                 isDeleteDialogOpen: false
             });
+            this.props.onDelete();
             this.props.history.replace('/');
         });
     }
@@ -232,7 +234,9 @@ class Post extends React.Component {
                 <div className="flex-grow">
                     <div className="post-body">
                         <h3>{this.props.title}</h3>
-                        <Markdown text={this.state.currentBody} />
+                        <div className="padded-bottom">
+                            <Markdown text={this.props.body} />
+                        </div>
                     </div>
                     <div className="post-footer flex flex-between">
                         <div className="center-vertical">
@@ -263,7 +267,9 @@ Post.defaultProps = {
     answered: false,
     questionId: null,
     answerId: null,
-    picture: null
+    picture: null,
+    onDelete: () => {},
+    onEdit: () => {}
 };
 
 export default withRouter(Post);
