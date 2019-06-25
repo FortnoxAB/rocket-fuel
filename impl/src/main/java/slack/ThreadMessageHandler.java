@@ -27,13 +27,13 @@ public class ThreadMessageHandler implements SlackMessageHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThreadMessageHandler.class);
 
-    private static final String               SLACK_THREAD_ID = "thread_ts";
-    private static final String               CHANNEL = "channel";
-    private final        QuestionResource     questionResource;
-    private final        SlackResource        slackResource;
-    private final        UserResource         userResource;
-    private final        AnswerResource       answerResource;
-    private static final int                  DEFAULT_BOUNTY  = 50;
+    private static final String           SLACK_THREAD_ID = "thread_ts";
+    private static final String           CHANNEL         = "channel";
+    private final        QuestionResource questionResource;
+    private final        SlackResource    slackResource;
+    private final        UserResource     userResource;
+    private final        AnswerResource   answerResource;
+    private static final int              DEFAULT_BOUNTY  = 50;
 
     @Inject
     public ThreadMessageHandler(QuestionResource questionResource,
@@ -58,25 +58,29 @@ public class ThreadMessageHandler implements SlackMessageHandler {
         return
             questionResource
                 .getQuestionBySlackThreadId(message.get(SLACK_THREAD_ID).getAsString())
-
                 //No thread found -> create new
                 .onErrorResumeNext(throwable -> {
-                    if (throwable instanceof WebException
-                            && NOT_FOUND.equals(((WebException) throwable).getStatus())) {
+                    if (isNotFoundException(throwable)) {
                         return createQuestionAndPostToSlack(message);
-
                     }
                     return error(throwable);
                 })
                 .flatMap(question -> createAnswer(message));
     }
 
+    private static boolean isNotFoundException(Throwable throwable) {
+        if(throwable instanceof WebException) {
+            return NOT_FOUND.equals(((WebException)throwable).getStatus());
+        }
+        return false;
+    }
     private Observable<Question> createQuestionAndPostToSlack(JsonObject message) {
         return concat(createMainQuestion(message), postToSlack(message).cast(Question.class));
     }
 
     /**
      * Posts reply to thread in slack
+     *
      * @param message the thread
      * @return
      */
@@ -85,13 +89,13 @@ public class ThreadMessageHandler implements SlackMessageHandler {
             message.get(CHANNEL).getAsString(),
             "This looks like an interesting conversation, added it to rocket-fuel",
             message.get(SLACK_THREAD_ID).getAsString())
-        .ignoreElements();
+            .ignoreElements();
     }
 
     /**
      * Start the thread in our internal storage
-     * @param message message from slack
      *
+     * @param message message from slack
      * @return
      */
     private Observable<Question> createMainQuestion(JsonObject message) {
@@ -124,8 +128,8 @@ public class ThreadMessageHandler implements SlackMessageHandler {
 
     /**
      * Create answer to question
-     * @param message message to create answer for
      *
+     * @param message message to create answer for
      * @return
      */
     private Observable<Void> createAnswer(JsonObject message) {
@@ -144,11 +148,11 @@ public class ThreadMessageHandler implements SlackMessageHandler {
 
                     return answerResource.answerQuestion(as(user.getId()), answer, question.getId()).ignoreElements().cast(Void.class);
                 }
-        ));
+            ));
     }
 
     /**
-     * TODO figure out how to create a title from the message
+     *
      * @param message the message from slack
      * @return the title
      */

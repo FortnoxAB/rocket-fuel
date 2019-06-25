@@ -7,6 +7,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.AnswerDao;
 import dao.QuestionDao;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
@@ -24,6 +27,8 @@ public class AnswerResourceImpl implements AnswerResource {
 
     public static final String ERROR_NOT_OWNER_OF_QUESTION = "not.owner.of.question";
     public static final String ERROR_ANSWER_NOT_CREATED = "answer.not.created";
+
+    private static final Logger LOG = LoggerFactory.getLogger(AnswerResourceImpl.class);
 
     private final AnswerDao       answerDao;
     private final QuestionDao     questionDao;
@@ -57,6 +62,7 @@ public class AnswerResourceImpl implements AnswerResource {
     public Observable<List<Answer>> getAnswers(long questionId) {
         return answerDao.getAnswers(questionId).toList().doOnError(throwable -> {
             System.out.println(throwable.getMessage());
+            LOG.error("Failed to get answers for question: " + questionId, throwable);
         });
     }
 
