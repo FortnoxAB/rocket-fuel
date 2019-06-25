@@ -15,6 +15,8 @@
 
     private Long userId;
 
+    private String picture;
+
     private String createdAt;
 
     private Integer votes;
@@ -75,5 +77,13 @@
 
      public void setSlackId(String slackId) {
          this.slackId = slackId;
+     }
+
+     public String getPicture() {
+         return picture;
+     }
+
+     public void setPicture(String picture) {
+         this.picture = picture;
      }
  }

@@ -1,0 +1,87 @@
+$picture-size: 40px;
+
+.question-post {
+    background-color: $background-color-light;
+    border-radius: $roundness;
+    display: flex;
+    margin-bottom: 20px;
+    color: contrast( $background-color-light);
+    border: 1px solid $border-color;
+    @include material-shadow(1);
+
+    .post-sidebar {
+        color: contrast($background-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+
+        .vote {
+            cursor: pointer;
+            font-size: 2em;
+            color: rgba(contrast($background-color), 20%);
+
+            &:hover {
+                color: contrast($background-color);
+            }
+        }
+
+        .accepted {
+            color: $notification-success;
+        }
+
+        .unaccepted {
+            cursor: pointer;
+            color: $gray-light-more;
+
+            &:hover {
+                color: $gray-light;
+            }
+        }
+    }
+
+    .picture img {
+        border-radius: 50%;
+        height: $picture-size;
+        width: $picture-size;
+        margin-right: 20px;
+    }
+
+    .post-body {
+        display: flex;
+        flex-grow: 1;
+        flex-direction: column;
+        white-space: pre-line;
+        padding: 20px;
+    }
+
+    .post-footer {
+        color: contrast($background-color);
+        align-items: center;
+        line-height: 2em;
+        font-size: .8em;
+        padding: 0 20px 20px 20px;
+
+        .button-group {
+            align-self: flex-end;
+        }
+    }
+
+    .trophy, .certificate {
+        margin-bottom: 10px;
+    }
+}
+
+.answer {
+    border: none;
+
+    &.accepted {
+        border: 1px solid rgba($notification-success, 20%);
+        @include material-shadow(2);
+    }
+}
+.answer-form {
+    textarea {
+        margin-bottom: 20px;
+    }
+}

@@ -7,6 +7,7 @@ import Coins from '../utils/coins';
 import MenuBar from './menubar';
 import InputField from '../forms/inputfield';
 import Dropdown from '../utils/dropdown';
+import Button from '../forms/button';
 
 class Header extends React.Component {
     constructor(props) {
@@ -54,7 +55,7 @@ class Header extends React.Component {
     render() {
         return (
             <div>
-                <div className="header-row">
+                <div className="header">
                     <div className="flex">
                         <Logo onClick={this.navigateToMain.bind(this)} className="pointer"
                               size="small" color="light" />
@@ -72,9 +73,9 @@ class Header extends React.Component {
                     </div>
                     <div>
                         <div className="user" onClick={this.toggleDropdown.bind(this)}>
-                            <div className="name">
+                            <Button color="primary" text>
                                 <i className="fa fa-user" /> {this.getUser()}
-                            </div>
+                            </Button>
                             {/*<Coins amount={172} />*/}
                         </div>
                         <Dropdown
@@ -87,7 +88,7 @@ class Header extends React.Component {
                         </Dropdown>
                     </div>
                 </div>
-                <div className="header-row-placeholder" />
+                <div className="header-placeholder" />
             </div>
         );
     }

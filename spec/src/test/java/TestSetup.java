@@ -139,6 +139,7 @@ public class TestSetup {
         User user = new User();
         user.setEmail(generatedEmail);
         user.setName("Test Subject");
+        user.setPicture("picture.jpg");
         userResource.createUser(null, user).toBlocking().single();
         return userResource.getUserByEmail(generatedEmail, false).toBlocking().single();
     }

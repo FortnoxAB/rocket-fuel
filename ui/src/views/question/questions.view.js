@@ -1,7 +1,7 @@
 import React from 'react';
 import { t } from 'ttag';
 import { withRouter, NavLink } from 'react-router-dom';
-import QuestionCard from '../../components/questions/questioncard';
+import QuestionRow from '../../components/questions/questionrow';
 import Loader from '../../components/utils/loader';
 import Button from '../../components/forms/button';
 import InputField from '../../components/forms/inputfield';
@@ -68,9 +68,9 @@ class QuestionsView extends React.Component {
         });
     }
 
-    renderQuestionCards() {
+    renderQuestionRows() {
         return this.state.questions.map((question, index) => {
-            return <QuestionCard key={index} question={question} />;
+            return <QuestionRow key={index} question={question} />;
         });
     }
 
@@ -80,7 +80,9 @@ class QuestionsView extends React.Component {
         }
 
         if (this.state.searchResult.length <= 0 && this.state.searchStr.length > 0 && this.state.searched) {
-            return <div>{t`No questions found.`}</div>;
+            return <div className="padded-bottom-large">
+                {t`No questions found.`}
+            </div>;
         }
 
         if (this.state.searchResult.length <= 0) {
@@ -88,14 +90,18 @@ class QuestionsView extends React.Component {
         }
 
         const searchResult = this.state.searchResult.map((question, index) => {
-            return <QuestionCard small key={index} question={question} />;
+            return <QuestionRow small key={index} question={question} />;
         });
         return (
-            <div className="underlined">
+            <div className="padded-bottom-large">
                 <h2>{t`Search result`}</h2>
                 {searchResult}
             </div>
         )
+    }
+
+    navigate(url) {
+        this.props.history.push(url);
     }
 
     render() {
@@ -106,11 +112,10 @@ class QuestionsView extends React.Component {
         }
         return (
             <div>
-                <div className="flex-end padded-bottom">
-                    <NavLink to="/create/thread">
-                        <Button color="secondary"><i className="fa fa-pencil" /> {t`New question`}
-                        </Button>
-                    </NavLink>
+                <div className="flex flex-end padded-bottom">
+                    <Button color="primary" onClick={this.navigate.bind(this, '/create/thread')}>
+                        {t`New question`}
+                    </Button>
                 </div>
 
                 <div className="padded-bottom">
@@ -122,13 +127,12 @@ class QuestionsView extends React.Component {
                         autocomplete="off"
                         rounded
                         icon="fa-search"
-                        className="lg"
                     />
                 </div>
 
                 <div>
                     {this.renderSearchResult()}
-                    {this.renderQuestionCards()}
+                    {this.renderQuestionRows()}
                 </div>
             </div>
         );

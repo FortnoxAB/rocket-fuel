@@ -119,7 +119,7 @@ class Routing extends React.Component {
                            render={() => <BlogListView />} />
                     <Route path="/users/:userId?"
                            render={() => <UsersView />} />
-                    <Route path="/create/:type"
+                    <Route path="/create/:type/:id?"
                            render={() => <CreateQuestionView />} />
                     <Route path="/search"
                            render={() => <SearchView />} />

@@ -1,0 +1,27 @@
+.dialog-blocker {
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, .3);
+    position: fixed;
+    z-index: 110;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dialog {
+    width: 500px;
+    max-width: 90vw;
+    max-height: 90vh;
+    background-color: $background-color-light;
+    border-radius: $roundness;
+    padding: 25px;
+    @include material-shadow(4);
+
+    > .title {
+        @include main-font('bold', 1.1em);
+        padding-bottom: 20px;
+    }
+}

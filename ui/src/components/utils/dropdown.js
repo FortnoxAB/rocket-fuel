@@ -20,7 +20,6 @@ class Dropdown extends React.Component {
     componentDidMount() {
         window.addEventListener('resize', this.resize);
         window.addEventListener('mouseup', this.onClick, false);
-        this.resizeEvent();
     }
 
     componentWillUnmount() {
@@ -39,23 +38,17 @@ class Dropdown extends React.Component {
     }
 
     resizeEvent() {
-        const content                 = this.contentNode;
+        const dropdown                = this.dropdownNode;
         const dropdownParent          = this.dropdownNode.parentElement;
         const dropdownParentRectangle = dropdownParent.getBoundingClientRect();
-        const arrow                   = this.arrowNode;
+        const offset = dropdownParentRectangle.width / 2;
 
-        let left = dropdownParentRectangle.left + dropdownParentRectangle.width / 2;
-
-        if (left + content.offsetWidth > window.innerWidth) {
-            left = window.innerWidth - content.offsetWidth / 2;
+        if (dropdownParentRectangle.x > (window.innerWidth/2)) {
+            dropdown.style.right = `${offset}px`;
+            return;
         }
 
-        if (left < content.offsetWidth / 2) {
-            left = content.offsetWidth / 2;
-        }
-
-        arrow.style.left   = `${dropdownParentRectangle.left + dropdownParentRectangle.width / 2}px`;
-        content.style.left = `${left}px`;
+        dropdown.style.left = `${offset}px`;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -70,6 +63,7 @@ class Dropdown extends React.Component {
         }
 
         if (nextProps.isOpen) {
+            this.resizeEvent();
             clearTimeout(this.closingTimeout);
             this.setState({
                 isOpen: nextProps.isOpen,
@@ -106,16 +100,9 @@ class Dropdown extends React.Component {
         return (
             <div
                 className={`dropdown ${this.getClasses()}`}
-                ref={(node) => {
-                    this.dropdownNode = node;
-                }}
+                ref={(node) => {this.dropdownNode = node;}}
             >
-                <div className="arrow" ref={(node) => {
-                    this.arrowNode = node;
-                }} />
-                <div className="content" ref={(node) => {
-                    this.contentNode = node;
-                }}>
+                <div className="content" ref={(node) => {this.contentNode = node;}}>
                     {this.props.children}
                 </div>
             </div>

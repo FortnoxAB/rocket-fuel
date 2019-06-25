@@ -18,8 +18,10 @@ class SignInView extends React.Component {
                     <source src={src} type="video/mp4" />
                 </video>
                 <Logo size="large" className="text-light" />
-                <Button color="gradient"
-                        onClick={this.props.onSignIn.bind(this)}>{t`Sign in`}</Button>
+                <Button
+                    color="primary"
+                    rounded
+                    onClick={this.props.onSignIn.bind(this)}>{t`Sign in`}</Button>
             </div>
         );
     }

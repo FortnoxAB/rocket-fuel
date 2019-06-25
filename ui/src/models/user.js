@@ -28,3 +28,61 @@ export function signIn(token) {
         return response;
     });
 }
+
+export function deleteQuestion(questionId) {
+    const options = {
+        url: `/api/me/questions/${questionId}`,
+        method: 'DELETE'
+    };
+
+    return ApiFetch(options).then((response) => {
+        if (response.error) {
+            return;
+        }
+        return response;
+    });
+}
+
+export function updateQuestion(questionId, body) {
+    const options = {
+        url: `/api/me/questions/${questionId}`,
+        method: 'PUT',
+        body: body
+    };
+
+    return ApiFetch(options).then((response) => {
+        if (response.error) {
+            return;
+        }
+        return response;
+    });
+}
+
+export function updateAnswer(answerId, body) {
+    const options = {
+        url: `/api/me/answers/${answerId}`,
+        method: 'PUT',
+        body: body
+    };
+
+    return ApiFetch(options).then((response) => {
+        if (response.error) {
+            return;
+        }
+        return response;
+    });
+}
+
+export function deleteAnswer(answerId) {
+    const options = {
+        url: `/api/me/answers/${answerId}`,
+        method: 'DELETE'
+    };
+
+    return ApiFetch(options).then((response) => {
+        if (response.error) {
+            return;
+        }
+        return response;
+    });
+}

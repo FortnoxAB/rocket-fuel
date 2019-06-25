@@ -80,7 +80,7 @@ public class UserResourceTest {
     public void shouldFetchExistingUserInDatabaseIfReturningUser() {
         // given
         User user = insertUser();
-        ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken(user.getName(), user.getEmail(), "pictureUrl");
+        ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken(user.getName(), user.getEmail(), user.getPicture());
         when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
@@ -90,6 +90,7 @@ public class UserResourceTest {
         assertNotNull(returnedUser);
         User insertedUser = userResource.getUserByEmail(user.getEmail(), false).toBlocking().singleOrDefault(null);
         assertEquals(user.getName(), insertedUser.getName());
+        assertEquals(user.getPicture(), insertedUser.getPicture());
     }
 
     @Test
@@ -125,6 +126,7 @@ public class UserResourceTest {
         assertNotNull(foundUser);
         assertEquals(user.getEmail(), foundUser.getEmail());
         assertEquals(user.getId(), foundUser.getId());
+        assertEquals(user.getPicture(), foundUser.getPicture());
     }
 
     @Test
@@ -139,6 +141,7 @@ public class UserResourceTest {
         assertNotNull(foundUser);
         assertEquals(user.getEmail(), foundUser.getEmail());
         assertEquals(user.getId(), foundUser.getId());
+        assertEquals(user.getPicture(), foundUser.getPicture());
     }
 
     @Test
@@ -185,6 +188,7 @@ public class UserResourceTest {
         User user = new User();
         user.setEmail(generatedEmail);
         user.setName("Test Subject");
+        user.setPicture("picture.jpg");
         userResource.createUser(null, user).toBlocking().single();
         return userResource.getUserByEmail(generatedEmail, false).toBlocking().single();
     }

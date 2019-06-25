@@ -109,4 +109,12 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_user_picture" author="tobias.friberg">
+        <addColumn tableName="user">
+            <column name="picture" type="VARCHAR" defaultValue="NULL">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
