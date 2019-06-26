@@ -87,7 +87,7 @@ public class UserResourceImpl implements UserResource {
         user.setEmail(email);
         user.setPicture(picture);
         return userDao.insertUser(user).flatMap(ignore -> userDao.getUserByEmail(email))
-                .onErrorResumeNext((t) -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.user.to.the.database", t)));
+                .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.user.to.the.database", t)));
     }
 
     private void addAsCookie(final ApplicationToken applicationToken, User user) {

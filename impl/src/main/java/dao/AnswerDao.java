@@ -16,8 +16,12 @@ public interface AnswerDao {
                                 "a.created_at, " +
                                 "a.accepted, " +
                                 "a.votes, " +
+                                "\"user\".picture, " +
                                 "a.slack_id, " +
                                 "a.question_id, ";
+
+    String FROM_ANSWER = "FROM answer a " +
+                            "INNER JOIN \"user\" u on u.id = a.user_id ";
 
     @Update(
         "UPDATE answer " +
@@ -28,18 +32,16 @@ public interface AnswerDao {
 
     @Query(
         SELECT_ANSWER +
-            "\"user\".\"name\" AS created_by, \"user\".picture " +
-        "FROM answer a " +
-        "INNER JOIN \"user\" on \"user\".id = a.user_id " +
+            "u.name AS created_by " +
+        FROM_ANSWER +
         "WHERE user_id=:userId AND question_id=:questionId"
     )
     Observable<Answer> getAnswers(long userId, long questionId);
 
     @Query(
         SELECT_ANSWER +
-            "\"user\".picture, \"user\".name AS created_by " +
-        "FROM answer a " +
-        "INNER JOIN \"user\" on \"user\".id = a.user_id " +
+            "u.name AS created_by " +
+        FROM_ANSWER +
         "WHERE question_id=:questionId " +
         "ORDER BY a.accepted desc, a.votes desc, a.created_at desc"
     )
@@ -48,9 +50,8 @@ public interface AnswerDao {
 
     @Query(
         SELECT_ANSWER +
-            "\"user\".\"name\" AS created_by, \"user\".picture " +
-        "FROM answer a " +
-        "INNER JOIN \"user\" on \"user\".id = a.user_id " +
+            "u.name AS created_by " +
+        FROM_ANSWER +
         "WHERE slack_id=:slackId"
     )
     Observable<Answer> getAnswer(String slackId);
@@ -104,8 +105,7 @@ public interface AnswerDao {
         SELECT_ANSWER +
             "u.name AS created_by, " +
             "q.user_id AS \"question.user_id\" " +
-        "FROM answer a " +
-        "INNER JOIN \"user\" u on u.id = a.user_id " +
+        FROM_ANSWER +
         "INNER JOIN question q on q.id = a.question_id " +
         "WHERE a.id=:id")
     Observable<AnswerInternal> getAnswerById(long id);

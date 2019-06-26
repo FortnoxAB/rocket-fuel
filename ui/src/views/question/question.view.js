@@ -94,7 +94,7 @@ class QuestionView extends React.Component {
             return (
                 <Answer
                     onAnswer={this.onAnswerAccepted.bind(this)}
-                    enableAnswer={!this.state.question.answerAccepted && this.state.owned}
+                    enableAccept={!this.state.question.answerAccepted && this.state.owned}
                     answer={answer}
                     key={index}
                     onDeleteAnswer={this.loadQuestionAndAnswers.bind(this, this.props.match.params.id)}
