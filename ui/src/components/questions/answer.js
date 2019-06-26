@@ -20,6 +20,8 @@ class Answer extends React.Component {
                 picture={this.props.answer.picture}
                 onDelete={this.props.onDeleteAnswer.bind(this)}
                 onEdit={this.props.onEditAnswer.bind(this)}
+                enableAccept={this.props.enableAccept}
+                onAnswer={this.props.onAnswer.bind(this)}
             />
         );
     }
@@ -29,7 +31,8 @@ Answer.defaultProps = {
     answer: null,
     enableAccept: true,
     onEditAnswer: () => {},
-    onDeleteAnswer: () => {}
+    onDeleteAnswer: () => {},
+    onAnswer: () => {}
 };
 
 export default Answer;

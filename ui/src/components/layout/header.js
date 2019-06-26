@@ -8,6 +8,7 @@ import MenuBar from './menubar';
 import InputField from '../forms/inputfield';
 import Dropdown from '../utils/dropdown';
 import Button from '../forms/button';
+import * as User from '../../models/user';
 
 class Header extends React.Component {
     constructor(props) {

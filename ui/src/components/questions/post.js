@@ -42,6 +42,31 @@ class Post extends React.Component {
         return classes;
     }
 
+    renderAccepted() {
+        if (!this.props.answerId) {
+            return;
+        }
+
+        if (!this.props.enableAccept) {
+            return null;
+        }
+
+        if (!this.props.accepted) {
+            return (
+                <div className="unaccepted">
+                    <i className="fa fa-check"
+                       onClick={() => this.props.onAnswer(this.props.answerId)} />
+                </div>
+            );
+        }
+
+        return (
+            <div className="accepted">
+                <i className="fa fa-check" />
+            </div>
+        );
+    }
+
     incrementVotes() {
         this.setState({
             votes: this.state.votes + 1
@@ -238,6 +263,7 @@ class Post extends React.Component {
                 {this.renderEditDialog()}
                 <div className="post-sidebar">
                     {/*this.renderVotes()*/}
+                    {this.renderAccepted()}
                     {this.renderAnswered()}
                     {this.renderAwarded()}
                 </div>
@@ -279,7 +305,8 @@ Post.defaultProps = {
     answerId: null,
     picture: null,
     onDelete: () => {},
-    onEdit: () => {}
+    onEdit: () => {},
+    enableAccept: false
 };
 
 export default withRouter(Post);

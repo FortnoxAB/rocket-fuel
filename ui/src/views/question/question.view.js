@@ -104,8 +104,8 @@ class QuestionView extends React.Component {
         });
     }
 
-    onAnswerAccepted(answer) {
-        AnswerApi.acceptAnswer(answer.id).then(() => {
+    onAnswerAccepted(answerId) {
+        AnswerApi.acceptAnswer(answerId).then(() => {
             this.loadQuestionAndAnswers(this.props.match.params.id);
         });
     }
