@@ -41,17 +41,19 @@ $picture-size: 40px;
     }
 
     .picture img {
+        display: flex;
+        align-items: center;
         border-radius: 50%;
         height: $picture-size;
         width: $picture-size;
-        margin-right: 20px;
+        margin-right: 15px;
     }
 
     .post-body {
+        word-break: break-all;
         display: flex;
         flex-grow: 1;
         flex-direction: column;
-        white-space: pre-line;
         padding: 20px;
     }
 
