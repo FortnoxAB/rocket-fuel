@@ -16,7 +16,7 @@ public interface AnswerDao {
                                 "a.created_at, " +
                                 "a.accepted, " +
                                 "a.votes, " +
-                                "\"user\".picture, " +
+                                "u.picture, " +
                                 "a.slack_id, " +
                                 "a.question_id, ";
 
