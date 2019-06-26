@@ -1,11 +1,16 @@
  package api;
 
- import api.auth.ApplicationToken;
  import api.auth.Auth;
  import rx.Observable;
 
  import javax.validation.constraints.NotNull;
- import javax.ws.rs.*;
+ import javax.ws.rs.DELETE;
+ import javax.ws.rs.GET;
+ import javax.ws.rs.HeaderParam;
+ import javax.ws.rs.POST;
+ import javax.ws.rs.Path;
+ import javax.ws.rs.PathParam;
+ import javax.ws.rs.QueryParam;
 
 @Path("/api/user")
 public interface UserResource {
@@ -56,6 +61,16 @@ public interface UserResource {
      */
     @GET
     @Path("authenticate")
-    Observable<User> generateToken(@HeaderParam("authorizationToken") @NotNull String authorizationToken);
+    Observable<User> signIn(@HeaderParam("authorizationToken") @NotNull String authorizationToken);
 
+    /**
+     * Signs out the user by telling client that the cookie shall be removed and is invalid.
+     *
+     * Set-Cookie header is used to perform the action.
+     *
+     * @return the userId
+     */
+    @DELETE
+    @Path("signOut")
+    Observable<Long> signOut(Auth auth);
 }

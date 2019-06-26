@@ -23,6 +23,8 @@ import static rx.Observable.error;
 @Singleton
 public class UserResourceImpl implements UserResource {
 
+    private static final int SESSION_MAX_AGE_SECONDS = 3600;
+
     private final ResponseHeaderHolder responseHeaderHolder;
     private final UserDao userDao;
     private final OpenIdValidator openIdValidator;
@@ -68,7 +70,7 @@ public class UserResourceImpl implements UserResource {
     }
 
     @Override
-    public Observable<User> generateToken(@NotNull String openIdToken) {
+    public Observable<User> signIn(@NotNull String openIdToken) {
         return openIdValidator.validate(openIdToken).flatMap(validOpenId ->
                 userDao.getUserByEmail(validOpenId.email)
                 .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.search.for.user", t)))
@@ -92,8 +94,21 @@ public class UserResourceImpl implements UserResource {
 
     private void addAsCookie(final ApplicationToken applicationToken, User user) {
         Map<String, Object> headers = new HashMap<>();
-        headers.put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + applicationTokenConfig.getDomain() + ";");
+        headers.put("Set-Cookie", getCookie(applicationToken.getApplicationToken(), SESSION_MAX_AGE_SECONDS, applicationTokenConfig.getDomain()));
         responseHeaderHolder.addHeaders(user, headers);
+    }
+
+    @Override
+    public Observable<Long> signOut(Auth auth) {
+        int expireNow = 0;
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("Set-Cookie", getCookie("deleted", expireNow, applicationTokenConfig.getDomain()));
+        responseHeaderHolder.addHeaders(auth.getUserId(), headers);
+        return Observable.just(auth.getUserId());
+    }
+
+    private static String getCookie(String applicationToken, int maxAge, String domain){
+        return String.format("application=%s; Path=/; Max-Age=%d; Domain=%s; SameSite=Strict; HttpOnly; Secure;", applicationToken, maxAge, domain);
     }
 
 }
