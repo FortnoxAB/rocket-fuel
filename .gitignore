@@ -6,7 +6,6 @@ target/
 ui/build/
 node_modules/
 dist/
-package-lock.json
 config.js
 
 localhost.crt
