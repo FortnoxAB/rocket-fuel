@@ -113,7 +113,7 @@ class QuestionsView extends React.Component {
         return (
             <div>
                 <div className="flex flex-end padded-bottom">
-                    <Button color="primary" onClick={this.navigate.bind(this, '/create/thread')}>
+                    <Button color="primary" onClick={this.navigate.bind(this, '/create/question')}>
                         {t`New question`}
                     </Button>
                 </div>

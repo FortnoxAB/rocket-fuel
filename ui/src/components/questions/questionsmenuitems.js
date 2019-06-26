@@ -18,7 +18,7 @@ class QuestionsMenuItems extends React.Component {
     render() {
         return (
             <ul>
-                <li onClick={this.navigate.bind(this, `/create/thread/${this.props.questionId}`)}>
+                <li onClick={this.navigate.bind(this, `/create/question/${this.props.questionId}`)}>
                     <i className="fa fa-pencil" /> {t`Edit`}
                 </li>
                 <li onClick={this.deletePost.bind(this)}>

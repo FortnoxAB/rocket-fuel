@@ -7,7 +7,6 @@ import Loader from '../../components/utils/loader';
 import * as Question from '../../models/question';
 import { UserContext } from '../../usercontext';
 import Post from '../../components/questions/post';
-import * as User from '../../models/user';
 
 class CreateQuestionView extends React.Component {
     constructor(props) {
@@ -16,7 +15,7 @@ class CreateQuestionView extends React.Component {
             title: '',
             question: '',
             bounty: '0',
-            postingThread: false,
+            postingQuestion: false,
             error: {
                 title: null,
                 question: null,
@@ -41,7 +40,7 @@ class CreateQuestionView extends React.Component {
                 this.setState({
                     loaded: true
                 });
-                this.props.history.replace('/create/thread');
+                this.props.history.replace('/create/question');
                 return;
             }
             this.setState({
@@ -55,7 +54,7 @@ class CreateQuestionView extends React.Component {
             this.setState({
                 loaded: true
             });
-            this.props.history.replace('/create/thread');
+            this.props.history.replace('/create/question');
         });
     }
 
@@ -78,12 +77,12 @@ class CreateQuestionView extends React.Component {
         });
     }
 
-    saveThread() {
+    saveQuestion() {
         let hasErrors = false;
         this.validateAll();
 
         this.setState({
-            postingThread: true
+            postingQuestion: true
         });
 
         Object.values(this.state.error).forEach((msg) => {
@@ -94,7 +93,7 @@ class CreateQuestionView extends React.Component {
 
         if (hasErrors) {
             this.setState({
-                postingThread: false
+                postingQuestion: false
             });
 
             return;
@@ -111,17 +110,17 @@ class CreateQuestionView extends React.Component {
                 this.props.history.push(`/question/${resp.id}`);
             }).catch((e) => {
                 this.setState({
-                    postingThread: false
+                    postingQuestion: false
                 });
             });
             return;
         }
 
-        User.updateQuestion(this.state.editPost, question).then(() => {
+        Question.updateQuestion(this.state.editPost, question).then(() => {
             this.props.history.push(`/question/${this.state.editPost}`);
         }).catch((e) => {
             this.setState({
-                postingThread: false
+                postingQuestion: false
             });
         });
     }
@@ -249,8 +248,8 @@ class CreateQuestionView extends React.Component {
 					/>*/}
                     <Button
                         color="secondary"
-                        loading={this.state.postingThread}
-                        onClick={this.saveThread.bind(this)}
+                        loading={this.state.postingQuestion}
+                        onClick={this.saveQuestion.bind(this)}
                     >
                         {this.renderButtonTitle()}
                     </Button>

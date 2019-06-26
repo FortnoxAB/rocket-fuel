@@ -22,6 +22,7 @@ import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 public class QuestionResourceImpl implements QuestionResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(QuestionResourceImpl.class);
+    public static final String FAILED_TO_SEARCH_FOR_QUESTIONS = "failed.to.search.for.questions";
     private final QuestionDao questionDao;
 
     @Inject
@@ -76,10 +77,13 @@ public class QuestionResourceImpl implements QuestionResource {
 
     @Override
     public Observable<List<Question>> getQuestionsBySearchQuery(@NotNull String searchQuery) {
+        if (searchQuery == null || searchQuery.isEmpty()) {
+            return error(new WebException(HttpResponseStatus.BAD_REQUEST, FAILED_TO_SEARCH_FOR_QUESTIONS));
+        }
         return questionDao.getQuestions(searchQuery)
             .onErrorResumeNext(e -> {
                 LOG.error("failed to search for questions with search query: [" + searchQuery + "]");
-                return error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.search.for.questions" ,e));
+                return error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS ,e));
             }).toList();
     }
 }

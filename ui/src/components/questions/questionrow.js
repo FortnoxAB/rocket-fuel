@@ -10,7 +10,7 @@ import Dropdown from '../utils/dropdown';
 import { t } from 'ttag';
 import Dialog from '../utils/dialog';
 import Button from '../forms/button';
-import * as User from '../../models/user';
+import * as Question from '../../models/question';
 
 class QuestionRow extends React.Component {
     constructor(props) {
@@ -38,7 +38,6 @@ class QuestionRow extends React.Component {
         if (this.props.question.answerAccepted) {
             return 'answered';
         }
-
         return 'unanswered';
     }
 
@@ -94,7 +93,7 @@ class QuestionRow extends React.Component {
     }
 
     editQuestion() {
-        this.props.history.push(`/create/thread/${this.props.question.id}`);
+        this.props.history.push(`/create/question/${this.props.question.id}`);
     }
 
     deleteQuestion() {
@@ -113,7 +112,7 @@ class QuestionRow extends React.Component {
         this.setState({
             isDeletingQuestion: true
         });
-        User.deleteQuestion(this.props.question.id).then(() => {
+        Question.deleteQuestion(this.props.question.id).then(() => {
             this.setState({
                 isDeletingQuestion: false,
                 isDeleteQuestionDialogOpen: false

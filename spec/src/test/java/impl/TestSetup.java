@@ -1,5 +1,6 @@
 package impl;
 
+import api.Answer;
 import api.Question;
 import api.User;
 import api.UserResource;
@@ -142,6 +143,16 @@ public class TestSetup {
         questionObject.setQuestion(question);
         return questionObject;
     }
+
+    @NotNull
+    public static Answer getAnswer(String answer) {
+        Answer answerObject = new Answer();
+        answerObject.setAccepted(false);
+        answerObject.setVotes(3);
+        answerObject.setAnswer(answer);
+        return answerObject;
+    }
+
     public static User insertUser(UserResource userResource) {
         final String generatedEmail = UUID.randomUUID().toString()+"@fortnox.se";
         User user = new User();

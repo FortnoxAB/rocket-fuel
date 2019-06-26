@@ -5,12 +5,7 @@ export function getUser(id) {
         url: `/api/user/id/${id}`
     };
 
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return;
-        }
-        return response;
-    });
+    return ApiFetch(options);
 }
 
 export function signIn(token) {
@@ -21,68 +16,5 @@ export function signIn(token) {
         }
     };
 
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return;
-        }
-        return response;
-    });
-}
-
-export function deleteQuestion(questionId) {
-    const options = {
-        url: `/api/users/me/questions/${questionId}`,
-        method: 'DELETE'
-    };
-
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return;
-        }
-        return response;
-    });
-}
-
-export function updateQuestion(questionId, body) {
-    const options = {
-        url: `/api/users/me/questions/${questionId}`,
-        method: 'PUT',
-        body: body
-    };
-
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return;
-        }
-        return response;
-    });
-}
-
-export function updateAnswer(answerId, body) {
-    const options = {
-        url: `/api/users/me/answers/${answerId}`,
-        method: 'PUT',
-        body: body
-    };
-
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return;
-        }
-        return response;
-    });
-}
-
-export function deleteAnswer(answerId) {
-    const options = {
-        url: `/api/users/me/answers/${answerId}`,
-        method: 'DELETE'
-    };
-
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return;
-        }
-        return response;
-    });
+    return ApiFetch(options);
 }

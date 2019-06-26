@@ -3,7 +3,8 @@ import { withRouter } from 'react-router-dom';
 import Markdown from '../helpers/markdown';
 import moment from 'moment';
 import Certificate from '../utils/certificate';
-import * as User from '../../models/user';
+import * as Question from '../../models/question';
+import * as Answer from '../../models/answer';
 import Button from '../forms/button';
 import { UserContext } from '../../usercontext';
 import Trophy from '../utils/trophy';
@@ -32,11 +33,11 @@ class Post extends React.Component {
 
     getClasses() {
         let classes = `question-post ${this.props.className}`;
-        if (this.state.votes < -3) {
-            classes = `${classes} faded`;
-        }
         if (this.props.answered) {
             classes = `${classes} accepted`;
+        }
+        if (this.state.votes < -3) {
+            classes = `${classes} faded`;
         }
         return classes;
     }
@@ -118,7 +119,7 @@ class Post extends React.Component {
             });
             return;
         }
-        this.props.history.push(`/create/thread/${this.props.questionId}`);
+        this.props.history.push(`/create/question/${this.props.questionId}`);
     }
 
     saveAnswer() {
@@ -128,7 +129,7 @@ class Post extends React.Component {
         this.setState({
             postingToServer: true
         });
-        User.updateAnswer(this.props.answerId, {answer: this.state.answer})
+        Answer.updateAnswer(this.props.answerId, {answer: this.state.answer})
             .then(() => {
                 this.setState({
                     isEditDialogOpen: false,
@@ -145,7 +146,7 @@ class Post extends React.Component {
 
     delete() {
         if (!this.props.questionId) {
-            User.deleteAnswer(this.props.answerId).then(() => {
+            Answer.deleteAnswer(this.props.answerId).then(() => {
                 this.setState({
                     isDeleteDialogOpen: false
                 });
@@ -153,7 +154,7 @@ class Post extends React.Component {
             });
             return;
         }
-        User.deleteQuestion(this.props.questionId).then(() => {
+        Question.deleteQuestion(this.props.questionId).then(() => {
             this.setState({
                 isDeleteDialogOpen: false
             });
@@ -195,38 +196,47 @@ class Post extends React.Component {
         );
     }
 
+    renderDeleteDialog() {
+        return (
+            <Dialog isOpen={this.state.isDeleteDialogOpen} title={this.getDialogTitle()}>
+                <div className="padded-bottom-large">
+                    {this.getDialogBody()}
+                </div>
+                <div className="flex flex-end">
+                    <Button onClick={this.closeDeleteDialog.bind(this)} text>{t`Cancel`}</Button>
+                    <Button onClick={this.delete.bind(this)} text color="primary">{t`Delete`}</Button>
+                </div>
+            </Dialog>
+        );
+    }
+
+    renderEditDialog() {
+        return (
+            <Dialog isOpen={this.state.isEditDialogOpen} title={t`Edit answer`}>
+                <div className="padded-bottom-large">
+                    <InputField
+                        type="textarea"
+                        name="answer"
+                        value={this.state.answer}
+                        onChange={this.onChangeAnswer.bind(this)}
+                        label={t`Answer`}
+                        markdown
+                    />
+                </div>
+                <div className="flex flex-end">
+                    <Button onClick={this.closeEditDialog.bind(this)} text>{t`Cancel`}</Button>
+                    <Button onClick={this.saveAnswer.bind(this)} loading={this.state.postingToServer} text color="primary">{t`Save`}</Button>
+                </div>
+            </Dialog>
+        );
+    }
+
     render() {
         return (
             <div className={this.getClasses()}>
-                <Dialog isOpen={this.state.isDeleteDialogOpen} title={this.getDialogTitle()}>
-                    <div className="padded-bottom-large">
-                        {this.getDialogBody()}
-                    </div>
-                    <div className="flex flex-end">
-                        <Button onClick={this.closeDeleteDialog.bind(this)} text>{t`Cancel`}</Button>
-                        <Button onClick={this.delete.bind(this)} text color="primary">{t`Delete`}</Button>
-                    </div>
-                </Dialog>
-                <Dialog isOpen={this.state.isEditDialogOpen} title={t`Edit answer`}>
-                    <div className="padded-bottom-large">
-                        <InputField
-                            type="textarea"
-                            name="answer"
-                            value={this.state.answer}
-                            onChange={this.onChangeAnswer.bind(this)}
-                            label={t`Answer`}
-                            markdown
-                        />
-                    </div>
-                    <div className="flex flex-end">
-                        <Button onClick={this.closeEditDialog.bind(this)} text>{t`Cancel`}</Button>
-                        <Button onClick={this.saveAnswer.bind(this)} loading={this.state.postingToServer} text color="primary">{t`Save`}</Button>
-                    </div>
-                </Dialog>
+                {this.renderDeleteDialog()}
+                {this.renderEditDialog()}
                 <div className="post-sidebar">
-                    <div>
-                        {/*<Coins amount={this.props.question.bounty} />*/}
-                    </div>
                     {/*this.renderVotes()*/}
                     {this.renderAnswered()}
                     {this.renderAwarded()}

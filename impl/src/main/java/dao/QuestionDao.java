@@ -189,7 +189,7 @@ public interface QuestionDao {
         "OR " +
             "question.question like ('%' || :search || '%') " +
         "OR " +
-            "answer.title  like ('%' || :search || '%') " +
+            "answer.answer  like ('%' || :search || '%') " +
         "ORDER BY  " +
             "question.votes desc, " +
             "question.created_at desc")

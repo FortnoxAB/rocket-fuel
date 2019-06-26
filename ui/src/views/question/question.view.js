@@ -37,10 +37,10 @@ class QuestionView extends React.Component {
 
     componentDidMount() {
         const questionId = this.props.match.params.id;
-        this.loadThreadAndAnswers(questionId);
+        this.loadQuestionAndAnswers(questionId);
     }
 
-    loadThreadAndAnswers(questionId) {
+    loadQuestionAndAnswers(questionId) {
         Promise.all([
             QuestionApi.getQuestionById(questionId),
             AnswerApi.getAnswersByQuestionId(questionId)
@@ -78,7 +78,7 @@ class QuestionView extends React.Component {
                 answer: '',
                 postingAnswer: false
             });
-            this.loadThreadAndAnswers(this.props.match.params.id);
+            this.loadQuestionAndAnswers(this.props.match.params.id);
         });
     }
 
@@ -97,8 +97,8 @@ class QuestionView extends React.Component {
                     enableAnswer={!this.state.question.answerAccepted && this.state.owned}
                     answer={answer}
                     key={index}
-                    onDeleteAnswer={this.loadThreadAndAnswers.bind(this, this.props.match.params.id)}
-                    onEditAnswer={this.loadThreadAndAnswers.bind(this, this.props.match.params.id)}
+                    onDeleteAnswer={this.loadQuestionAndAnswers.bind(this, this.props.match.params.id)}
+                    onEditAnswer={this.loadQuestionAndAnswers.bind(this, this.props.match.params.id)}
                 />
              );
         });
@@ -106,7 +106,7 @@ class QuestionView extends React.Component {
 
     onAnswerAccepted(answer) {
         AnswerApi.acceptAnswer(answer.id).then(() => {
-            this.loadThreadAndAnswers(this.props.match.params.id);
+            this.loadQuestionAndAnswers(this.props.match.params.id);
         });
     }
 
