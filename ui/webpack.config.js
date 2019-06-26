@@ -52,16 +52,14 @@ module.exports = {
 				]
 			},
 			{
-				test: /\.less$/,
+				test: /\.scss$/,
 				use: [
+                    'css-hot-loader',
 					{
 						loader: MiniCssExtractPlugin.loader,
-						options: {
-							publicPath: '../'
-						}
 					},
 					'css-loader',
-					'less-loader'
+					'sass-loader'
 				]
 			},
 			{

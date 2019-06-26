@@ -125,4 +125,14 @@
                                  referencedColumnNames="id"
                                  referencedTableName="question"/>
     </changeSet>
+    <changeSet id="add_user_picture" author="tobias.friberg">
+        <addColumn tableName="user">
+            <column name="picture" type="VARCHAR" defaultValue="NULL">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="drop_column_title_in_answers" author="tobias.friberg">
+        <dropColumn columnName="title" tableName="answer" />
+    </changeSet>
 </databaseChangeLog>

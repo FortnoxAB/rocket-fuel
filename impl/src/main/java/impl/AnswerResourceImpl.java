@@ -40,11 +40,6 @@ public class AnswerResourceImpl implements AnswerResource {
     public Observable<Answer> answerQuestion(Auth auth, Answer answer, long questionId) {
         Objects.requireNonNull(answer.getAnswer());
 
-        //If title is missing we just extract a title from the answer
-        if (answer.getTitle() == null) {
-            answer.setTitle(answer.getAnswer().substring(0, Math.min(10, answer.getAnswer().length())) + "...");
-        }
-
         return this.answerDao.createAnswer(auth.getUserId(), questionId, answer)
             .map(generatedKey -> {
                 answer.setId(generatedKey.getKey());

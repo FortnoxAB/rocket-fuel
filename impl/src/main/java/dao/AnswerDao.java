@@ -15,7 +15,6 @@ public interface AnswerDao {
                                 "a.answer, " +
                                 "a.created_at, " +
                                 "a.accepted, " +
-                                "a.title," +
                                 "a.votes, " +
                                 "a.slack_id, " +
                                 "a.question_id, ";
@@ -29,7 +28,7 @@ public interface AnswerDao {
 
     @Query(
         SELECT_ANSWER +
-            "\"user\".\"name\" AS created_by " +
+            "\"user\".\"name\" AS created_by, \"user\".picture " +
         "FROM answer a " +
         "INNER JOIN \"user\" on \"user\".id = a.user_id " +
         "WHERE user_id=:userId AND question_id=:questionId"
@@ -38,7 +37,7 @@ public interface AnswerDao {
 
     @Query(
         SELECT_ANSWER +
-            "\"user\".\"name\" AS created_by " +
+            "\"user\".picture, \"user\".name AS created_by " +
         "FROM answer a " +
         "INNER JOIN \"user\" on \"user\".id = a.user_id " +
         "WHERE question_id=:questionId " +
@@ -49,7 +48,7 @@ public interface AnswerDao {
 
     @Query(
         SELECT_ANSWER +
-            "\"user\".\"name\" AS created_by " +
+            "\"user\".\"name\" AS created_by, \"user\".picture " +
         "FROM answer a " +
         "INNER JOIN \"user\" on \"user\".id = a.user_id " +
         "WHERE slack_id=:slackId"
@@ -60,7 +59,6 @@ public interface AnswerDao {
         "INSERT INTO answer " +
             "(" +
                 "answer, " +
-                "title, " +
                 "votes, " +
                 "created_at, " +
                 "accepted, " +
@@ -70,7 +68,6 @@ public interface AnswerDao {
             ")" +
             "VALUES(" +
                 ":answer.answer, " +
-                ":answer.title, " +
                 "0, " +
                 "NOW(), " +
                 "false, " +
@@ -83,8 +80,7 @@ public interface AnswerDao {
 
     @Update(
         "UPDATE answer SET " +
-            "answer=:answer.answer, " +
-            "title=:answer.title " +
+            "answer=:answer.answer " +
         "WHERE " +
             "answer.id=:answerId " +
             "AND answer.user_id=:userId")

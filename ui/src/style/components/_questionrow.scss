@@ -1,0 +1,102 @@
+.question-row {
+    position: relative;
+    $text-color: contrast($background-color-light);
+
+    transition: .2s;
+    background-color: $background-color-light;
+    color: $text-color;
+    border: 1px solid $border-color;
+
+    + .question-row {
+        border-top: none;
+    }
+
+    &:hover {
+        background-color: contrast($background-color-light, $gray-dark-even-more, $gray-light-even-more);
+    }
+
+    > .content {
+        padding: 20px;
+        display: flex;
+        flex-grow: 1;
+        cursor: pointer;
+        overflow: hidden;
+
+        > .body {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex-grow: 1;
+
+            > .title {
+                width: 80%;
+                margin-right: 10px;
+                padding-bottom: 5px;
+                font-size: 1.2em;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    }
+
+    .user {
+        font-size: .8em;
+    }
+
+    .marks {
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        margin-right: 10px;
+
+        .trophy, .certificate {
+            margin-right: 5px;
+        }
+    }
+
+    .question-menu {
+        position: relative;
+        cursor: pointer;
+        align-self: flex-start;
+
+        .menu-button {
+            padding: 15px;
+        }
+    }
+
+    &.small {
+        font-size: 1em;
+        justify-content: space-between;
+        align-items: stretch;
+        margin-bottom: 0;
+
+        > .content {
+            padding: 5px;
+
+            > .body {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+
+                > .title {
+                    font-size: 1em;
+                    padding: 0;
+                }
+            }
+        }
+
+        .question-menu {
+            padding: 0;
+            align-self: center;
+        }
+
+        .marks {
+            margin: 0 5px;
+        }
+    }
+}

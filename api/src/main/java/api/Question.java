@@ -9,6 +9,8 @@
   */
  public class Question extends Post {
 
+    private String title;
+
     private String question;
 
     private Integer bounty;
@@ -48,4 +50,12 @@
     public void setSlackThreadId(String slackThreadId) {
        this.slackThreadId = slackThreadId;
     }
+
+     public String getTitle() {
+         return title;
+     }
+
+     public void setTitle(String title) {
+         this.title = title;
+     }
  }

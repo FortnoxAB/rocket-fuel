@@ -1,21 +1,49 @@
 import React from 'react'
+import Loader from '../utils/loader';
 
 class Button extends React.Component {
     getClass() {
-        let className = `button ${this.props.color} ${this.props.className}`;
-        if (this.props.circle) {
-            className = `${className} circle`;
+        return [
+            'button',
+            `button-${this.props.color}`,
+            this.props.rounded ? 'rounded' : '',
+            this.props.floating ? 'floating' : '',
+            this.props.circle ? 'circle' : '',
+            this.props.text ? 'text' : '',
+            this.props.border ? 'border' : '',
+            this.props.small ? 'small' : '',
+            this.props.className,
+        ].join(' ');
+    }
+
+    onClick() {
+        if (this.props.loading) {
+            return null;
         }
-        if (this.props.floating) {
-            className = `${className} floating`;
+
+        return this.props.onClick();
+    }
+
+    getButtonContentClassName() {
+        if (!this.props.loading) {
+            return '';
         }
-        return className;
+
+        return 'hidden-blocking';
+    }
+
+    renderLoader() {
+        if (!this.props.loading) {
+            return null;
+        }
+        return <Loader />
     }
 
     render() {
         return (
-            <div onClick={this.props.onClick.bind(this)} className={this.getClass()}>
-                {this.props.children}
+            <div onClick={this.onClick.bind(this)} className={this.getClass()}>
+                {this.renderLoader()}
+                <span className={this.getButtonContentClassName()}>{this.props.children}</span>
             </div>
         );
     }
@@ -24,10 +52,15 @@ class Button extends React.Component {
 Button.defaultProps = {
     onClick: () => {
     },
-    color: '',
+    color: 'default',
     className: '',
     circle: false,
-    floating: false
+    rounded: false,
+    floating: false,
+    text: false,
+    border: false,
+    small: false,
+    loading: false
 };
 
 export default Button;

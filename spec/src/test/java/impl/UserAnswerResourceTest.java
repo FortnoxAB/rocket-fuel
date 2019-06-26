@@ -76,7 +76,6 @@ public class UserAnswerResourceTest {
         Answer createdAnswer = getFirstAnswer(createdUser, question);
         assertFalse(createdAnswer.isAccepted());
         assertEquals("this is the body of the answer", createdAnswer.getAnswer());
-        assertEquals("this is an answer title", createdAnswer.getTitle());
         assertEquals(Integer.valueOf(0), createdAnswer.getVotes());
         assertEquals("Test Subject", createdAnswer.getCreatedBy());
     }
@@ -94,7 +93,6 @@ public class UserAnswerResourceTest {
         Answer createdAnswer = getFirstAnswer(createdUser, question);
 
         Answer updatedAnswerInput = new Answer();
-        updatedAnswerInput.setTitle("this is an updated title");
         updatedAnswerInput.setAnswer("this is an updated body of the answer");
         updatedAnswerInput.setVotes(3);
         updatedAnswerInput.setAccepted(false);
@@ -104,7 +102,6 @@ public class UserAnswerResourceTest {
         Answer updatedAnswer = getFirstAnswer(createdUser, question);
 
         assertFalse(updatedAnswer.isAccepted());
-        assertEquals("this is an updated title", updatedAnswer.getTitle());
         assertEquals("this is an updated body of the answer", updatedAnswer.getAnswer());
         assertEquals("Test Subject", updatedAnswer.getCreatedBy());
     }
@@ -130,9 +127,6 @@ public class UserAnswerResourceTest {
         // then only the answer we want to delete should be deleted
         List<Answer> remainingAnswers = userAnswerResource.getAnswers(createdUser.getId(), question.getId()).toBlocking().single();
         assertThat(remainingAnswers.size()).isEqualTo(1);
-        assertThat(remainingAnswers)
-            .extracting(Answer::getTitle)
-            .containsExactly("title2");
     }
 
     @Test
@@ -166,7 +160,6 @@ public class UserAnswerResourceTest {
         Answer createdAnswer = getFirstAnswer(createdUser, question);
         assertFalse(createdAnswer.isAccepted());
         assertEquals("this is the body of the answer", createdAnswer.getAnswer());
-        assertEquals("this is an answer title", createdAnswer.getTitle());
         assertEquals(Integer.valueOf(0), createdAnswer.getVotes());
         assertEquals("Test Subject", createdAnswer.getCreatedBy());
     }
@@ -208,7 +201,6 @@ public class UserAnswerResourceTest {
     }
     private static Answer createAnswer(String title, String answerBody) {
         Answer answer = new Answer();
-        answer.setTitle(title);
         answer.setAnswer(answerBody);
         return answer;
     }

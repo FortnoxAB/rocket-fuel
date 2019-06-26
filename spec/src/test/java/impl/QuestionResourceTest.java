@@ -3,6 +3,7 @@ package impl;
 import api.*;
 import api.auth.Auth;
 import dao.QuestionDao;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
@@ -12,7 +13,9 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 import java.sql.SQLException;
 import java.util.List;
 
+import static impl.QuestionResourceImpl.FAILED_TO_SEARCH_FOR_QUESTIONS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -21,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 public class QuestionResourceTest {
     private static QuestionResource     questionResource;
+    private static AnswerResource       answerResource;
     private static UserResource         userResource;
 
     @ClassRule
@@ -33,6 +37,7 @@ public class QuestionResourceTest {
         testSetup = new TestSetup(postgreSQLContainer);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
+        answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
     }
 
     @After
@@ -91,6 +96,36 @@ public class QuestionResourceTest {
         generateQuestions(20);
         List<Question> questions = questionResource.getLatestQuestion(null).toBlocking().single();
         assertEquals(10, questions.size());
+    }
+
+    @Test
+    public void shouldOnlySearchForQuestion() {
+        User createdUser = TestSetup.insertUser(userResource);
+        Auth mockAuth    = new MockAuth(createdUser.getId());
+        mockAuth.setUserId(createdUser.getId());
+        // given a question
+        Question question = TestSetup.getQuestion("Question title", "Question");
+        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        // and an answer
+        Answer answer = TestSetup.getAnswer("Answer body");
+        answerResource.answerQuestion(mockAuth, answer, question.getId()).toBlocking().singleOrDefault(null);
+
+        // when searching with a query that matches the body of the answer
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("body").toBlocking().single();
+        // then the question should be returned
+        assertEquals(1, questions.size());
+        assertThat(questions.get(0).getTitle()).isEqualTo(question.getTitle());
+    }
+
+    @Test
+    public void shouldNotBeAbleToSearchEmptyOrNull() {
+        Observable<List<Question>> questions = questionResource.getQuestionsBySearchQuery("");
+        assertThatExceptionOfType(WebException.class)
+            .isThrownBy(() -> questions.toBlocking().single())
+            .satisfies(e -> {
+                assertEquals(HttpResponseStatus.BAD_REQUEST, e.getStatus());
+                assertEquals(FAILED_TO_SEARCH_FOR_QUESTIONS, e.getError());
+            });
     }
 
     private void generateQuestions(int questionsToGenerate) {

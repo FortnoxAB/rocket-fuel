@@ -136,7 +136,6 @@ public class ReactionMessageHandlerTest {
         Answer answer = new Answer();
         answer.setAnswer("test");
         answer.setUserId(user.getId());
-        answer.setTitle("The title of the answer");
         answer.setSlackId(String.valueOf(currentTimeMillis+1));
         AssertableSubscriber<Answer> voidAssertableSubscriber = answerResource.answerQuestion(as(user), answer, questionBySlackThreadId.getId()).test().awaitTerminalEvent();
         voidAssertableSubscriber.assertNoErrors();

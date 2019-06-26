@@ -50,5 +50,5 @@ public interface UserQuestionResource {
      */
     @DELETE
     @Path("me/questions/{questionId}")
-    Observable<Void> deleteQuestion(Auth auth, long questionId);
+    Observable<Void> deleteQuestion(Auth auth, @PathParam("questionId") long questionId);
 }

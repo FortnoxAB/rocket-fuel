@@ -1,0 +1,84 @@
+@font-face {
+    font-family: 'Roboto-Thin';
+    src: url('./fonts/roboto-font/Roboto-Thin.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto-Light';
+    src: url('./fonts/roboto-font/Roboto-Light.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto-Regular';
+    src: url('./fonts/roboto-font/Roboto-Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto-Medium';
+    src: url('./fonts/roboto-font/Roboto-Medium.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto-Bold';
+    src: url('./fonts/roboto-font/Roboto-Bold.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+h1, h2, h3 {
+    @include main-font('bold');
+    padding: 0;
+    margin: 0;
+    display: block;
+}
+
+h1 {
+    font-size: 3em;
+    margin-bottom: 30px;
+}
+
+h2 {
+    font-size: 2em;
+    margin-bottom: 15px;
+}
+
+h3 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+.headline {
+    @include main-font('medium');
+    padding: 0 0 10px 0;
+}
+
+.text{
+    &-center {
+        text-align: center;
+    }
+
+    &-light {
+        color: $text-color-light;
+
+        &-faded {
+            color: rgba($text-color-light, .8);
+        }
+    }
+
+    &-dark {
+        color: $text-color-dark;
+
+        &-faded {
+            color: rgba($text-color-dark, .8);
+        }
+    }
+}

@@ -18,7 +18,7 @@ public interface QuestionDao {
             "question.votes, " +
             "question.created_at, " +
             "question,user_id, " +
-            "question.slack_id, \"user\".name as created_by " +
+            "question.slack_id, \"user\".picture, \"user\".name as created_by " +
         "FROM " +
             "question " +
         "INNER JOIN " +
@@ -36,7 +36,7 @@ public interface QuestionDao {
             "question.created_at, " +
             "question,user_id, " +
             "question.slack_id, " +
-            "\"user\".name as created_by " +
+            "\"user\".picture, \"user\".name as created_by " +
         "FROM " +
             "question " +
         "INNER JOIN " +
@@ -76,7 +76,7 @@ public interface QuestionDao {
 
     @Query(
         "SELECT " +
-            "id, " +
+            "question.id, " +
             "question, " +
             "title, " +
             "bounty, " +
@@ -84,11 +84,14 @@ public interface QuestionDao {
             "answer_accepted, " +
             "created_at, " +
             "user_id, " +
-            "slack_id " +
+            "slack_id, " +
+            "\"user\".picture " +
         "FROM " +
             "question " +
+        "INNER JOIN " +
+            "\"user\" on \"user\".id = question.user_id " +
         "WHERE " +
-            "user_id = :userId AND id=:questionId")
+            "user_id = :userId AND question.id=:questionId")
     Observable<Question> getQuestion(long userId, long questionId);
 
     @Query(
@@ -119,7 +122,8 @@ public interface QuestionDao {
             "question.created_at, " +
             "question.slack_id, " +
             "u.name as created_by, " +
-            "u.id AS user_id " +
+            "u.id AS user_id, " +
+            "u.picture " +
         "FROM " +
             "question " +
         "LEFT JOIN " +
@@ -185,7 +189,7 @@ public interface QuestionDao {
         "OR " +
             "question.question like ('%' || :search || '%') " +
         "OR " +
-            "answer.title  like ('%' || :search || '%') " +
+            "answer.answer  like ('%' || :search || '%') " +
         "ORDER BY  " +
             "question.votes desc, " +
             "question.created_at desc")

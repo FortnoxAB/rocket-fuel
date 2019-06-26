@@ -1,0 +1,49 @@
+.row {
+    display: flex;
+    flex-flow: wrap;
+
+    &.spacing {
+        > [class^="col-"]:not(:first-child) {
+            padding-left: 15px;
+        }
+    }
+}
+
+.hide-on-phone, .hide-on-tablet {
+    display: inherit;
+}
+
+@for $i from 1 through 12 {
+    .col-#{$i} {
+        width: 100%/$i;
+    }
+}
+
+@media screen and (max-width: $break-small) {
+    @for $i from 1 through 12 {
+        .col-#{$i} {
+            width: 100%;
+        }
+    }
+
+    .hide-on-tablet {
+        display: inherit;
+    }
+}
+
+@media screen and (min-width: $break-large) {
+    @for $i from 1 through 12 {
+        @if($i % 2 != 0) {
+            .col-#{$i} {
+                width: 100%;
+            }
+        }
+        .col-#{$i} {
+            width: 50%;
+        }
+    }
+
+    .hide-on-phone, .hide-on-tablet {
+        display: none;
+    }
+}

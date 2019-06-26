@@ -1,0 +1,113 @@
+$input-background-color: rgba($background-color-light, .8);
+$input-placeholder-color: rgba(contrast($background-color), .6);
+
+.input-wrap {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    position: relative;
+    flex-direction: column;
+    @include main-font('medium');
+
+    &.error {
+        input, textarea {
+            border-color: $notification-error;
+        }
+
+        .label {
+            color: $notification-error;
+        }
+    }
+
+    .error-message {
+        font-size: 10px;
+        margin: 0;
+        padding: 3px;
+        color: $notification-error;
+    }
+
+    .label {
+        transform-origin: left;
+        pointer-events: none;
+        color: $input-placeholder-color;
+        transition: .2s;
+        position: absolute;
+        display: block;
+        top: 15px;
+        left: 15px;
+    }
+
+    &.rounded input {
+        border-radius: 45px;
+    }
+
+    &.has-icon {
+        input {
+            padding-left: 35px;
+        }
+
+        .label {
+            left: 35px;
+        }
+
+        .fa {
+            color: $input-placeholder-color;
+            position: absolute;
+            left: 15px;
+        }
+    }
+
+    input, textarea {
+        vertical-align: middle;
+        padding: 15px;
+        transition: .2s;
+        width: 100%;
+        background-color: $input-background-color;
+        border: 1px solid $border-color;
+        color: contrast($input-background-color);
+        outline: none;
+        resize: none;
+        border-radius: $roundness;
+        @include main-font();
+
+        &:focus {
+            border-color: contrast($background-color);
+        }
+    }
+
+    &.active {
+        .label {
+            @include main-font();
+            color: $primary-color;
+            background: $background-color-light;
+            padding: 5px;
+            transform: scale(0.7) translate(0, calc((-200%) + 1em));
+        }
+    }
+}
+
+.markdown-text {
+    padding-bottom: 8px;
+}
+
+.lg {
+    font-size: 1.6em;
+
+    &.has-icon {
+        input, textarea {
+            padding-left: 50px
+        }
+
+        .label {
+            left: 50px;
+        }
+
+        &.active .label {
+            font-size: .5em;
+        }
+
+        .fa {
+            left: 20px;
+        }
+    }
+}

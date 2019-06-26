@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import TextareaAutosize from 'react-autosize-textarea';
+import { t } from 'ttag';
 
 class InputField extends React.Component {
     constructor(props) {
@@ -143,14 +144,30 @@ class InputField extends React.Component {
         );
     }
 
+    renderMarkdown() {
+        if (!this.props.markdown) {
+            return null;
+        }
+        return (
+            <div className="markdown-text">
+                {t`Use Markdown in this field.`} <a
+                href="https://guides.github.com/features/mastering-markdown/"
+                target="_blank">{t`Markdown-syntax`}</a>
+            </div>
+        );
+    }
+
     render() {
         return (
-            <div className={this.getClassName()} ref={node => this.node = node}>
-                {this.getLabel()}
-                {this.getIcon()}
-                {this.getInputType()}
-                {this.printErrorMessage()}
-                {this.printDropDown()}
+            <div>
+                {this.renderMarkdown()}
+                <div className={this.getClassName()} ref={node => this.node = node}>
+                    {this.getLabel()}
+                    {this.getIcon()}
+                    {this.getInputType()}
+                    {this.printErrorMessage()}
+                    {this.printDropDown()}
+                </div>
             </div>
         );
     }
@@ -181,7 +198,8 @@ InputField.defaultProps = {
     rounded: false,
     icon: '',
     validate: () => {
-    }
+    },
+    markdown: false
 };
 
 InputField.propTypes = {
@@ -203,7 +221,8 @@ InputField.propTypes = {
     endButton: PropTypes.string,
     rounded: PropTypes.bool,
     icon: PropTypes.string,
-    validate: PropTypes.func
+    validate: PropTypes.func,
+    markdown: PropTypes.bool
 };
 
 export default InputField;

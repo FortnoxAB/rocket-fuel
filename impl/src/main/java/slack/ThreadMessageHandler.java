@@ -138,7 +138,6 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                     Answer answer = new Answer();
 
                     answer.setAnswer(getTextFrom(message));
-                    answer.setTitle(getTitleFrom(message));
                     answer.setUserId(user.getId());
                     answer.setSlackId(message.get("ts").getAsString());
 

@@ -1,0 +1,36 @@
+.certificate, .trophy {
+    font-size: 1.2em;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgba(contrast($background-color-light), .2);
+}
+
+.trophy {
+    &.active {
+        color: #FFCA28;
+    }
+}
+
+.certificate {
+    &.active {
+        color: #2196F3;
+
+        .fa-check {
+            font-size: .6em;
+            position: absolute;
+            z-index: 1;
+            color: #E3F2FD;
+            display: block;
+        }
+    }
+
+    .fa-certificate {
+        z-index: 1;
+    }
+
+    .fa-check {
+        display: none;
+    }
+}

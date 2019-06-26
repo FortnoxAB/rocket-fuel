@@ -11,7 +11,7 @@ class MenuBar extends React.Component {
 
     render() {
         return (
-            <div className="menu-bar">
+            <div className="menu">
                 <ul>
                     <li><NavLink activeClassName={activeClass} exact to="/">{t`Overview`}</NavLink>
                     </li>

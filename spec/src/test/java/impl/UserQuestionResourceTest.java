@@ -181,7 +181,6 @@ public class UserQuestionResourceTest {
         List<Question> questions = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single();
 
         Answer answer = new Answer();
-        answer.setTitle("just a answer");
         answer.setAnswer("just a answer");
         answerResource.answerQuestion(mockAuth, answer, questions.get(0).getId()).toBlocking().singleOrDefault(null);
         answerResource.answerQuestion(mockAuth, answer, questions.get(1).getId()).toBlocking().singleOrDefault(null);

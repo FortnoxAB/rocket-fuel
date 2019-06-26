@@ -11,12 +11,7 @@ export function answerQuestion(answer, questionId, token) {
         }
     };
 
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return 'err';
-        }
-        return response;
-    });
+    return ApiFetch(options);
 
 }
 
@@ -25,12 +20,7 @@ export function getAnswersByQuestionId(id) {
         url: `/api/answers/question/${id}`
     };
 
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return 'err';
-        }
-        return response;
-    });
+    return ApiFetch(options);
 }
 
 export function acceptAnswer(id) {
@@ -39,10 +29,24 @@ export function acceptAnswer(id) {
         method: 'PATCH'
     };
 
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return 'err';
-        }
-        return response;
-    });
+    return ApiFetch(options);
+}
+
+export function updateAnswer(answerId, body) {
+    const options = {
+        url: `/api/users/me/answers/${answerId}`,
+        method: 'PUT',
+        body: body
+    };
+
+    return ApiFetch(options);
+}
+
+export function deleteAnswer(answerId) {
+    const options = {
+        url: `/api/users/me/answers/${answerId}`,
+        method: 'DELETE'
+    };
+
+    return ApiFetch(options);
 }
