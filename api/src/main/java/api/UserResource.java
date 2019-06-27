@@ -59,7 +59,7 @@ public interface UserResource {
      * @param authorizationToken a OpenId jwt token
      * @return a application token as a jwt
      */
-    @GET
+    @POST
     @Path("authenticate")
     Observable<User> signIn(@HeaderParam("authorizationToken") @NotNull String authorizationToken);
 
@@ -71,6 +71,6 @@ public interface UserResource {
      * @return the userId
      */
     @DELETE
-    @Path("signOut")
+    @Path("authenticate")
     Observable<Long> signOut(Auth auth);
 }

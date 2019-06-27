@@ -8,6 +8,7 @@ import MenuBar from './menubar';
 import InputField from '../forms/inputfield';
 import Dropdown from '../utils/dropdown';
 import Button from '../forms/button';
+import * as User from '../../models/user';
 
 class Header extends React.Component {
     constructor(props) {
@@ -49,7 +50,10 @@ class Header extends React.Component {
     }
 
     logoutUser() {
-        console.log('logout');
+        this.GoogleAuth = gapi.auth2.getAuthInstance();
+        this.GoogleAuth.signOut().catch(() => {
+            User.signOut();
+        });
     }
 
     render() {
