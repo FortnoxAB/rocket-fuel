@@ -8,6 +8,8 @@ public class User {
 
     private String name;
 
+    private String picture;
+
     public Long getId() {
         return id;
     }
@@ -30,5 +32,13 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
+    public String getPicture() {
+        return picture;
     }
 }

@@ -3,10 +3,10 @@ import { withRouter } from 'react-router-dom';
 import { t } from 'ttag';
 import InputField from '../../components/forms/inputfield';
 import Button from '../../components/forms/button';
-import Markdown from '../../components/helpers/markdown';
 import Loader from '../../components/utils/loader';
 import * as Question from '../../models/question';
 import { UserContext } from '../../usercontext';
+import Post from '../../components/questions/post';
 
 class CreateQuestionView extends React.Component {
     constructor(props) {
@@ -15,13 +15,47 @@ class CreateQuestionView extends React.Component {
             title: '',
             question: '',
             bounty: '0',
-            postingThread: false,
+            postingQuestion: false,
             error: {
                 title: null,
                 question: null,
                 bounty: null
-            }
+            },
+            editPost: null,
+            loaded: true
         };
+    }
+
+    componentDidMount() {
+        const questionId = parseInt(this.props.match.params.id, 10);
+        const userId = this.context.state.user.id;
+        if (!questionId) {
+            return;
+        }
+        this.setState({
+            loaded: false
+        });
+        Question.getQuestionById(questionId).then((question) => {
+            if (question.userId !== userId) {
+                this.setState({
+                    loaded: true
+                });
+                this.props.history.replace('/create/question');
+                return;
+            }
+            this.setState({
+                title: question.title,
+                question: question.question,
+                bounty: question.bounty,
+                editPost: questionId,
+                loaded: true
+            });
+        }).catch(() => {
+            this.setState({
+                loaded: true
+            });
+            this.props.history.replace('/create/question');
+        });
     }
 
     handleChange(node) {
@@ -43,17 +77,13 @@ class CreateQuestionView extends React.Component {
         });
     }
 
-    saveThread() {
+    saveQuestion() {
         let hasErrors = false;
         this.validateAll();
 
         this.setState({
-            postingThread: true
+            postingQuestion: true
         });
-
-        if (Object.keys(this.state.error).length > 0) {
-            console.log(1);
-        }
 
         Object.values(this.state.error).forEach((msg) => {
             if (msg) {
@@ -63,7 +93,7 @@ class CreateQuestionView extends React.Component {
 
         if (hasErrors) {
             this.setState({
-                postingThread: false
+                postingQuestion: false
             });
 
             return;
@@ -75,10 +105,26 @@ class CreateQuestionView extends React.Component {
             bounty: this.state.bounty
         };
 
-        Question.createQuestion(question, this.context.state.token).then((resp) => {
-            this.props.history.push(`/question/${resp.id}`);
+        if (!this.state.editPost) {
+            Question.createQuestion(question, this.context.state.token).then((resp) => {
+                this.props.history.push(`/question/${resp.id}`);
+            }).catch((e) => {
+                this.setState({
+                    postingQuestion: false
+                });
+            });
+            return;
+        }
+
+        Question.updateQuestion(this.state.editPost, question).then(() => {
+            this.props.history.push(`/question/${this.state.editPost}`);
+        }).catch((e) => {
+            this.setState({
+                postingQuestion: false
+            });
         });
     }
+
 
     renderPreview() {
         if (!this.state.question && !this.state.title) {
@@ -86,9 +132,13 @@ class CreateQuestionView extends React.Component {
         }
         return (
             <div className="padded-vertical">
-                <div className="underlined">{t`Preview`}</div>
-                <h1>{this.state.title}</h1>
-                <Markdown text={this.state.question} />
+                <div className="headline">{t`Preview`}</div>
+                <Post
+                    body={this.state.question}
+                    title={this.state.title}
+                    userName={this.context.state.user.name}
+                    picture={this.context.state.user.picture}
+                />
             </div>
         );
     }
@@ -136,15 +186,30 @@ class CreateQuestionView extends React.Component {
         });
     }
 
+    renderTitle() {
+        if (this.state.editPost) {
+            return t`Edit question`;
+        }
+
+        return t`New question`;
+    }
+
+    renderButtonTitle() {
+        if (this.state.editPost) {
+            return t`Save question`;
+        }
+
+        return t`Post question`;
+    }
+
     render() {
-        if (this.state.postingThread) {
+        if (!this.state.loaded) {
             return <Loader fillPage />
         }
 
         return (
             <div>
-                <h1>{t`New question`}</h1>
-                <p></p>
+                <h1>{this.renderTitle()}</h1>
                 <div className="form">
                     <InputField
                         className="padded-bottom"
@@ -158,12 +223,8 @@ class CreateQuestionView extends React.Component {
                         autocomplete="off"
                         validate={this.validateTitle.bind(this)}
                     />
-                    <div className="padded-bottom">
-                        {t`Use Markdown in question field.`} <a
-                        href="https://guides.github.com/features/mastering-markdown/"
-                        target="_blank">{t`Markdown-syntax`}</a>
-                    </div>
                     <InputField
+                        markdown
                         className="padded-bottom"
                         placeholder={t`Question`}
                         onChange={this.handleChange.bind(this)}
@@ -185,8 +246,13 @@ class CreateQuestionView extends React.Component {
                         errorMessage={this.state.error.bounty}
                         validate={this.validateBounty.bind(this)}
 					/>*/}
-                    <Button color="secondary"
-                            onClick={this.saveThread.bind(this)}>{t`Post question`}</Button>
+                    <Button
+                        color="secondary"
+                        loading={this.state.postingQuestion}
+                        onClick={this.saveQuestion.bind(this)}
+                    >
+                        {this.renderButtonTitle()}
+                    </Button>
                 </div>
                 {this.renderPreview()}
             </div>

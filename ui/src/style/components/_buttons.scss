@@ -1,0 +1,99 @@
+$button-colors:(
+    default: $gray,
+    primary: $primary-color,
+    secondary: $secondary-color,
+    alternative: $alternative-color,
+    error: $notification-error
+);
+
+.button {
+    text-transform: uppercase;
+    height: 36px;
+    transition: .1s;
+    border: 0;
+    padding: 0 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: $roundness;
+    @include main-font('medium');
+    letter-spacing: .09em;
+    text-decoration: none;
+
+    &.rounded {
+        border-radius: 25px;
+    }
+
+    &.text, &.border {
+        background-color: transparent;
+    }
+
+    &.small {
+        height: 26px;
+        padding: 0 12px;
+        font-size: $font-size*.85;
+    }
+
+    i.fa {
+        &:first-child {
+            margin-right: 5px;
+        }
+
+        &:last-child {
+            margin-left: 5px;
+        }
+    }
+
+    .loader {
+        position: absolute;
+        height: 1em;
+        align-items: center;
+
+        span {
+            background-color: $background-color;
+        }
+    }
+}
+
+@each $key,$val in $button-colors {
+    .button-#{$key} {
+        background-color: $val;
+        color: contrast($val, $text-color-light, $text-color-dark);
+        @include material-shadow(1);
+
+        &:hover {
+            background-color: darken($val, 5%);
+            @include material-shadow(2);
+        }
+
+        .loader {
+            span {
+                background-color: contrast($val, $text-color-light, $primary-color);
+            }
+        }
+
+        &.text {
+            box-shadow: none;
+            color: $val;
+        }
+
+        &.border {
+            box-shadow: none;
+            color: $val;
+            border: 1px solid $val;
+        }
+
+        &.text, &.border {
+            &:hover {
+                background-color: rgba($val, .05);
+            }
+
+            .loader {
+                span {
+                    background-color: contrast($background-color, $text-color-light, $primary-color);
+                }
+            }
+        }
+    }
+}

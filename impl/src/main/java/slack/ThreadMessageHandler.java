@@ -116,7 +116,7 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                         question.setSlackId(mainMessageId);
                         question.setBounty(DEFAULT_BOUNTY);
 
-                        return first(questionResource.postQuestion(as(userId), question).doOnError(throwable -> LOG.error("Could not post message to slack", throwable))).thenReturn(question);
+                        return first(questionResource.createQuestion(as(userId), question).doOnError(throwable -> LOG.error("Could not post message to slack", throwable))).thenReturn(question);
                     }));
     }
 
@@ -142,7 +142,6 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                     Answer answer = new Answer();
 
                     answer.setAnswer(getTextFrom(message));
-                    answer.setTitle(getTitleFrom(message));
                     answer.setUserId(user.getId());
                     answer.setSlackId(message.get("ts").getAsString());
 

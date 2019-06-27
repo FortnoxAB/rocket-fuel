@@ -5,12 +5,7 @@ export function getUser(id) {
         url: `/api/user/id/${id}`
     };
 
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return;
-        }
-        return response;
-    });
+    return ApiFetch(options);
 }
 
 export function signIn(token) {
@@ -21,10 +16,5 @@ export function signIn(token) {
         }
     };
 
-    return ApiFetch(options).then((response) => {
-        if (response.error) {
-            return;
-        }
-        return response;
-    });
+    return ApiFetch(options);
 }

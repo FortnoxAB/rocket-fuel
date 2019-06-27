@@ -1,0 +1,53 @@
+.header {
+    color: contrast($background-color-light, $text-color-light, $text-color-dark);
+    align-items: stretch;
+    justify-content: space-between;
+    padding: 0 10px;
+    display: flex;
+    background-color: $background-color-light;
+    position: fixed;
+    height: $header-height;
+    width: 100%;
+    z-index: 100;
+
+    .logo {
+        cursor: pointer;
+    }
+
+    & > div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .user {
+        padding-left: 25px;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+
+        .button {
+            margin-right: 10px;
+        }
+    }
+
+    .input-wrap {
+        align-self: center;
+        flex-grow: 1;
+    }
+
+    .search-bar {
+        flex-grow: 1;
+    }
+
+    .menu-bar {
+        padding-right: 25px;
+    }
+
+    &-placeholder {
+        display: block;
+        height: $header-height;
+        width: 1px;
+    }
+}

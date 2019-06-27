@@ -1,0 +1,110 @@
+.page-not-found {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(to top, #000 0%, #020528 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+
+    .star-map {
+        background-image: url('../images/404/bg-01.jpg');
+        background-size: cover;
+        background-position: center;
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+
+    .astronaut {
+        background-image: url('../images/404/atronaut.png');
+        background-size: cover;
+        z-index: 4;
+        position: absolute;
+        width: 365px;
+        height: 325px;
+        animation: float 10s ease-in-out infinite;
+    }
+
+    .falling-1 {
+        background-image: url('../images/404/falling-01.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: right;
+        left: 80px;
+        z-index: 2;
+        top: 33%;
+        position: absolute;
+        width: 100%;
+        height: 50%;
+        animation: float-small  3.2s linear infinite;
+    }
+
+    .falling-2 {
+        background-image: url('../images/404/falling-02.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: right;
+        left: 80px;
+        top: 13%;
+        z-index: 2;
+        position: absolute;
+        width: 100%;
+        height: 40%;
+        animation: float-small  3.7s linear infinite;
+    }
+
+    .tube {
+        background-image: url('../images/404/tube.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: left;
+        right: 80px;
+        bottom: -100px;
+        z-index: 5;
+        position: absolute;
+        width: 100%;
+        height: 40%;
+        animation: float  4.1s ease-in-out infinite;
+    }
+
+    .text {
+        position: absolute;
+        padding: 25px;
+        top: 100px;
+        z-index: 8;
+        width: 100%;
+        color: $text-color-light;
+        background-color: rgba(0, 0, 0, .6);
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(8px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(8px);
+    }
+}
+
+@keyframes float-small {
+    0% {
+        transform: translateY(5px);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+    100% {
+        transform: translateY(5px);
+    }
+}

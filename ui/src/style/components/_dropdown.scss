@@ -1,0 +1,41 @@
+$arrow-size: 6px;
+
+.dropdown {
+    transition: .2s;
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    opacity: 0;
+    top: 50%;
+
+    .content {
+        background-color: $background-color-light;
+        color: contrast($background-color-light, $text-color-light, $text-color-dark);
+        min-width: 200px;
+        @include material-shadow(3);
+        border-radius: $roundness;
+        padding: 5px 0;
+        border: 1px solid $border-color;
+    }
+
+    li, a {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+        padding: 10px 15px;
+
+        &:hover {
+            background-color: $primary-color;
+            color: contrast($primary-color, $text-color-light, $text-color-dark);
+        }
+    }
+
+    &.closed {
+        display: none;
+    }
+
+    &.open {
+        top: 90%;
+        opacity: 1;
+    }
+}

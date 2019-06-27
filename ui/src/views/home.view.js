@@ -1,7 +1,7 @@
 import React from 'react';
 import { t } from 'ttag';
 import Loader from '../components/utils/loader';
-import QuestionCard from '../components/questions/questioncard';
+import QuestionRow from '../components/questions/questionrow';
 import { UserContext } from '../usercontext';
 import * as Question from '../models/question';
 
@@ -39,13 +39,13 @@ class HomeView extends React.Component {
 
     getUserQuestions() {
         return this.state.userQuestions.map((question, index) => {
-            return <QuestionCard small key={index} question={question} />;
+            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
         });
     }
 
     getLatestQuestions() {
         return this.state.latestQuestions.map((question, index) => {
-            return <QuestionCard small key={index} question={question} />;
+            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
         });
     }
 
@@ -61,16 +61,17 @@ class HomeView extends React.Component {
         }
         return (
             <div>
-                <div className="user-space">
-                    <h1>{this.getDisplayName()}</h1>
+                <div className="user-space padded-bottom">
+                    <img src={this.context.state.user.picture} alt={this.getDisplayName()} />
+                    <h2>{this.getDisplayName()}</h2>
                 </div>
-                <div className="flex list-row">
-                    <div className="flex-basis-2">
-                        <h3>{t`Latest questions`}</h3>
+                <div className="row spacing">
+                    <div className="col-2">
+                        <div className="headline">{t`Latest questions`}</div>
                         {this.getLatestQuestions()}
                     </div>
-                    <div className="flex-basis-2">
-                        <h3>{t`Your recent questions`}</h3>
+                    <div className="col-2">
+                        <div className="headline">{t`Your recent questions`}</div>
                         {this.getUserQuestions()}
                     </div>
                 </div>

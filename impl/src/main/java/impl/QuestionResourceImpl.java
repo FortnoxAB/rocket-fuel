@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 import static rx.Observable.error;
@@ -21,6 +22,7 @@ import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 public class QuestionResourceImpl implements QuestionResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(QuestionResourceImpl.class);
+    public static final String FAILED_TO_SEARCH_FOR_QUESTIONS = "failed.to.search.for.questions";
     private final QuestionDao questionDao;
 
     @Inject
@@ -63,7 +65,7 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<Question> postQuestion(Auth auth, Question question) {
+    public Observable<Question> createQuestion(Auth auth, Question question) {
         return this.questionDao
           .addQuestion(auth.getUserId(), question)
             .map(longGeneratedKey -> {
@@ -71,5 +73,17 @@ public class QuestionResourceImpl implements QuestionResource {
                 return question;
             })
           .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
+    }
+
+    @Override
+    public Observable<List<Question>> getQuestionsBySearchQuery(@NotNull String searchQuery) {
+        if (searchQuery == null || searchQuery.isEmpty()) {
+            return error(new WebException(HttpResponseStatus.BAD_REQUEST, FAILED_TO_SEARCH_FOR_QUESTIONS));
+        }
+        return questionDao.getQuestions(searchQuery)
+            .onErrorResumeNext(e -> {
+                LOG.error("failed to search for questions with search query: [" + searchQuery + "]");
+                return error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS ,e));
+            }).toList();
     }
 }

@@ -1,5 +1,7 @@
 package impl;
 
+import api.Answer;
+import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
 import api.User;
@@ -12,14 +14,16 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-import rx.observers.AssertableSubscriber;
-import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.util.List;
 
+import static impl.UserQuestionResourceImpl.QUESTION_NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 public class UserQuestionResourceTest {
@@ -27,6 +31,7 @@ public class UserQuestionResourceTest {
     private static UserQuestionResource userQuestionResource;
     private static QuestionResource     questionResource;
     private static UserResource         userResource;
+    private static AnswerResource       answerResource;
 
 
     @ClassRule
@@ -40,6 +45,7 @@ public class UserQuestionResourceTest {
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         userQuestionResource = testSetup.getInjector().getInstance(UserQuestionResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
+        answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
     }
 
     @After
@@ -54,26 +60,28 @@ public class UserQuestionResourceTest {
 
 
     @Test
-    public void shouldBePossibleToAddQuestionToUserAndFetchIt() {
+    public void shouldBePossibleToAddQuestionAndFetchIt() {
 
         User createdUser = TestSetup.insertUser(userResource);
 
-        // when question is inserted
+        // when question is created
         Question question = TestSetup.getQuestion("my question title", "my question");
-
         Auth mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
-        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+
+        // when we create the question
+        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
         // then the question should be returned when asking for the users questions
-        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
+        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question insertedQuestion = questions.get(0);
         assertEquals("my question title", insertedQuestion.getTitle());
         assertEquals("my question", insertedQuestion.getQuestion());
-        assertEquals(new Integer(300),insertedQuestion.getBounty());
+        assertEquals(question.getBounty(),insertedQuestion.getBounty());
         assertEquals(createdUser.getId(), insertedQuestion.getUserId());
+        assertNotNull(insertedQuestion.getId());
     }
 
     @Test
@@ -85,8 +93,8 @@ public class UserQuestionResourceTest {
         Question question = TestSetup.getQuestion("my question title", "my question");
         Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
-        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
-        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
+        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single();
         assertEquals(1, questions.size());
 
         // then the question should be returned when asking for the specific question
@@ -94,35 +102,10 @@ public class UserQuestionResourceTest {
 
         assertEquals("my question title", selectedQuestion.getTitle());
         assertEquals("my question", selectedQuestion.getQuestion());
-        assertEquals(new Integer(300),selectedQuestion.getBounty());
+        assertEquals(Integer.valueOf(300),selectedQuestion.getBounty());
         assertEquals(createdUser.getId(), selectedQuestion.getUserId());
     }
 
-    @Test
-    public void shouldBePossibleToGetQuestionBySlackThreadId() {
-
-        User createdUser = TestSetup.insertUser(userResource);
-        Auth mockAuth = new MockAuth(createdUser.getId());
-
-        Question question      = TestSetup.getQuestion("my question title", "my question");
-        String   slackThreadId = String.valueOf(System.currentTimeMillis());
-        question.setSlackId(slackThreadId);
-
-        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
-        Question returnedQuestion = questionResource.getQuestionBySlackThreadId(slackThreadId).toBlocking().singleOrDefault(null);
-
-        assertThat(returnedQuestion.getSlackId()).isEqualTo(slackThreadId);
-    }
-
-    @Test
-    public void shouldReturnNotFoundWhenNoQuestionIsFoundForSlackThreadId() {
-
-        AssertableSubscriber<Question> test = questionResource.getQuestionBySlackThreadId(String.valueOf(System.currentTimeMillis())).test();
-        test.awaitTerminalEvent();
-
-        test.assertError(WebException.class);
-        assertThat(((WebException)test.getOnErrorEvents().get(0)).getError()).isEqualTo("not.found");
-    }
 
 
     @Test
@@ -135,20 +118,20 @@ public class UserQuestionResourceTest {
 
         Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
-        questionResource.postQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
-        long newQuestionId = userQuestionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single().get(0).getId();
-        question.setBounty(400);
-        question.setTitle("new title");
-        question.setQuestion("new question body");
-        userQuestionResource.updateQuestion(mockAuth, newQuestionId, question).toBlocking().singleOrDefault(null);
-        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId(), new CollectionOptions()).toBlocking().single();
+        Question storedQuestion = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single().get(0);
+        storedQuestion.setBounty(400);
+        storedQuestion.setTitle("new title");
+        storedQuestion.setQuestion("new question body");
+        userQuestionResource.updateQuestion(mockAuth, storedQuestion.getId(), storedQuestion).toBlocking().singleOrDefault(null);
+        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question updatedQuestion = questions.get(0);
         assertEquals("new title", updatedQuestion.getTitle());
         assertEquals("new question body", updatedQuestion.getQuestion());
-        assertEquals(new Integer(400),updatedQuestion.getBounty());
+        assertEquals(question.getBounty(), updatedQuestion.getBounty());
         assertEquals(createdUser.getId(), updatedQuestion.getUserId());
     }
 
@@ -165,12 +148,12 @@ public class UserQuestionResourceTest {
         Question questionForOtherUser = TestSetup.getQuestion("other users question title", "other users question");
 
         Auth auth = new MockAuth(ourUser.getId());
-        questionResource.postQuestion(auth, ourQuestion).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(auth, ourQuestion).toBlocking().singleOrDefault(null);
         Auth authOtherUser = new MockAuth(otherUser.getId());
-        questionResource.postQuestion(authOtherUser, questionForOtherUser).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(authOtherUser, questionForOtherUser).toBlocking().singleOrDefault(null);
 
         // then only questions for our user should be returned
-        List<Question> questions = userQuestionResource.getQuestions(ourUser.getId(), new CollectionOptions()).toBlocking().single();
+        List<Question> questions = userQuestionResource.getQuestions(ourUser.getId()).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question insertedQuestion = questions.get(0);
@@ -178,4 +161,59 @@ public class UserQuestionResourceTest {
         assertEquals(ourUser.getId(), insertedQuestion.getUserId());
     }
 
+    @Test
+    public void shouldBePossibleToDeleteQuestion() {
+
+        User createdUser = TestSetup.insertUser(userResource);
+
+        Auth mockAuth = new MockAuth(createdUser.getId());
+        mockAuth.setUserId(createdUser.getId());
+
+        // given questions exists
+        Question questionToInsert = TestSetup.getQuestion("my question title", "my question");
+
+        Question questionToInsert2 = TestSetup.getQuestion("my question title2", "my question2");
+
+        questionResource.createQuestion(mockAuth, questionToInsert).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(mockAuth, questionToInsert2).toBlocking().singleOrDefault(null);
+
+        // and the questions has answers
+        List<Question> questions = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single();
+
+        Answer answer = new Answer();
+        answer.setAnswer("just a answer");
+        answerResource.answerQuestion(mockAuth, answer, questions.get(0).getId()).toBlocking().singleOrDefault(null);
+        answerResource.answerQuestion(mockAuth, answer, questions.get(1).getId()).toBlocking().singleOrDefault(null);
+
+        List<Question> questionsSaved = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single();
+
+        // when we deletes a question
+        userQuestionResource.deleteQuestion(mockAuth,questionsSaved.get(0).getId()).toBlocking().singleOrDefault(null);
+
+        // only the question we want to delete should be removed
+        List<Question> remaningQuestions = userQuestionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        assertThat(remaningQuestions.size()).isEqualTo(1);
+        assertThat(remaningQuestions.get(0).getTitle()).isEqualTo("my question title2");
+
+        // and the answers should be deleted as well for the deleted question
+        List<Answer> answersForTheNonDeletedQuestion = answerResource.getAnswers(questionsSaved.get(1).getId()).toBlocking().singleOrDefault(null);
+        assertThat(answersForTheNonDeletedQuestion).isNotEmpty();
+
+        List<Answer> answersForTheDeletedQuestion = answerResource.getAnswers(questionsSaved.get(0).getId()).toBlocking().singleOrDefault(null);
+        assertThat(answersForTheDeletedQuestion).isEmpty();
+    }
+
+    @Test
+    public void shouldNotDeleteQuestionThatDoesNotExist() {
+        User createdUser = TestSetup.insertUser(userResource);
+
+        Auth auth = new MockAuth(createdUser.getId());
+        long nonExistingQuestionId = 12;
+        assertThatExceptionOfType(WebException.class)
+            .isThrownBy(() -> userQuestionResource.deleteQuestion(auth,  nonExistingQuestionId).toBlocking().singleOrDefault(null))
+            .satisfies(e -> {
+                assertEquals(NOT_FOUND, e.getStatus());
+                assertEquals(QUESTION_NOT_FOUND, e.getError());
+            });
+    }
 }

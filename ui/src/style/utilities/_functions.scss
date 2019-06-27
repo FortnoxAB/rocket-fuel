@@ -1,0 +1,6 @@
+@function contrast($color-to-check, $light-color: $text-color-light, $dark-color: $text-color-dark) {
+    @if (lightness($color-to-check) > 65) {
+        @return $dark-color;
+    }
+    @return $light-color;
+}

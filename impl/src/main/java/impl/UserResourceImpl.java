@@ -54,7 +54,7 @@ public class UserResourceImpl implements UserResource {
         return this.userDao.getUserByEmail(email)
             .switchIfEmpty(defer(() -> {
                 if(createIfMissing) {
-                    return addUserToDatabase("Added from slack", email);
+                    return addUserToDatabase("Added from slack", email, null);
                 } else {
                     return error(new WebException(HttpResponseStatus.NOT_FOUND));
                 }
@@ -72,7 +72,7 @@ public class UserResourceImpl implements UserResource {
         return openIdValidator.validate(openIdToken).flatMap(validOpenId ->
                 userDao.getUserByEmail(validOpenId.email)
                 .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.search.for.user", t)))
-                .switchIfEmpty(addUserToDatabase(validOpenId.name, validOpenId.email))
+                .switchIfEmpty(addUserToDatabase(validOpenId.name, validOpenId.email, validOpenId.picture))
                 .map(user -> {
                             ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
                             addAsCookie(applicationToken, user);
@@ -81,10 +81,11 @@ public class UserResourceImpl implements UserResource {
                 ));
     }
 
-    private Observable<User> addUserToDatabase(String name, String email) {
+    private Observable<User> addUserToDatabase(String name, String email, String picture) {
         User user = new User();
         user.setName(name);
         user.setEmail(email);
+        user.setPicture(picture);
         return userDao.insertUser(user).flatMap(ignore -> userDao.getUserByEmail(email))
                 .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.user.to.the.database", t)));
     }

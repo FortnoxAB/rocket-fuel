@@ -15,8 +15,8 @@ public interface AnswerDao {
                                 "a.answer, " +
                                 "a.created_at, " +
                                 "a.accepted, " +
-                                "a.title," +
                                 "a.votes, " +
+                                "u.picture, " +
                                 "a.slack_id, " +
                                 "a.question_id, ";
 
@@ -60,7 +60,6 @@ public interface AnswerDao {
         "INSERT INTO answer " +
             "(" +
                 "answer, " +
-                "title, " +
                 "votes, " +
                 "created_at, " +
                 "accepted, " +
@@ -70,7 +69,6 @@ public interface AnswerDao {
             ")" +
             "VALUES(" +
                 ":answer.answer, " +
-                ":answer.title, " +
                 "0, " +
                 "NOW(), " +
                 "false, " +
@@ -83,15 +81,11 @@ public interface AnswerDao {
 
     @Update(
         "UPDATE answer SET " +
-            "answer=:answer.answer, " +
-            "title=:answer.title, " +
-            "votes=:answer.votes, " +
-            "accepted=:answer.accepted " +
+            "answer=:answer.answer " +
         "WHERE " +
             "answer.id=:answerId " +
-            "AND question_id=:questionId " +
             "AND answer.user_id=:userId")
-    Observable<Void> updateAnswer(long userId, long questionId, long answerId, Answer answer);
+    Observable<Void> updateAnswer(long userId, long answerId, Answer answer);
 
     @Update(
         "UPDATE answer SET " +
@@ -115,4 +109,11 @@ public interface AnswerDao {
         "INNER JOIN question q on q.id = a.question_id " +
         "WHERE a.id=:id")
     Observable<AnswerInternal> getAnswerById(long id);
+
+    @Update(
+        "DELETE FROM " +
+            "answer " +
+        "WHERE " +
+            "answer.user_id = :userId AND answer.id = :answerId")
+    Observable<Void> deleteAnswer(long userId, long answerId);
 }

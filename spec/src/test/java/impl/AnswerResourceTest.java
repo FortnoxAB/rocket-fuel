@@ -60,24 +60,25 @@ public class AnswerResourceTest {
     }
 
     @Test
-    public void markBothQuestionAndAnswerAsAccepted() {
-
+    public void shouldMarkBothQuestionAndAnswerAsAcceptedWhenUserAcceptsAnAnswer() {
+        // given user creates a question
         Auth questioner = newUser();
-
         Question question = newQuestion();
 
-        Question returnedQuestion = questionResource.postQuestion(questioner, question).toBlocking().singleOrDefault(null);
+        Question returnedQuestion = questionResource.createQuestion(questioner, question).toBlocking().singleOrDefault(null);
         assertThat(returnedQuestion).isNotNull();
         assertThat(returnedQuestion.getId()).isGreaterThan(0);
 
         Auth answerer = newUser();
-
+        // and someone answers the question
         Answer answer         = newAnswer();
         Answer returnedAnswer = answerResource.answerQuestion(answerer, answer, returnedQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(returnedAnswer).isNotNull();
 
+        // when the creator of the question marks a answer as the correct one
         answerResource.markAsAcceptedAnswer(questioner, returnedAnswer.getId()).toBlocking().singleOrDefault(null);
 
+        // then both answer and question should be updated and state that they are accepted.
         List<Answer> answers = answerResource.getAnswers(returnedQuestion.getId()).toBlocking().singleOrDefault(new ArrayList<>());
         assertThat(answers.size()).isEqualTo(1);
         assertThat(answers.get(0).isAccepted()).isTrue();
@@ -87,15 +88,15 @@ public class AnswerResourceTest {
     }
 
     @Test
-    public void userCantAcceptAnswerToOtherUsersQuestion() {
-
+    public void shouldNotAllowToAcceptAnswerWhenQuestionIsCreatedBySomeoneElse() {
+        // given a question
         Question question = newQuestion();
-
-        Question returnedQuestion = questionResource.postQuestion(newUser(), question).toBlocking().singleOrDefault(null);
-
+        Question returnedQuestion = questionResource.createQuestion(newUser(), question).toBlocking().singleOrDefault(null);
+        // and an answer
         Answer answer         = newAnswer();
+        // when the current user tries to accept the question, that belongs to someone else
         Answer returnedAnswer = answerResource.answerQuestion(newUser(), answer, returnedQuestion.getId()).toBlocking().singleOrDefault(null);
-
+        // then a exception shall be thrown stating that the request is invalid.
         assertThatExceptionOfType(WebException.class)
             .isThrownBy(() -> answerResource.markAsAcceptedAnswer(newUser(), returnedAnswer.getId()).toBlocking().singleOrDefault(null))
             .satisfies(e -> {
@@ -105,16 +106,16 @@ public class AnswerResourceTest {
     }
 
     @Test
-    public void errorOnAnswerNotCreated() {
-
-        Question question = questionResource.postQuestion(newUser(), newQuestion()).toBlocking().singleOrDefault(null);
-
+    public void shouldThrowInternalErrorWhenCreateAnswerQueryFails() {
+        // given a question
+        Question question = questionResource.createQuestion(newUser(), newQuestion()).toBlocking().singleOrDefault(null);
+        // and the db malfunctions on the create
         RuntimeException dbException   = new RuntimeException();
         AnswerDao        answerDaoMock = mock(AnswerDao.class);
         when(answerDaoMock.createAnswer(anyLong(), anyLong(), any())).thenReturn(error(dbException));
-
         AnswerResource mockedResource = new AnswerResourceImpl(answerDaoMock, null, testSetup.getInjector().getInstance(DaoTransactions.class));
 
+        // when the answer is going to be persisted, exception is returned
         assertThatExceptionOfType(WebException.class)
             .isThrownBy(() -> mockedResource.answerQuestion(newUser(), newAnswer(), question.getId()).toBlocking().singleOrDefault(null))
             .withCause(dbException)
@@ -124,7 +125,7 @@ public class AnswerResourceTest {
             });
     }
 
-    private Auth newUser() {
+    private static Auth newUser() {
         return new MockAuth(TestSetup.insertUser(userResource).getId());
     }
 

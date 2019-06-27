@@ -79,7 +79,6 @@ public class ThreadMessageHandlerTest {
     @Test
     public void shouldCreateNewThreadWhenNewThreadIsCreatedInSlack() {
 
-
         //Given
         User user = TestSetup.insertUser(userResource);
         User originalMessageUser = TestSetup.insertUser(userResource);
@@ -140,6 +139,8 @@ public class ThreadMessageHandlerTest {
         assertThat(answers).isNotNull();
         assertThat(answers).hasSize(2);
         assertThat(answers.get(1).getSlackId()).isNotNull();
+        assertThat(answers.get(0).getId()).isNotNull();
+        assertThat(answers.get(1).getId()).isNotNull();
 
         //No sending to slack the second time. Verifying only single invocation after second call to handleMessage
         verify(slackResourceMock, times(1)).postMessageToSlack(anyString(), anyString(), anyString());

@@ -6,11 +6,12 @@ import Loader from '../../components/utils/loader';
 import Markdown from '../../components/helpers/markdown';
 import InputField from '../../components/forms/inputfield';
 import Button from '../../components/forms/button';
-import Question from '../../components/questions/question';
+import Post from '../../components/questions/post';
 import Answer from '../../components/questions/answer';
 import * as QuestionApi from '../../models/question';
 import * as AnswerApi from '../../models/answer';
 import { UserContext } from '../../usercontext';
+import Question from '../../components/questions/question';
 
 
 class QuestionView extends React.Component {
@@ -36,10 +37,10 @@ class QuestionView extends React.Component {
 
     componentDidMount() {
         const questionId = this.props.match.params.id;
-        this.loadThreadAndAnswers(questionId);
+        this.loadQuestionAndAnswers(questionId);
     }
 
-        loadThreadAndAnswers(questionId) {
+    loadQuestionAndAnswers(questionId) {
         Promise.all([
             QuestionApi.getQuestionById(questionId),
             AnswerApi.getAnswersByQuestionId(questionId)
@@ -77,37 +78,43 @@ class QuestionView extends React.Component {
                 answer: '',
                 postingAnswer: false
             });
-            this.loadThreadAndAnswers(this.props.match.params.id);
+            this.loadQuestionAndAnswers(this.props.match.params.id);
         });
     }
 
     renderAnswers() {
+        if (this.state.answers.length <= 0) {
+            return (
+                <div className="padded-bottom-large text-center">
+                    {t`No answers, be the first one to answer this question.`}
+                </div>
+            );
+        }
         return this.state.answers.map((answer, index) => {
-            return <Answer onAnswer={this.onAnswerAccepted.bind(this)}
-                           enableAccept={!this.state.question.answerAccepted && this.state.owned} answer={answer}
-                           key={index} />;
+            return (
+                <Answer
+                    onAnswer={this.onAnswerAccepted.bind(this)}
+                    enableAccept={!this.state.question.answerAccepted && this.state.owned}
+                    answer={answer}
+                    key={index}
+                    onDeleteAnswer={this.loadQuestionAndAnswers.bind(this, this.props.match.params.id)}
+                    onEditAnswer={this.loadQuestionAndAnswers.bind(this, this.props.match.params.id)}
+                />
+             );
         });
     }
 
-    onAnswerAccepted(answer) {
-        AnswerApi.acceptAnswer(answer.id).then(() => {
-            this.loadThreadAndAnswers(this.props.match.params.id);
+    onAnswerAccepted(answerId) {
+        AnswerApi.acceptAnswer(answerId).then(() => {
+            this.loadQuestionAndAnswers(this.props.match.params.id);
         });
     }
 
     renderAnswerForm() {
-        if (this.state.postingAnswer) {
-            return <Loader />;
-        }
-
         return (
             <div className="answer-form">
-                <div className="padded-bottom">
-                    {t`Use Markdown in answer field.`} <a
-                    href="https://guides.github.com/features/mastering-markdown/"
-                    target="_blank">{t`Markdown-syntax`}</a>
-                </div>
                 <InputField
+                    markdown
                     label={t`Answer`}
                     type="textarea"
                     name="answer"
@@ -115,8 +122,13 @@ class QuestionView extends React.Component {
                     onChange={this.onChangeAnswer.bind(this)}
                     errorMessage={this.state.answerError}
                 />
-                <Button color="secondary"
-                        onClick={this.saveAnswer.bind(this)}>{t`Post answer`}</Button>
+                <Button
+                    color="secondary"
+                    onClick={this.saveAnswer.bind(this)}
+                    loading={this.state.postingAnswer}
+                >
+                    {t`Post answer`}
+                </Button>
             </div>
         );
 
@@ -128,7 +140,7 @@ class QuestionView extends React.Component {
         }
         return (
             <div className="padded-vertical">
-                <div className="underlined">{t`Preview`}</div>
+                <h3>{t`Preview`}</h3>
                 <Markdown text={this.state.answer} />
             </div>
         );

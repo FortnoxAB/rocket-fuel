@@ -6,28 +6,19 @@
   * or {@link Question}.
   */
  public abstract class Post {
-
-    private String title;
-
-     private Long id;
+    private Long id;
 
     private String createdBy;
 
     private Long userId;
+
+    private String picture;
 
     private String createdAt;
 
     private Integer votes;
 
     private String slackId;
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
 
     public String getCreatedBy() {
         return createdBy;
@@ -75,5 +66,13 @@
 
      public void setSlackId(String slackId) {
          this.slackId = slackId;
+     }
+
+     public String getPicture() {
+         return picture;
+     }
+
+     public void setPicture(String picture) {
+         this.picture = picture;
      }
  }
