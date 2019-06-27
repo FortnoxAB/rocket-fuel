@@ -94,7 +94,7 @@ public class UserResourceImpl implements UserResource {
 
     private void addAsCookie(final ApplicationToken applicationToken, User user) {
         Map<String, Object> headers = new HashMap<>();
-        headers.put("Set-Cookie", getCookie(applicationToken.getApplicationToken(), SESSION_MAX_AGE_SECONDS, applicationTokenConfig.getDomain()));
+        headers.put("Set-Cookie", formatCookie(applicationToken.getApplicationToken(), SESSION_MAX_AGE_SECONDS, applicationTokenConfig.getDomain()));
         responseHeaderHolder.addHeaders(user, headers);
     }
 
@@ -102,12 +102,12 @@ public class UserResourceImpl implements UserResource {
     public Observable<Long> signOut(Auth auth) {
         int expireNow = 0;
         Map<String, Object> headers = new HashMap<>();
-        headers.put("Set-Cookie", getCookie("deleted", expireNow, applicationTokenConfig.getDomain()));
+        headers.put("Set-Cookie", formatCookie("deleted", expireNow, applicationTokenConfig.getDomain()));
         responseHeaderHolder.addHeaders(auth.getUserId(), headers);
         return Observable.just(auth.getUserId());
     }
 
-    private static String getCookie(String applicationToken, int maxAge, String domain){
+    private static String formatCookie(String applicationToken, int maxAge, String domain){
         return String.format("application=%s; Path=/; Max-Age=%d; Domain=%s; SameSite=Strict; HttpOnly; Secure;", applicationToken, maxAge, domain);
     }
 
