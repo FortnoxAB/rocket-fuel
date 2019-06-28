@@ -3,7 +3,6 @@ const CopyPlugin           = require('copy-webpack-plugin');
 const HtmlWebpackPlugin    = require('html-webpack-plugin');
 const CleanWebpackPlugin   = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const webpack = require('webpack');
 
 const reactConfig = {
@@ -80,7 +79,6 @@ module.exports = {
 	},
 	devtool: 'source-map', // TODO: Check production flag -> false
 	plugins: [
-        new BundleAnalyzerPlugin(),
 		new MiniCssExtractPlugin({
 			filename: 'style.css'
 		}),
