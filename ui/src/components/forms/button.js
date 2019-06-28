@@ -12,6 +12,7 @@ class Button extends React.Component {
             this.props.text ? 'text' : '',
             this.props.border ? 'border' : '',
             this.props.small ? 'small' : '',
+            this.props.icon ? 'icon' : '',
             this.props.className,
         ].join(' ');
     }
@@ -43,7 +44,7 @@ class Button extends React.Component {
         return (
             <div onClick={this.onClick.bind(this)} className={this.getClass()}>
                 {this.renderLoader()}
-                <span className={this.getButtonContentClassName()}>{this.props.children}</span>
+                <span className={`button-content ${this.getButtonContentClassName()}`}>{this.props.children}</span>
             </div>
         );
     }
@@ -60,7 +61,8 @@ Button.defaultProps = {
     text: false,
     border: false,
     small: false,
-    loading: false
+    loading: false,
+    icon: false
 };
 
 export default Button;

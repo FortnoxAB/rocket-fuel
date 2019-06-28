@@ -5,7 +5,6 @@ import SignedInView from './components/signedinview';
 import SignInView from './views/signInView';
 
 import HomeView from './views/home.view';
-import QuestionsView from './views/question/questions.view';
 import QuestionView from './views/question/question.view';
 import BlogListView from './views/bloglist.view';
 import UsersView from './views/users.view';

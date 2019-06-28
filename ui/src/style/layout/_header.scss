@@ -20,8 +20,11 @@
         align-items: center;
     }
 
+    .item {
+        padding-left: 15px;
+    }
+
     .user {
-        padding-left: 25px;
         align-self: stretch;
         display: flex;
         align-items: center;
