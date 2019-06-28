@@ -5,10 +5,12 @@ import api.UserAnswerResource;
 import api.auth.Auth;
 import dao.AnswerDao;
 import dao.AnswerInternal;
+import dao.VoteDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
@@ -25,19 +27,26 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+import static rx.Observable.error;
 import static rx.Observable.just;
 
 public class UserAnswerResourceImplTest {
 
     private UserAnswerResource userAnswerResource;
-    private AnswerDao          answerDao;
     private Auth auth;
+
+    @Mock
+    private AnswerDao          answerDao;
+
+    @Mock
+    private VoteDao            voteDao;
+
     @Before
     public void beforeEach() {
-        answerDao = mock(AnswerDao.class);
-        userAnswerResource = new UserAnswerResourceImpl(answerDao);
+        initMocks(this);
+        userAnswerResource = new UserAnswerResourceImpl(answerDao, voteDao);
         auth = new Auth();
         auth.setUserId(123);
 
@@ -45,7 +54,7 @@ public class UserAnswerResourceImplTest {
 
     @Test
     public void shouldThrowInternalServerErrorIfGetAnswersFails() {
-        when(answerDao.getAnswers(123, 123)).thenReturn(Observable.error(new SQLException("poff")));
+        when(answerDao.getAnswers(123, 123)).thenReturn(error(new SQLException("poff")));
 
         assertException(() -> userAnswerResource.getAnswers(123, 123).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
@@ -119,6 +128,7 @@ public class UserAnswerResourceImplTest {
     public void shouldThrowInternalIfAnswerToDeleteCannotBeFetchedFromDb() {
         Answer answer = createAnswer();
         when(answerDao.getAnswerById(123)).thenReturn(Observable.error(new SQLException("poff")));
+        when(answerDao.updateAnswer(123, 123, answer)).thenReturn(error(new SQLException("poff")));
         Auth auth = new Auth();
         auth.setUserId(123);
 

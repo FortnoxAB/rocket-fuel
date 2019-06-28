@@ -1,6 +1,5 @@
 package dao;
 
-
 import api.Answer;
 import rx.Observable;
 import se.fortnox.reactivewizard.db.GeneratedKey;
@@ -15,13 +14,14 @@ public interface AnswerDao {
                                 "a.answer, " +
                                 "a.created_at, " +
                                 "a.accepted, " +
-                                "a.votes, " +
                                 "u.picture, " +
                                 "a.slack_id, " +
                                 "a.question_id, ";
 
     String FROM_ANSWER = "FROM answer a " +
                             "INNER JOIN \"user\" u on u.id = a.user_id ";
+
+    String VOTES = "(SELECT SUM(v.value) FROM answer_vote v WHERE v.answer_id = a.id) AS \"votes\" ";
 
     @Update(
         "UPDATE answer " +
@@ -32,7 +32,8 @@ public interface AnswerDao {
 
     @Query(
         SELECT_ANSWER +
-            "u.name AS created_by " +
+            "u.name AS created_by, " +
+            VOTES +
         FROM_ANSWER +
         "WHERE user_id=:userId AND question_id=:questionId"
     )
@@ -40,17 +41,20 @@ public interface AnswerDao {
 
     @Query(
         SELECT_ANSWER +
-            "u.name AS created_by " +
-        FROM_ANSWER +
-        "WHERE question_id=:questionId " +
-        "ORDER BY a.accepted desc, a.votes desc, a.created_at desc"
+            "u.name AS created_by, " +
+            VOTES +
+            "FROM answer a " +
+            "INNER JOIN \"user\" u on u.id = a.user_id " +
+            "WHERE question_id=:questionId " +
+            "ORDER BY a.accepted desc, \"votes\" desc, a.created_at desc"
     )
     Observable<Answer> getAnswers(long questionId);
 
 
     @Query(
         SELECT_ANSWER +
-            "u.name AS created_by " +
+            "u.name AS created_by, " +
+            VOTES +
         FROM_ANSWER +
         "WHERE slack_id=:slackId"
     )
@@ -60,7 +64,6 @@ public interface AnswerDao {
         "INSERT INTO answer " +
             "(" +
                 "answer, " +
-                "votes, " +
                 "created_at, " +
                 "accepted, " +
                 "question_id, " +
@@ -69,7 +72,6 @@ public interface AnswerDao {
             ")" +
             "VALUES(" +
                 ":answer.answer, " +
-                "0, " +
                 "NOW(), " +
                 "false, " +
                 ":questionId, " +
@@ -81,30 +83,18 @@ public interface AnswerDao {
 
     @Update(
         "UPDATE answer SET " +
-            "answer=:answer.answer " +
+            "answer=:answer.answer, " +
+            "accepted=:answer.accepted " +
         "WHERE " +
             "answer.id=:answerId " +
             "AND answer.user_id=:userId")
     Observable<Void> updateAnswer(long userId, long answerId, Answer answer);
 
-    @Update(
-        "UPDATE answer SET " +
-            "votes=votes+1 " +
-        "WHERE " +
-            "slack_id = :threadId")
-    Observable<Void> upVoteAnswer(String threadId);
-
-    @Update(
-        "UPDATE answer " +
-        "SET votes=votes-1 " +
-        "WHERE " +
-            "slack_id = :threadId")
-    Observable<Void> downVoteAnswer(String threadId);
-
     @Query(
         SELECT_ANSWER +
             "u.name AS created_by, " +
-            "q.user_id AS \"question.user_id\" " +
+            "q.user_id AS \"question.user_id\", " +
+            VOTES +
         FROM_ANSWER +
         "INNER JOIN question q on q.id = a.question_id " +
         "WHERE a.id=:id")

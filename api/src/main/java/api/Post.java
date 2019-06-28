@@ -16,7 +16,7 @@
 
     private String createdAt;
 
-    private Integer votes;
+    private int votes;
 
     private String slackId;
 
@@ -36,11 +36,11 @@
         this.createdAt = createdAt;
     }
 
-    public Integer getVotes() {
+    public int getVotes() {
         return votes;
     }
 
-    public void setVotes(Integer votes) {
+    public void setVotes(int votes) {
         this.votes = votes;
     }
 

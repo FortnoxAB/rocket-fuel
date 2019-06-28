@@ -16,7 +16,7 @@
 
     <properties>
         <slf4j.version>1.7.22</slf4j.version>
-        <reactivewizard.version>1.6.0</reactivewizard.version>
+        <reactivewizard.version>1.8.2</reactivewizard.version>
         <antrun.plugin.version>1.7</antrun.plugin.version>
         <assertj.version>3.12.2</assertj.version>
         <sonar.coverage.jacoco.xmlReportPaths>report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>

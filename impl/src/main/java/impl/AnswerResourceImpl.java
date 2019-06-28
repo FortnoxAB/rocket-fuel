@@ -25,6 +25,7 @@ import java.util.Objects;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.util.Arrays.asList;
 import static rx.Observable.empty;
 import static rx.Observable.error;
@@ -35,7 +36,7 @@ import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 public class AnswerResourceImpl implements AnswerResource {
 
     public static final String ERROR_NOT_OWNER_OF_QUESTION = "not.owner.of.question";
-    public static final String ERROR_ANSWER_NOT_CREATED = "answer.not.created";
+    public static final String ERROR_ANSWER_NOT_CREATED    = "answer.not.created";
 
     private static final Logger LOG = LoggerFactory.getLogger(AnswerResourceImpl.class);
 
@@ -76,21 +77,22 @@ public class AnswerResourceImpl implements AnswerResource {
 
     /**
      * Notifies the owner of the question unless the questioner and answerer is the same user
-     * @param answer the answer created
+     *
+     * @param answer     the answer created
      * @param questionId the id of the question
      */
     private Observable<Void> notifyQuestionOwner(Auth auth, Answer answer, long questionId) {
         return questionDao.getQuestionById(questionId)
             .flatMap(question -> {
                 if (!question.getUserId().equals(auth.getUserId())) {
-                return userResource.getUserById(question.getUserId())
-                    .flatMap(user -> slackResource.getUserId(user.getEmail()))
-                    .filter(userId -> !userId.equals(String.valueOf(answer.getUserId()))) //Don't notify if question owner writes a response
-                    .flatMap(slackUserId -> slackResource.postMessageToSlackAsBotUser(slackUserId, notificationMessage(answer, question)))
-                    .onErrorResumeNext(throwable -> {
-                        LOG.warn("Could not notify question owner: " + question.getUserId(), throwable);
-                        return empty();
-                    });
+                    return userResource.getUserById(question.getUserId())
+                        .flatMap(user -> slackResource.getUserId(user.getEmail()))
+                        .filter(userId -> !userId.equals(String.valueOf(answer.getUserId()))) //Don't notify if question owner writes a response
+                        .flatMap(slackUserId -> slackResource.postMessageToSlackAsBotUser(slackUserId, notificationMessage(answer, question)))
+                        .onErrorResumeNext(throwable -> {
+                            LOG.warn("Could not notify question owner: " + question.getUserId(), throwable);
+                            return empty();
+                        });
                 }
                 return empty();
             });
@@ -98,8 +100,8 @@ public class AnswerResourceImpl implements AnswerResource {
 
     private List<LayoutBlock> notificationMessage(Answer answer, Question question) {
         return asList(SectionBlock.builder()
-            .text(markdownText("Your question: *%s* got an answer:", question.getTitle()))
-            .build(),
+                .text(markdownText("Your question: *%s* got an answer:", question.getTitle()))
+                .build(),
             SectionBlock.builder()
                 .text(markdownText(answer.getAnswer()))
                 .build(),
@@ -116,8 +118,9 @@ public class AnswerResourceImpl implements AnswerResource {
 
     /**
      * Creates a link element to be used in slack messages
-     * @param questionId the id of the question
-     * @param answerId optionally
+     *
+     * @param questionId        the id of the question
+     * @param answerId          optionally
      * @param applicationConfig the application config to get the baseurl from
      * @return a slack friendly link
      */
@@ -145,12 +148,10 @@ public class AnswerResourceImpl implements AnswerResource {
     }
 
     @Override
-    public Observable<Void> upVoteAnswer(String threadId) {
-        return answerDao.upVoteAnswer(threadId);
-    }
-
-    public Observable<Void> downVoteAnswer(String threadId) {
-        return answerDao.downVoteAnswer(threadId);
+    public Observable<Answer> getAnswerById(long answerId) {
+        return answerDao.getAnswerById(answerId)
+            .cast(Answer.class)
+            .switchIfEmpty(exception(() -> new WebException(NOT_FOUND)));
     }
 
     @Override

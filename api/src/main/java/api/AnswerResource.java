@@ -48,22 +48,7 @@ public interface AnswerResource {
     @GET
     Observable<Answer> getAnswerBySlackId(@PathParam("slackId") String slackId);
 
-
-    /**
-     * Votes on answer with slackid = threadId.
-     */
-    @PATCH
-    @Path("upvote/{slackId}")
-    Observable<Void> upVoteAnswer(@PathParam("slackId") String slackId);
-
-    /**
-     * Removes vote on answer
-     *
-     * @param slackId the slackid to downvote
-     *
-     * @return
-     */
-    @PATCH
-    @Path("downvote/{slackId}")
-    Observable<Void> downVoteAnswer(@PathParam("slackId") String slackId);
+    @Path("/{answerId}")
+    @GET
+    Observable<Answer> getAnswerById(@PathParam("answerId") long answerId);
 }
