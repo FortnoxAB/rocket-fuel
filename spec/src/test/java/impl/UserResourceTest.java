@@ -15,12 +15,18 @@ import org.mockito.ArgumentCaptor;
 import org.testcontainers.containers.PostgreSQLContainer;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
 
+import static impl.UserResourceImpl.FAILED_TO_UPDATE_USER_NAME_OR_PICTURE;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
+import static rx.Observable.error;
 import static rx.Observable.just;
 
 public class UserResourceTest {
@@ -28,6 +34,9 @@ public class UserResourceTest {
     private static UserResource userResource;
     private static OpenIdValidator openIdValidator;
     private static ResponseHeaderHolder responseHeaderHolder;
+    private static ApplicationTokenConfig applicationTokenConfig;
+    private static ApplicationTokenCreator applicationTokenCreator;
+
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
 
@@ -39,11 +48,11 @@ public class UserResourceTest {
         UserDao userDao = testSetup.getInjector().getInstance(UserDao.class);
         responseHeaderHolder = mock(ResponseHeaderHolder.class);
         openIdValidator = mock(OpenIdValidator.class);
-        ApplicationTokenConfig applicationTokenConfig = new ApplicationTokenConfig();
+        applicationTokenConfig = new ApplicationTokenConfig();
         applicationTokenConfig.setSecret("my-test-secret-that-is-valid");
         applicationTokenConfig.setDomain(".rocket-fuel");
         DateProvider dateProvider = new DateProviderImpl();
-        ApplicationTokenCreator applicationTokenCreator = new ApplicationTokenCreator(applicationTokenConfig, dateProvider);
+        applicationTokenCreator = new ApplicationTokenCreator(applicationTokenConfig, dateProvider);
 
         userResource = new UserResourceImpl(userDao, responseHeaderHolder, openIdValidator, applicationTokenCreator, applicationTokenConfig);
     }
@@ -114,14 +123,83 @@ public class UserResourceTest {
     }
 
     @Test
-    public void shouldFetchUserByEmail() {
-        // given
+    public void shouldUpdateExistingUserIfNewPictureIsProvided() {
+        // given that the user already exists in rocket fuel
         User user = insertUser();
 
-        // when
+        // and that the user has changed profile picture since last visit
+        ImmutableOpenIdToken openId = new ImmutableOpenIdToken(user.getName(), user.getEmail(), "new_picture.png");
+        when(openIdValidator.validate(any())).thenReturn(just(openId));
+
+        // when the user signs in
+        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+
+        // then the user returned shall have the updated picture url
+        assertThat(returnedUser.getPicture()).isEqualTo(openId.picture);
+
+        // and the user in the database shall be updated with the new picture url
+        User storedUser = userResource.getUserById(returnedUser.getId()).toBlocking().single();
+        assertThat(storedUser.getPicture()).isEqualTo(openId.picture);
+    }
+
+    @Test
+    public void shouldUpdateExistingUserIfNewNameIsProvided() {
+        // given that the user already exists in rocket fuel
+        User user = insertUser();
+
+        // and that the user has changed name since last visit
+        ImmutableOpenIdToken openId = new ImmutableOpenIdToken("Arnold", user.getEmail(), user.getPicture());
+        when(openIdValidator.validate(any())).thenReturn(just(openId));
+
+        // when the user signs in
+        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+
+        // then the user returned shall have the updated name
+        assertThat(returnedUser.getName()).isEqualTo(openId.name);
+
+        // and the user in the database shall be updated with the new name
+        User storedUser = userResource.getUserById(returnedUser.getId()).toBlocking().single();
+        assertThat(storedUser.getName()).isEqualTo(openId.name);
+    }
+
+    @Test
+    public void shouldThrowInternalServerErrorIfUpdateOfUserFails() {
+        // given that the user already exists in rocket fuel
+        User user = insertUser();
+        UserDao userDao = testSetup.getInjector().getInstance(UserDao.class);
+        UserDao userDaoMock = mock(UserDao.class);
+        //but the update sql yields errors
+        doAnswer((answer)-> userDao.insertUser((User)answer.getArguments()[0])).when(userDaoMock).insertUser(any());
+        doAnswer(answer -> userDao.getUserByEmail((String)answer.getArguments()[0])).when(userDaoMock).getUserByEmail(anyString());
+
+        doReturn(error(new SQLException("poff"))).when(userDaoMock).updateUser(any(),anyString(),anyString());
+
+        userResource = new UserResourceImpl(userDaoMock, responseHeaderHolder, openIdValidator, applicationTokenCreator, applicationTokenConfig);
+
+        // and that the user has changed name since last visit
+        ImmutableOpenIdToken openId = new ImmutableOpenIdToken("Arnold", user.getEmail(), user.getPicture());
+        when(openIdValidator.validate(any())).thenReturn(just(openId));
+
+        // when the user shall update name
+        assertThatExceptionOfType(WebException.class)
+            .isThrownBy(() -> userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null))
+            .satisfies(e -> {
+                // then a internal server error is returned
+                assertEquals(INTERNAL_SERVER_ERROR, e.getStatus());
+                assertEquals(FAILED_TO_UPDATE_USER_NAME_OR_PICTURE, e.getError());
+            });
+
+    }
+
+    @Test
+    public void shouldFetchUserByEmail() {
+        // given that the user exists in rocket-fuel
+        User user = insertUser();
+
+        // when we try to find the user by mail
         User foundUser = userResource.getUserByEmail(user.getEmail(), false).toBlocking().singleOrDefault(null);
 
-        // then
+        // then we shall get the user
         assertNotNull(foundUser);
         assertEquals(user.getEmail(), foundUser.getEmail());
         assertEquals(user.getId(), foundUser.getId());
@@ -178,11 +256,15 @@ public class UserResourceTest {
     }
 
     private User insertUser() {
+        return insertUser("Test Subject", "picture");
+    }
+
+    private User insertUser(String name, String picture) {
         final String generatedEmail = UUID.randomUUID().toString() + "@fortnox.se";
         User user = new User();
         user.setEmail(generatedEmail);
-        user.setName("Test Subject");
-        user.setPicture("picture.jpg");
+        user.setName(name);
+        user.setPicture(picture);
         userResource.createUser(null, user).toBlocking().single();
         return userResource.getUserByEmail(generatedEmail, false).toBlocking().single();
     }

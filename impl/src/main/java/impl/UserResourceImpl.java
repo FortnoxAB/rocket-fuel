@@ -5,23 +5,32 @@ import api.UserResource;
 import api.auth.ApplicationToken;
 import api.auth.Auth;
 import auth.application.ApplicationTokenConfig;
+import auth.openid.ImmutableOpenIdToken;
 import auth.openid.OpenIdValidator;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.UserDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static rx.Observable.defer;
 import static rx.Observable.error;
+import static rx.Observable.just;
 
 @Singleton
 public class UserResourceImpl implements UserResource {
+
+    private static final Logger LOG = LoggerFactory.getLogger(UserResourceImpl.class);
+    public static final String FAILED_TO_UPDATE_USER_NAME_OR_PICTURE = "failed.to.update.user.name.or.picture";
+    public static final String FAILED_TO_SEARCH_FOR_USER = "failed.to.search.for.user";
 
     private final ResponseHeaderHolder responseHeaderHolder;
     private final UserDao userDao;
@@ -71,15 +80,46 @@ public class UserResourceImpl implements UserResource {
     public Observable<User> generateToken(@NotNull String openIdToken) {
         return openIdValidator.validate(openIdToken).flatMap(validOpenId ->
                 userDao.getUserByEmail(validOpenId.email)
-                .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.search.for.user", t)))
+                .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_USER, t)))
                 .switchIfEmpty(addUserToDatabase(validOpenId.name, validOpenId.email, validOpenId.picture))
-                .map(user -> {
-                            ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
-                            addAsCookie(applicationToken, user);
-                            return user;
-                        }
-                ));
+                .flatMap(user -> updateUserNameAndPicture(user, validOpenId))
+                .map(user -> addApplicationTokenToHeader(validOpenId, user)));
     }
+
+    private User addApplicationTokenToHeader(ImmutableOpenIdToken validOpenId, User user) {
+        ApplicationToken applicationToken = applicationTokenCreator.createApplicationToken(validOpenId, user.getId());
+        addAsCookie(applicationToken, user);
+        return user;
+    }
+
+    private Observable<User> updateUserNameAndPicture(User user, ImmutableOpenIdToken openId) {
+        if(!hasUpdatedNameOrPicture(user, openId)) {
+            return just(user);
+        }
+
+        return userDao.updateUser(user.getId(), openId.name, openId.picture)
+            .doOnError(e -> LOG.error("failed to update user with id: {} with the following update name: {} and updated picture: {}",
+                user.getId(),
+                openId.name,
+                openId.picture))
+            .onErrorResumeNext(e -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_UPDATE_USER_NAME_OR_PICTURE, e)))
+            .map(e -> {
+                user.setName(openId.name);
+                user.setPicture(openId.picture);
+                return user;
+            });
+    }
+
+    private boolean hasUpdatedNameOrPicture(User user, ImmutableOpenIdToken validOpenId) {
+        if(!Objects.equals(user.getName(), validOpenId.name)) {
+            return true;
+        }
+        if(!Objects.equals(user.getPicture(), validOpenId.picture)) {
+            return true;
+        }
+        return false;
+    }
+
 
     private Observable<User> addUserToDatabase(String name, String email, String picture) {
         User user = new User();
