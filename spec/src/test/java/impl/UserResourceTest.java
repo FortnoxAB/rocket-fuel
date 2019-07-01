@@ -295,7 +295,7 @@ public class UserResourceTest {
     }
 
     private User insertUser(String name, String picture) {
-        final String generatedEmail = UUID.randomUUID().toString() + "@fortnox.se";
+        final String generatedEmail = UUID.randomUUID().toString() + "@example.com";
         User user = new User();
         user.setEmail(generatedEmail);
         user.setName(name);
