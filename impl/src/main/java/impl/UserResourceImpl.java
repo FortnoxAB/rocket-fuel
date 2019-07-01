@@ -31,6 +31,7 @@ public class UserResourceImpl implements UserResource {
     private static final Logger LOG = LoggerFactory.getLogger(UserResourceImpl.class);
     public static final String FAILED_TO_UPDATE_USER_NAME_OR_PICTURE = "failed.to.update.user.name.or.picture";
     public static final String FAILED_TO_SEARCH_FOR_USER = "failed.to.search.for.user";
+    public static final String DEFAULT_PICTURE_URL =  "https://via.placeholder.com/96";
 
     private final ResponseHeaderHolder responseHeaderHolder;
     private final UserDao userDao;
@@ -80,7 +81,7 @@ public class UserResourceImpl implements UserResource {
     public Observable<User> generateToken(@NotNull String openIdToken) {
         return openIdValidator.validate(openIdToken).flatMap(validOpenId ->
                 userDao.getUserByEmail(validOpenId.email)
-                .onErrorResumeNext(t -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_USER, t)))
+                .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_USER, throwable)))
                 .switchIfEmpty(addUserToDatabase(validOpenId.name, validOpenId.email, validOpenId.picture))
                 .flatMap(user -> updateUserNameAndPicture(user, validOpenId))
                 .map(user -> addApplicationTokenToHeader(validOpenId, user)));
@@ -93,28 +94,36 @@ public class UserResourceImpl implements UserResource {
     }
 
     private Observable<User> updateUserNameAndPicture(User user, ImmutableOpenIdToken openId) {
-        if(!hasUpdatedNameOrPicture(user, openId)) {
+        final String picture = getPicture(openId.picture);
+        if(!hasUpdatedNameOrPicture(user, openId.name, picture)) {
             return just(user);
         }
 
-        return userDao.updateUser(user.getId(), openId.name, openId.picture)
-            .doOnError(e -> LOG.error("failed to update user with id: {} with the following update name: {} and updated picture: {}",
+        return userDao.updateUser(user.getId(), openId.name, picture)
+            .doOnError(e -> LOG.error("failed to update user with id: {} with the following updated name: {} and updated picture: {}",
                 user.getId(),
                 openId.name,
                 openId.picture))
             .onErrorResumeNext(e -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_UPDATE_USER_NAME_OR_PICTURE, e)))
             .map(e -> {
                 user.setName(openId.name);
-                user.setPicture(openId.picture);
+                user.setPicture(picture);
                 return user;
             });
     }
 
-    private boolean hasUpdatedNameOrPicture(User user, ImmutableOpenIdToken validOpenId) {
-        if(!Objects.equals(user.getName(), validOpenId.name)) {
+    private String getPicture(String picture) {
+        if(picture == null) {
+            return DEFAULT_PICTURE_URL;
+        }
+        return picture;
+    }
+
+    private boolean hasUpdatedNameOrPicture(User user, String openIdName, String openIdPicture) {
+        if(!Objects.equals(user.getName(), openIdName)) {
             return true;
         }
-        if(!Objects.equals(user.getPicture(), validOpenId.picture)) {
+        if(!Objects.equals(user.getPicture(), openIdPicture)) {
             return true;
         }
         return false;

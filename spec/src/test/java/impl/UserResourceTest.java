@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
 
+import static impl.UserResourceImpl.DEFAULT_PICTURE_URL;
 import static impl.UserResourceImpl.FAILED_TO_UPDATE_USER_NAME_OR_PICTURE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,8 +34,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -157,6 +156,26 @@ public class UserResourceTest {
     }
 
     @Test
+    public void shouldDefaultToDefaultImageIfUserGotNoImage() {
+        // given that the user already exists in rocket fuel
+        User user = insertUser();
+
+        // and that the user has removed the profile picture from last visit
+        ImmutableOpenIdToken openId = new ImmutableOpenIdToken(user.getName(), user.getEmail(), null);
+        when(openIdValidator.validate(any())).thenReturn(just(openId));
+
+        // when the user signs in
+        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+
+        // then the user returned shall have the updated picture url
+        assertThat(returnedUser.getPicture()).isEqualTo(DEFAULT_PICTURE_URL);
+
+        // and the user in the database shall be updated with the new picture url
+        User storedUser = userResource.getUserById(returnedUser.getId()).toBlocking().single();
+        assertThat(storedUser.getPicture()).isEqualTo(DEFAULT_PICTURE_URL);
+    }
+
+    @Test
     public void shouldUpdateExistingUserIfNewNameIsProvided() {
         // given that the user already exists in rocket fuel
         User user = insertUser();
@@ -180,13 +199,15 @@ public class UserResourceTest {
     public void shouldThrowInternalServerErrorIfUpdateOfUserFails() {
         // given that the user already exists in rocket fuel
         User user = insertUser();
-        UserDao userDao = testSetup.getInjector().getInstance(UserDao.class);
         UserDao userDaoMock = mock(UserDao.class);
-        //but the update sql yields errors
-        doAnswer((answer)-> error(new Exception("should.not.be.executed"))).when(userDaoMock).insertUser(any());
-        doAnswer(answer -> userDao.getUserByEmail((String)answer.getArguments()[0])).when(userDaoMock).getUserByEmail(anyString());
+        when(userDaoMock.getUserByEmail(anyString())).thenReturn(just(user));
 
-        doReturn(error(new SQLException("poff"))).when(userDaoMock).updateUser(any(),anyString(),anyString());
+        // and we will fail to update the user
+        when(userDaoMock.updateUser(any(), anyString(), anyString())).thenReturn(error(new SQLException()));
+
+        // and we make sure that we will not be able to insert a new user to db
+        rx.Observable<Integer> obs = just(1).doOnSubscribe(() -> fail("should not be called within this test"));
+        when(userDaoMock.insertUser(any())).thenReturn(obs);
 
         UserResource userResource = new UserResourceImpl(userDaoMock, responseHeaderHolder, openIdValidator, applicationTokenCreator, applicationTokenConfig);
 
