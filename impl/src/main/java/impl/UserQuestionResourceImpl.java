@@ -14,6 +14,7 @@ import java.util.List;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static rx.Observable.error;
+import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 
 @Singleton
 public class UserQuestionResourceImpl implements UserQuestionResource {
@@ -52,7 +53,7 @@ public class UserQuestionResourceImpl implements UserQuestionResource {
     public Observable<Question> updateQuestion(Auth auth, long questionId, Question question) {
         return questionDao.getQuestion(questionId)
             .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable)))
-            .switchIfEmpty(error(new WebException(HttpResponseStatus.NOT_FOUND, QUESTION_NOT_FOUND)))
+            .switchIfEmpty(exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, QUESTION_NOT_FOUND)))
             .flatMap(storedQuestion -> {
                 if(auth.getUserId() != storedQuestion.getUserId()) {
                     return error(new WebException(HttpResponseStatus.FORBIDDEN, NOT_OWNER_OF_QUESTION));
@@ -61,7 +62,7 @@ public class UserQuestionResourceImpl implements UserQuestionResource {
                     .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_UPDATE_QUESTION_TO_DATABASE, throwable)))
                     .flatMap(ignore -> questionDao.getQuestion(questionId)
                          .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable))))
-                    .switchIfEmpty(error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE)));
+                    .switchIfEmpty(exception(() -> new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE)));
             });
     }
 
@@ -69,7 +70,7 @@ public class UserQuestionResourceImpl implements UserQuestionResource {
     public Observable<Void> deleteQuestion(Auth auth, long questionId) {
         return questionDao.getQuestion(questionId)
             .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable)))
-            .switchIfEmpty(error(new WebException(HttpResponseStatus.NOT_FOUND, QUESTION_NOT_FOUND)))
+            .switchIfEmpty(exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, QUESTION_NOT_FOUND)))
             .flatMap(storedAnswer -> {
                 if(auth.getUserId() != storedAnswer.getUserId()) {
                     return error(new WebException(HttpResponseStatus.FORBIDDEN, NOT_OWNER_OF_QUESTION));
