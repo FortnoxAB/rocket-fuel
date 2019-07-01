@@ -10,7 +10,11 @@ import dao.UserDao;
 import dates.DateProvider;
 import dates.DateProviderImpl;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.testcontainers.containers.PostgreSQLContainer;
 import se.fortnox.reactivewizard.jaxrs.WebException;
@@ -23,9 +27,19 @@ import static impl.UserResourceImpl.FAILED_TO_UPDATE_USER_NAME_OR_PICTURE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static rx.Observable.error;
 import static rx.Observable.just;
 
@@ -169,7 +183,7 @@ public class UserResourceTest {
         UserDao userDao = testSetup.getInjector().getInstance(UserDao.class);
         UserDao userDaoMock = mock(UserDao.class);
         //but the update sql yields errors
-        doAnswer((answer)-> userDao.insertUser((User)answer.getArguments()[0])).when(userDaoMock).insertUser(any());
+        doAnswer((answer)-> error(new Exception("should.not.be.executed"))).when(userDaoMock).insertUser(any());
         doAnswer(answer -> userDao.getUserByEmail((String)answer.getArguments()[0])).when(userDaoMock).getUserByEmail(anyString());
 
         doReturn(error(new SQLException("poff"))).when(userDaoMock).updateUser(any(),anyString(),anyString());
