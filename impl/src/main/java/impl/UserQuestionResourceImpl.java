@@ -25,7 +25,6 @@ public class UserQuestionResourceImpl implements UserQuestionResource {
     public static final String QUESTION_NOT_FOUND = "question.not.found";
     public static final String NOT_OWNER_OF_QUESTION = "not.owner.of.question";
     public static final String FAILED_TO_DELETE_QUESTION = "failed.to.delete.question";
-    public static final String FAILED_TO_GET_UPDATED_QUESTION_FROM_DATABASE = "failed.to.get.updated.question.from.database";
     private final QuestionDao questionDao;
 
     @Inject

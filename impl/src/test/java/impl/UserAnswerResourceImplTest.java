@@ -1,6 +1,5 @@
 package impl;
 
-import api.Answer;
 import api.UserAnswerResource;
 import api.auth.Auth;
 import dao.AnswerDao;
@@ -11,7 +10,6 @@ import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.sql.SQLException;
@@ -29,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static rx.Observable.empty;
 import static rx.Observable.error;
 import static rx.Observable.just;
 
@@ -64,7 +63,7 @@ public class UserAnswerResourceImplTest {
     @Test
     public void shouldThrowInternalServerErrorIfUpdateAnswerFails() {
         AnswerInternal answer = createAnswer();
-        when(answerDao.updateAnswer(123,  123, answer)).thenReturn(Observable.error(new SQLException("poff")));
+        when(answerDao.updateAnswer(123,  123, answer)).thenReturn(error(new SQLException("poff")));
         when(answerDao.getAnswerById(123)).thenReturn(just(answer));
 
         assertException(() -> userAnswerResource.updateAnswer(auth, 123,answer).toBlocking().singleOrDefault(null),
@@ -76,7 +75,7 @@ public class UserAnswerResourceImplTest {
     @Test
     public void shouldThrowForbiddenIfAnswerIsNotCreatedByTheUpdater() {
         AnswerInternal answer = createAnswer(444);
-        when(answerDao.updateAnswer(123,  123, answer)).thenReturn(Observable.error(new SQLException("poff")));
+        when(answerDao.updateAnswer(123,  123, answer)).thenReturn(error(new SQLException("poff")));
         when(answerDao.getAnswerById(123)).thenReturn(just(answer));
 
         assertException(() -> userAnswerResource.updateAnswer(auth, 123,answer).toBlocking().singleOrDefault(null),
@@ -86,8 +85,7 @@ public class UserAnswerResourceImplTest {
 
     @Test
     public void shouldThrowNotFoundIfAnswerToUpdateCannotBeFound() {
-        AnswerInternal answer = createAnswer();
-        when(answerDao.getAnswerById(123)).thenReturn(Observable.empty());
+        when(answerDao.getAnswerById(123)).thenReturn(empty());
 
         assertException(() -> userAnswerResource.deleteAnswer(auth, 123).toBlocking().singleOrDefault(null),
             NOT_FOUND,
@@ -106,7 +104,7 @@ public class UserAnswerResourceImplTest {
 
     @Test
     public void shouldThrowNotFoundIfAnswerToDeleteCannotBeFound() {
-        when(answerDao.getAnswerById(123)).thenReturn(Observable.empty());
+        when(answerDao.getAnswerById(123)).thenReturn(empty());
 
         assertException(() -> userAnswerResource.deleteAnswer(auth, 123).toBlocking().singleOrDefault(null),
             NOT_FOUND,
@@ -116,7 +114,7 @@ public class UserAnswerResourceImplTest {
     @Test
     public void shouldThrowInternalIfAnswerToDeleteCannotBeDeleted() {
         AnswerInternal answer = createAnswer();
-        when(answerDao.deleteAnswer(123,  123)).thenReturn(Observable.error(new SQLException("poff")));
+        when(answerDao.deleteAnswer(123,  123)).thenReturn(error(new SQLException("poff")));
         when(answerDao.getAnswerById(123)).thenReturn(just(answer));
 
         assertException(() -> userAnswerResource.deleteAnswer(auth, 123).toBlocking().singleOrDefault(null),
@@ -126,9 +124,7 @@ public class UserAnswerResourceImplTest {
 
     @Test
     public void shouldThrowInternalIfAnswerToDeleteCannotBeFetchedFromDb() {
-        Answer answer = createAnswer();
-        when(answerDao.getAnswerById(123)).thenReturn(Observable.error(new SQLException("poff")));
-        when(answerDao.updateAnswer(123, 123, answer)).thenReturn(error(new SQLException("poff")));
+        when(answerDao.getAnswerById(123)).thenReturn(error(new SQLException("poff")));
         Auth auth = new Auth();
         auth.setUserId(123);
 
