@@ -188,7 +188,7 @@ public class UserResourceTest {
 
         doReturn(error(new SQLException("poff"))).when(userDaoMock).updateUser(any(),anyString(),anyString());
 
-        userResource = new UserResourceImpl(userDaoMock, responseHeaderHolder, openIdValidator, applicationTokenCreator, applicationTokenConfig);
+        UserResource userResource = new UserResourceImpl(userDaoMock, responseHeaderHolder, openIdValidator, applicationTokenCreator, applicationTokenConfig);
 
         // and that the user has changed name since last visit
         ImmutableOpenIdToken openId = new ImmutableOpenIdToken("Arnold", user.getEmail(), user.getPicture());
