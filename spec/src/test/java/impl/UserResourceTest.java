@@ -22,6 +22,7 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 import java.util.Map;
 import java.util.UUID;
 
+import static impl.UserResourceImpl.SESSION_MAX_AGE_SECONDS;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -39,6 +40,7 @@ public class UserResourceTest {
     private static UserResource userResource;
     private static OpenIdValidator openIdValidator;
     private static ResponseHeaderHolder responseHeaderHolder;
+    private static ApplicationTokenConfig applicationTokenConfig;
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
 
@@ -50,7 +52,7 @@ public class UserResourceTest {
         UserDao userDao = testSetup.getInjector().getInstance(UserDao.class);
         responseHeaderHolder = mock(ResponseHeaderHolder.class);
         openIdValidator = mock(OpenIdValidator.class);
-        ApplicationTokenConfig applicationTokenConfig = new ApplicationTokenConfig();
+        applicationTokenConfig = new ApplicationTokenConfig();
         applicationTokenConfig.setSecret("my-test-secret-that-is-valid");
         applicationTokenConfig.setDomain(".rocket-fuel");
         DateProvider dateProvider = new DateProviderImpl();
@@ -99,8 +101,14 @@ public class UserResourceTest {
         ArgumentCaptor<Map> mapArgumentCaptor = ArgumentCaptor.forClass(Map.class);
         verify(responseHeaderHolder, times(1)).addHeaders(any(), mapArgumentCaptor.capture());
         String setCookieHeader = (String) mapArgumentCaptor.getValue().get("Set-Cookie");
-        String expectedCookie = "application=deleted; Path=/; Max-Age=0; Domain=.rocket-fuel; SameSite=Strict; HttpOnly; Secure;";
-        assertThat(setCookieHeader).isEqualTo(expectedCookie);
+
+        assertThat(setCookieHeader).contains("application=;");
+        assertThat(setCookieHeader).contains("Path=/;");
+        assertThat(setCookieHeader).contains("Domain="+applicationTokenConfig.getDomain()+";");
+        assertThat(setCookieHeader).contains("Max-Age=0;");
+        assertThat(setCookieHeader).contains("HttpOnly;");
+        assertThat(setCookieHeader).contains("Secure");
+        assertThat(setCookieHeader).contains("SameSite=Strict;");
         // and assert that user id is returned in the response to the client
         assertThat(userId).isEqualTo(1234);
     }
@@ -139,8 +147,8 @@ public class UserResourceTest {
         String setCookieHeader = (String) mapArgumentCaptor.getValue().get("Set-Cookie");
         assertThat(setCookieHeader).contains("application=ey");
         assertThat(setCookieHeader).contains("Path=/;");
-        assertThat(setCookieHeader).contains("Domain=.rocket-fuel;");
-        assertThat(setCookieHeader).contains("Max-Age=3600;");
+        assertThat(setCookieHeader).contains("Domain="+applicationTokenConfig.getDomain()+";");
+        assertThat(setCookieHeader).contains("Max-Age="+SESSION_MAX_AGE_SECONDS+";");
         assertThat(setCookieHeader).contains("HttpOnly;");
         assertThat(setCookieHeader).contains("Secure");
         assertThat(setCookieHeader).contains("SameSite=Strict;");

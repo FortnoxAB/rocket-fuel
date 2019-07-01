@@ -23,7 +23,7 @@ import static rx.Observable.error;
 @Singleton
 public class UserResourceImpl implements UserResource {
 
-    private static final int SESSION_MAX_AGE_SECONDS = 3600;
+    public static final int SESSION_MAX_AGE_SECONDS = 3600;
 
     private final ResponseHeaderHolder responseHeaderHolder;
     private final UserDao userDao;
@@ -102,7 +102,7 @@ public class UserResourceImpl implements UserResource {
     public Observable<Long> signOut(Auth auth) {
         int expireNow = 0;
         Map<String, Object> headers = new HashMap<>();
-        headers.put("Set-Cookie", formatCookie("deleted", expireNow, applicationTokenConfig.getDomain()));
+        headers.put("Set-Cookie", formatCookie("", expireNow, applicationTokenConfig.getDomain()));
         responseHeaderHolder.addHeaders(auth.getUserId(), headers);
         return Observable.just(auth.getUserId());
     }
