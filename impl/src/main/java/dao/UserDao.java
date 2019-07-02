@@ -17,4 +17,8 @@ public interface UserDao {
 
     @Query(value = "SELECT * from \"user\" where id = :userId LIMIT 1")
     Observable<User> getUserById(long userId);
+    @Update("UPDATE \"user\" " +
+        "SET name=:name, picture=:picture " +
+        "WHERE id=:userId")
+    Observable<Integer> updateUser(Long userId, String name, String picture);
 }
