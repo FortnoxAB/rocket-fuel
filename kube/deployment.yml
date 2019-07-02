@@ -155,7 +155,7 @@ spec:
                 secretKeyRef:
                   name: rocket-fuel
                   key: slack.api_token
-            - name: ROCKET_FUEL_URL
+            - name: BASE_URL
               valueFrom:
                 configMapKeyRef:
                   name: rocket-fuel

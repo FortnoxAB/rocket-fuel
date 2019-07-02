@@ -74,9 +74,11 @@ public class AnswerResourceImpl implements AnswerResource {
     }
 
     private Observable<Void> notifyQuestionOwner(Answer answer, long questionId) {
-        return questionDao.getQuestionById(questionId).flatMap(question ->
-                userResource.getUserById(question.getUserId()).flatMap(user ->
-                    slackResource.getUserId(user.getEmail())).flatMap(slackUserId ->
+        return questionDao.getQuestionById(questionId)
+            .flatMap(question ->
+                userResource.getUserById(question.getUserId())
+                    .flatMap(user -> slackResource.getUserId(user.getEmail()))
+                    .flatMap(slackUserId ->
                         slackResource.postMessageToSlackAsBotUser(slackUserId, notificationMessage(answer, question))))
             .onErrorResumeNext(throwable -> {
                 LOG.warn("Could not notify question owner", throwable);

@@ -17,6 +17,8 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static rx.Observable.concat;
+import static rx.Observable.defer;
+import static rx.Observable.empty;
 import static rx.Observable.error;
 import static rx.Observable.merge;
 import static rx.Observable.zip;
@@ -117,7 +119,12 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                         question.setBounty(DEFAULT_BOUNTY);
 
                         return first(questionResource.createQuestion(as(userId), question).doOnError(throwable -> LOG.error("Could not post message to slack", throwable))).thenReturn(question);
-                    }));
+                    })).doOnError(throwable -> {
+                        LOG.error("Could not create question: ", throwable);
+            }).switchIfEmpty(defer(() -> {
+                LOG.error("Could not create question empty");
+                return empty();
+            }));
     }
 
     private Auth as(Long userId) {
