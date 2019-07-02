@@ -21,6 +21,9 @@ applicationTokenConfig:
     secret: {{ .Env.APPLICATION_TOKEN }}
     domain:  {{ .Env.DOMAIN }}
 
+application:
+  baseUrl: {{ .Env.ROCKET_FUEL_URL }}
+
 slack:
     botUserToken: {{ .Env.SLACK_BOT_TOKEN }}
     apiToken:  {{ .Env.SLACK_API_TOKEN }}

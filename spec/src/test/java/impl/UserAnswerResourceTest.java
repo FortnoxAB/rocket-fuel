@@ -14,8 +14,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.testcontainers.containers.PostgreSQLContainer;
 import se.fortnox.reactivewizard.jaxrs.WebException;
+import slack.SlackResource;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static rx.Observable.empty;
 
 public class UserAnswerResourceTest {
 
@@ -43,7 +47,12 @@ public class UserAnswerResourceTest {
 
     @BeforeClass
     public static void before() {
-        testSetup = new TestSetup(postgreSQLContainer);
+        testSetup = new TestSetup(postgreSQLContainer, binder -> binder.bind(SlackResource.class).toInstance(Mockito.mock(SlackResource.class, new org.mockito.stubbing.Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return empty();
+            }
+        })));
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         userQuestionResource = testSetup.getInjector().getInstance(UserQuestionResource.class);
         userAnswerResource = testSetup.getInjector().getInstance(UserAnswerResource.class);

@@ -50,6 +50,7 @@ public class TestSetup {
             .with(mocks, new AbstractModule() {
                 @Override
                 protected void configure() {
+
                     SlackRTMClient slackRTMClient = mock(SlackRTMClient.class);
                     binder().bind(SlackRTMClient.class).toInstance(slackRTMClient);
                     binder().bind(JwkResource.class).toProvider(() -> mock(JwkResource.class));

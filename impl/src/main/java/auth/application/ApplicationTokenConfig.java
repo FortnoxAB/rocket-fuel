@@ -1,3 +1,4 @@
+
 package auth.application;
 
 import se.fortnox.reactivewizard.config.Config;
