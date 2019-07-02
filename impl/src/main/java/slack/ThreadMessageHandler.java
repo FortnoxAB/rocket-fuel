@@ -119,12 +119,12 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                         question.setBounty(DEFAULT_BOUNTY);
 
                         return first(questionResource.createQuestion(as(userId), question).doOnError(throwable -> LOG.error("Could not post message to slack", throwable))).thenReturn(question);
-                    })).doOnError(throwable -> {
-                        LOG.error("Could not create question: ", throwable);
-            }).switchIfEmpty(defer(() -> {
-                LOG.error("Could not create question empty");
-                return empty();
-            }));
+                    }))
+                .doOnError(throwable -> LOG.error("Could not create question: ", throwable))
+                .switchIfEmpty(defer(() -> {
+                    LOG.error("Could not create question empty");
+                    return empty();
+                }));
     }
 
     private Auth as(Long userId) {
