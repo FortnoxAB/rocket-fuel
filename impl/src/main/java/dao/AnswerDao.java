@@ -21,7 +21,9 @@ public interface AnswerDao {
     String FROM_ANSWER = "FROM answer a " +
                             "INNER JOIN \"user\" u on u.id = a.user_id ";
 
-    String VOTES = "(SELECT SUM(v.value) FROM answer_vote v WHERE v.answer_id = a.id) AS \"votes\" ";
+    String VOTES = "(SELECT COALESCE(SUM(v.value), 0) FROM answer_vote v WHERE v.answer_id = a.id) AS votes ";
+
+    String USER_VOTE = "(SELECT COALESCE(SUM(v.value), 0) FROM answer_vote v WHERE v.answer_id = a.id AND v.user_id = :userId) AS user_vote ";
 
     @Update(
         "UPDATE answer " +
@@ -42,13 +44,14 @@ public interface AnswerDao {
     @Query(
         SELECT_ANSWER +
             "u.name AS created_by, " +
-            VOTES +
+            VOTES + ", " +
+            USER_VOTE +
             "FROM answer a " +
             "INNER JOIN \"user\" u on u.id = a.user_id " +
             "WHERE question_id=:questionId " +
             "ORDER BY a.accepted desc, \"votes\" desc, a.created_at desc"
     )
-    Observable<Answer> getAnswers(long questionId);
+    Observable<Answer> getAnswersWithUserVotes(long userId, long questionId);
 
 
     @Query(

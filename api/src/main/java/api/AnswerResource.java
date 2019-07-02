@@ -28,7 +28,7 @@ public interface AnswerResource {
      */
     @Path("question/{questionId}")
     @GET
-    Observable<List<Answer>> getAnswers(@PathParam("questionId") long questionId);
+    Observable<List<Answer>> getAnswers(Auth auth, @PathParam("questionId") long questionId);
 
     /**
      * Marks a given answer as answered. The method will mark the question as well as answered.

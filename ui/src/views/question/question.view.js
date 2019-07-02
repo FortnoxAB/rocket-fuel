@@ -43,7 +43,7 @@ class QuestionView extends React.Component {
     loadQuestionAndAnswers(questionId) {
         Promise.all([
             QuestionApi.getQuestionById(questionId),
-            AnswerApi.getAnswersByQuestionId(questionId)
+            AnswerApi.getAnswersByQuestionId(questionId, this.context.state.token)
         ]).then((resp) => {
             this.setState({
                 question: resp[0],
@@ -99,6 +99,8 @@ class QuestionView extends React.Component {
                     key={index}
                     onDeleteAnswer={this.loadQuestionAndAnswers.bind(this, this.props.match.params.id)}
                     onEditAnswer={this.loadQuestionAndAnswers.bind(this, this.props.match.params.id)}
+                    onUpVote={this.onUpVote.bind(this)}
+                    onDownVote={this.onDownVote.bind(this)}
                 />
              );
         });
@@ -108,6 +110,16 @@ class QuestionView extends React.Component {
         AnswerApi.acceptAnswer(answerId).then(() => {
             this.loadQuestionAndAnswers(this.props.match.params.id);
         });
+    }
+
+    onUpVote(answerId) {
+        AnswerApi.upVoteAnswer(answerId)
+            .then(() => this.loadQuestionAndAnswers(this.props.match.params.id));
+    }
+
+    onDownVote(answerId) {
+        AnswerApi.downVoteAnswer(answerId)
+            .then(() => this.loadQuestionAndAnswers(this.props.match.params.id));
     }
 
     renderAnswerForm() {

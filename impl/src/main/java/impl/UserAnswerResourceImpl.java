@@ -17,6 +17,7 @@ import java.util.List;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static rx.Observable.error;
+import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
 @Singleton
@@ -51,7 +52,7 @@ public class UserAnswerResourceImpl implements UserAnswerResource {
     public Observable<Void> updateAnswer(Auth auth, long answerId, Answer answer) {
         return answerDao.getAnswerById(answerId)
             .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_ANSWER_FROM_DATABASE, throwable)))
-            .switchIfEmpty(error(new WebException(HttpResponseStatus.NOT_FOUND, ANSWER_NOT_FOUND)))
+            .switchIfEmpty(exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, ANSWER_NOT_FOUND)))
             .flatMap(storedAnswer -> {
                 if (auth.getUserId() != storedAnswer.getUserId()) {
                     return error(new WebException(HttpResponseStatus.FORBIDDEN, NOT_OWNER_OF_ANSWER));
@@ -65,7 +66,7 @@ public class UserAnswerResourceImpl implements UserAnswerResource {
     public Observable<Void> deleteAnswer(Auth auth, long answerId) {
         return answerDao.getAnswerById(answerId)
             .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_ANSWER_FROM_DATABASE, throwable)))
-            .switchIfEmpty(error(new WebException(HttpResponseStatus.NOT_FOUND, ANSWER_NOT_FOUND)))
+            .switchIfEmpty(exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, ANSWER_NOT_FOUND)))
             .flatMap(storedAnswer -> {
                 if (auth.getUserId() != storedAnswer.getUserId()) {
                     return error(new WebException(HttpResponseStatus.FORBIDDEN, NOT_OWNER_OF_ANSWER));
@@ -86,7 +87,13 @@ public class UserAnswerResourceImpl implements UserAnswerResource {
     }
 
     private Observable<Void> handleVote(Vote newVote) {
-        return first(voteDao.findVote(newVote.getUserId(), newVote.getAnswerId())
+
+        return first(answerDao.getAnswerById(newVote.getAnswerId()).flatMap(answer -> {
+                if (answer.getUserId() == newVote.getUserId()) { // no voting for your own answer
+                    return error(new WebException(BAD_REQUEST, INVALID_VOTE));
+                }
+                return voteDao.findVote(newVote.getUserId(), newVote.getAnswerId());
+            })
             .flatMap(existingVote -> {
                 int totalVote = newVote.getValue() + existingVote.getValue();
                 if (totalVote == 0) {

@@ -16,9 +16,11 @@
 
     private String createdAt;
 
-    private int votes;
+    private Integer votes;
 
     private String slackId;
+
+    private Integer userVote;
 
     public String getCreatedBy() {
         return createdBy;
@@ -36,11 +38,11 @@
         this.createdAt = createdAt;
     }
 
-    public int getVotes() {
+    public Integer getVotes() {
         return votes;
     }
 
-    public void setVotes(int votes) {
+    public void setVotes(Integer votes) {
         this.votes = votes;
     }
 
@@ -74,5 +76,16 @@
 
      public void setPicture(String picture) {
          this.picture = picture;
+     }
+
+     /**
+      * When populated, represents the value of the vote that the "current user" has applied to the post.
+      */
+     public Integer getUserVote() {
+         return userVote;
+     }
+
+     public void setUserVote(Integer userVote) {
+         this.userVote = userVote;
      }
  }

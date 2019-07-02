@@ -2,10 +2,10 @@
 
  import api.auth.Auth;
  import rx.Observable;
+ import se.fortnox.reactivewizard.jaxrs.PATCH;
 
  import javax.ws.rs.DELETE;
  import javax.ws.rs.GET;
- import javax.ws.rs.PATCH;
  import javax.ws.rs.PUT;
  import javax.ws.rs.Path;
  import javax.ws.rs.PathParam;
@@ -63,7 +63,7 @@ public interface UserAnswerResource {
      * @return
      */
     @PATCH
-    @Path("me/answers/{answerId}/upvote")
+    @Path("me/answers/upvote/{answerId}")
     Observable<Void> upVoteAnswer(Auth auth, @PathParam("answerId") long answerId);
 
     /**
@@ -75,6 +75,6 @@ public interface UserAnswerResource {
      * @return
      */
     @PATCH
-    @Path("me/answers/{answerId}/downvote")
+    @Path("me/answers/downvote/{answerId}")
     Observable<Void> downVoteAnswer(Auth auth, @PathParam("answerId") long answerId);
 }

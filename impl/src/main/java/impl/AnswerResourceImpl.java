@@ -135,9 +135,8 @@ public class AnswerResourceImpl implements AnswerResource {
     }
 
     @Override
-    public Observable<List<Answer>> getAnswers(long questionId) {
-        return answerDao.getAnswers(questionId).toList().doOnError(throwable -> {
-            System.out.println(throwable.getMessage());
+    public Observable<List<Answer>> getAnswers(Auth auth, long questionId) {
+        return answerDao.getAnswersWithUserVotes(auth.getUserId(), questionId).toList().doOnError(throwable -> {
             LOG.error("Failed to get answers for question: " + questionId, throwable);
         });
     }

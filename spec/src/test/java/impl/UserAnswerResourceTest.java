@@ -19,6 +19,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -81,7 +82,7 @@ public class UserAnswerResourceTest {
         Answer createdAnswer = getFirstAnswer(createdUserAuth, question);
         assertFalse(createdAnswer.isAccepted());
         assertEquals("this is the body of the answer", createdAnswer.getAnswer());
-        assertEquals(0, createdAnswer.getVotes());
+        assertThat(createdAnswer.getVotes()).isZero();
         assertEquals("Test Subject", createdAnswer.getCreatedBy());
     }
 
@@ -162,7 +163,7 @@ public class UserAnswerResourceTest {
         Answer createdAnswer = getFirstAnswer(authUserOne, question);
         assertFalse(createdAnswer.isAccepted());
         assertEquals("this is the body of the answer", createdAnswer.getAnswer());
-        assertEquals(0, createdAnswer.getVotes());
+        assertThat(createdAnswer.getVotes()).isZero();
         assertEquals("Test Subject", createdAnswer.getCreatedBy());
     }
 
@@ -172,15 +173,14 @@ public class UserAnswerResourceTest {
         Auth auth1 = newAuth();
         Auth auth2 = newAuth();
         Auth auth3 = newAuth();
-        Answer answer = createQuestionAndAnswer(auth1);
-        assertThat(answer.getVotes()).isZero();
-       assertNoVote(auth1, answer);
+        Answer answer = createQuestionAndAnswer(newAuth());
 
         voteAndAssertSuccess(userAnswerResource::downVoteAnswer, auth1, answer,-1);
         voteAndAssertFailure(userAnswerResource::downVoteAnswer, auth1, answer);
         voteAndAssertSuccess(userAnswerResource::upVoteAnswer, auth1, answer, 0);
         assertNoVote(auth1, answer);
         voteAndAssertSuccess(userAnswerResource::upVoteAnswer, auth1, answer, 1);
+        voteAndAssertFailure(userAnswerResource::upVoteAnswer, auth1, answer);
 
         voteAndAssertSuccess(userAnswerResource::upVoteAnswer, auth2, answer, 2);
 
@@ -191,6 +191,16 @@ public class UserAnswerResourceTest {
 
         voteAndAssertSuccess(userAnswerResource::downVoteAnswer, auth3, answer, 1);
         assertNoVote(auth2, answer);
+    }
+
+    @Test
+    public void userCantVoteOnOwnAnswer() {
+
+        Auth auth = newAuth();
+        Answer answer = createQuestionAndAnswer(auth);
+
+        voteAndAssertFailure(userAnswerResource::downVoteAnswer, auth, answer);
+        voteAndAssertFailure(userAnswerResource::upVoteAnswer, auth, answer);
     }
 
     private void voteAndAssertSuccess(BiFunction<Auth, Long, Observable<Void>> call, Auth auth, Answer answer, int expectedVotes) {
@@ -214,8 +224,7 @@ public class UserAnswerResourceTest {
 
     private void assertNoVote(Auth auth, Answer answer) {
         voteDao.findVote(auth.getUserId(), answer.getId()).test().awaitTerminalEvent()
-            .assertNoErrors()
-            .getOnNextEvents().forEach(vote -> {System.out.println(vote.getAnswerId() + vote.getUserId());});
+            .assertNoValues();
     }
 
     private Answer createQuestionAndAnswer(Auth auth) {

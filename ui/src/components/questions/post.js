@@ -17,7 +17,6 @@ class Post extends React.Component {
         super(props);
 
         this.state = {
-            votes: 0,
             isDeleteDialogOpen: false,
             isEditDialogOpen: false,
             currentBody: '',
@@ -36,7 +35,7 @@ class Post extends React.Component {
         if (this.props.answered) {
             classes = `${classes} accepted`;
         }
-        if (this.state.votes < -3) {
+        if (this.props.votes < -3) {
             classes = `${classes} faded`;
         }
         return classes;
@@ -65,18 +64,6 @@ class Post extends React.Component {
                 <i className="fa fa-check" />
             </div>
         );
-    }
-
-    incrementVotes() {
-        this.setState({
-            votes: this.state.votes + 1
-        });
-    }
-
-    decrementVotes() {
-        this.setState({
-            votes: this.state.votes - 1
-        });
     }
 
     getTime() {
@@ -189,19 +176,36 @@ class Post extends React.Component {
     }
 
     renderVotes() {
+
+        if(!this.props.enableVote) {
+            return null;
+        }
+
         return (
             <>
-                <div className="vote">
-                    <i onClick={this.incrementVotes.bind(this)} className="fa fa-caret-up" />
-                </div>
+                {this.renderUpVote()}
                 <div>
-                    {this.state.votes}
+                    {this.props.votes}
                 </div>
-                <div className="vote">
-                    <i onClick={this.decrementVotes.bind(this)} className="fa fa-caret-down" />
-                </div>
+                {this.renderDownVote()}
             </>
         );
+    }
+
+    renderUpVote() {
+        return (
+            <div className={`vote${this.props.allowUpVote ? '' : '-disabled'}`}>
+                <i onClick={() => `${this.props.allowUpVote ? this.props.onUpVote(this.props.answerId) : ''}`} className="fa fa-caret-up" />
+            </div>
+        )
+    }
+
+    renderDownVote() {
+        return (
+            <div className={`vote${this.props.allowDownVote ? '' : '-disabled'}`}>
+                <i onClick={() => `${this.props.allowDownVote ? this.props.onDownVote(this.props.answerId) : ''}`} className="fa fa-caret-down" />
+            </div>
+        )
     }
 
     renderButtons() {
@@ -262,7 +266,7 @@ class Post extends React.Component {
                 {this.renderDeleteDialog()}
                 {this.renderEditDialog()}
                 <div className="post-sidebar">
-                    {/*this.renderVotes()*/}
+                    {this.renderVotes()}
                     {this.renderAccepted()}
                     {this.renderAnswered()}
                     {this.renderAwarded()}
@@ -304,13 +308,19 @@ Post.defaultProps = {
     userId: 0,
     created: new Date(),
     votes: 0,
+    userVote: 0,
     answered: false,
     questionId: null,
     answerId: null,
     picture: null,
     onDelete: () => {},
     onEdit: () => {},
-    enableAccept: false
+    enableAccept: false,
+    enableVote: false,
+    onUpVote: () => {},
+    onDownVote: () => {},
+    allowUpVote: false,
+    allowDownVote: false
 };
 
 export default withRouter(Post);

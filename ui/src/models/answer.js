@@ -15,9 +15,13 @@ export function answerQuestion(answer, questionId, token) {
 
 }
 
-export function getAnswersByQuestionId(id) {
+export function getAnswersByQuestionId(id, token) {
     const options = {
-        url: `/api/answers/question/${id}`
+        url: `/api/answers/question/${id}`,
+        method: 'GET',
+        headers: {
+            authorizationToken: token
+        }
     };
 
     return ApiFetch(options);
@@ -46,6 +50,24 @@ export function deleteAnswer(answerId) {
     const options = {
         url: `/api/users/me/answers/${answerId}`,
         method: 'DELETE'
+    };
+
+    return ApiFetch(options);
+}
+
+export function upVoteAnswer(answerId) {
+    const options = {
+        url: `/api/users/me/answers/upvote/${answerId}`,
+        method: 'PATCH'
+    };
+
+    return ApiFetch(options);
+}
+
+export function downVoteAnswer(answerId) {
+    const options = {
+        url: `/api/users/me/answers/downvote/${answerId}`,
+        method: 'PATCH'
     };
 
     return ApiFetch(options);

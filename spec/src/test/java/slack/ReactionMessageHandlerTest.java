@@ -18,6 +18,8 @@ import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.observers.AssertableSubscriber;
 
+import static impl.TestSetup.insertUser;
+import static java.lang.System.currentTimeMillis;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static rx.Observable.just;
@@ -67,9 +69,9 @@ public class ReactionMessageHandlerTest {
     public void testVotesOnQuestion() {
         Question question = TestSetup.getQuestion("whatever", "whatever");
         //Given
-        User user = TestSetup.insertUser(userResource);
+        User user = insertUser(userResource);
 
-        long   currentTimeMillis = System.currentTimeMillis();
+        long   currentTimeMillis = currentTimeMillis();
         String questionId        = String.valueOf(currentTimeMillis);
 
         question.setSlackId(questionId);
@@ -124,9 +126,9 @@ public class ReactionMessageHandlerTest {
     public void testVotesOnAnswer() {
         Question question = TestSetup.getQuestion("whatever", "whatever");
         //Given
-        User user = TestSetup.insertUser(userResource);
+        User user = insertUser(userResource);
 
-        long   currentTimeMillis = System.currentTimeMillis();
+        long   currentTimeMillis = currentTimeMillis();
         String questionId        = String.valueOf(currentTimeMillis);
 
         question.setSlackId(questionId);
@@ -144,11 +146,11 @@ public class ReactionMessageHandlerTest {
         answer.setSlackId(String.valueOf(currentTimeMillis + 1));
         AssertableSubscriber<Answer> voidAssertableSubscriber = answerResource.answerQuestion(as(user), answer, questionBySlackThreadId.getId()).test().awaitTerminalEvent();
         voidAssertableSubscriber.assertNoErrors();
-        Answer storedAnswer = answerResource.getAnswers(questionBySlackThreadId.getId()).toBlocking().first().get(0);
+        Answer storedAnswer = answerResource.getAnswers(as(user), questionBySlackThreadId.getId()).toBlocking().first().get(0);
         assertThat(storedAnswer.getVotes()).isEqualTo(0);
 
         String channel = "someChannel";
-        mockSlackUser(user, answer.getSlackId(), channel);
+        mockSlackUser(insertUser(userResource), answer.getSlackId(), channel);
 
         //When
         JsonObject jsonObject = new JsonObject();

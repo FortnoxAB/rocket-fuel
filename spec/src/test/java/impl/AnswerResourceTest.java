@@ -12,6 +12,7 @@ import com.google.inject.AbstractModule;
 import dao.AnswerDao;
 import dao.Vote;
 import dao.VoteDao;
+import org.assertj.core.groups.Tuple;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
 import org.junit.After;
 import org.junit.Before;
@@ -108,7 +109,6 @@ public class AnswerResourceTest {
         Answer answer         = newAnswer();
         Answer returnedAnswer = answerResource.answerQuestion(answerer, answer, returnedQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(returnedAnswer).isNotNull();
-        assertThat(returnedAnswer.getVotes()).isZero();
 
         //Verify slack notification is send to the user who created the question
         verify(mockedSlackResource).getUserId(questioner.getEmail());
@@ -132,11 +132,12 @@ public class AnswerResourceTest {
         answerResource.markAsAcceptedAnswer(questioner, returnedAnswer.getId()).toBlocking().singleOrDefault(null);
 
         // then both answer and question should be updated and state that they are accepted.
-        List<Answer> answers = answerResource.getAnswers(returnedQuestion.getId()).toBlocking().singleOrDefault(new ArrayList<>());
+        List<Answer> answers = answerResource.getAnswers(questioner, returnedQuestion.getId()).toBlocking().singleOrDefault(new ArrayList<>());
         assertThat(answers)
             .hasOnlyOneElementSatisfying(acceptedAnswer -> {
                 assertThat(acceptedAnswer.isAccepted()).isTrue();
                 assertThat(acceptedAnswer.getVotes()).isZero();
+                assertThat(acceptedAnswer.getUserVote()).isZero();
             });
         assertThat(answers.size()).isEqualTo(1);
 
@@ -209,17 +210,19 @@ public class AnswerResourceTest {
     public void getAnswerById() {
 
         Question question = questionResource.createQuestion(newUser(), newQuestion()).toBlocking().singleOrDefault(null);
-        long answerId = answerResource.answerQuestion(newUser(), newAnswer(), question.getId()).toBlocking().singleOrDefault(null).getId();
+        Answer answer = answerResource.answerQuestion(newUser(), newAnswer(), question.getId()).toBlocking().singleOrDefault(null);
         Auth user = newUser();
 
-        assertAnswerById(answerId, 0);
+        assertAnswerById(answer, 0);
 
-        voteDao.createVote(new Vote(user.getUserId(), answerId, -1)).test().awaitTerminalEvent().assertNoErrors();
-        assertAnswerById(answerId, -1);
-        voteDao.deleteVote(user.getUserId(), answerId).test().awaitTerminalEvent().assertNoErrors();
-        assertAnswerById(answerId, 0);
-        voteDao.createVote(new Vote(user.getUserId(), answerId, 1)).test().awaitTerminalEvent().assertNoErrors();
-        assertAnswerById(answerId, 1);
+        addVote(user, answer, -1);
+        assertAnswerById(answer, -1);
+
+        voteDao.deleteVote(user.getUserId(), answer.getId()).test().awaitTerminalEvent().assertNoErrors();
+        assertAnswerById(answer, 0);
+
+        addVote(user, answer, 1);
+        assertAnswerById(answer, 1);
     }
 
     @Test
@@ -233,10 +236,53 @@ public class AnswerResourceTest {
             });
     }
 
-    private void assertAnswerById(long id, int votes) {
-        assertThat(answerResource.getAnswerById(id).test().awaitTerminalEvent().getOnNextEvents())
+    @Test
+    public void getAnswerByQuestionId() {
+
+        Auth user1 = newUser();
+        Auth user2 = newUser();
+        Auth user3 = newUser();
+
+        Question question = questionResource.createQuestion(user1, newQuestion()).toBlocking().singleOrDefault(null);
+        Answer answer1 = answerResource.answerQuestion(user1, newAnswer(), question.getId()).toBlocking().singleOrDefault(null);
+
+        assertAnswersByQuestionId(user1, question, tuple(0, 0));
+
+        addVote(user1, answer1, 1);
+        assertAnswersByQuestionId(user1, question, tuple(1, 1));
+        assertAnswersByQuestionId(user2, question, tuple(1, 0));
+
+        addVote(user2, answer1, 1);
+        assertAnswersByQuestionId(user1, question, tuple(2, 1));
+
+        addVote(user3, answer1, -1);
+        assertAnswersByQuestionId(user3, question, tuple(1, -1));
+
+        Answer answer2 = answerResource.answerQuestion(user1, newAnswer(), question.getId()).toBlocking().singleOrDefault(null);
+        assertAnswersByQuestionId(user3, question, tuple(1, -1), tuple(0, 0));
+
+        addVote(user3, answer2, -1);
+        assertAnswersByQuestionId(user3, question, tuple(1, -1), tuple(-1, -1));
+        assertAnswersByQuestionId(user1, question, tuple(1, 1), tuple(-1, 0));
+    }
+
+    private void addVote(Auth auth, Answer answer, int value) {
+        voteDao.createVote(new Vote(auth.getUserId(), answer.getId(), value)).test().awaitTerminalEvent().assertNoErrors();
+    }
+
+    private void assertAnswersByQuestionId(Auth auth, Question question, Tuple ... votesAndUserVote) {
+        assertThat(answerResource.getAnswers(auth, question.getId()).test().awaitTerminalEvent().getOnNextEvents())
+            .hasOnlyOneElementSatisfying(answers ->  {
+                assertThat(answers)
+                    .extracting(Answer::getVotes, Answer::getUserVote)
+                    .containsExactlyInAnyOrder(votesAndUserVote);
+            });
+    }
+
+    private void assertAnswerById(Answer answer, int votes) {
+        assertThat(answerResource.getAnswerById(answer.getId()).test().awaitTerminalEvent().getOnNextEvents())
             .extracting(Answer::getId, Answer::getVotes)
-            .containsExactly(tuple(id, votes));
+            .containsExactly(tuple(answer.getId(), votes));
     }
 
     private static Auth newUser() {
