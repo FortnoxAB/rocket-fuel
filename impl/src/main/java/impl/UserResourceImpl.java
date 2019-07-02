@@ -113,7 +113,7 @@ public class UserResourceImpl implements UserResource {
     }
 
     private String getPicture(String picture) {
-        if(picture == null) {
+        if(picture == null || picture.isEmpty()) {
             return DEFAULT_PICTURE_URL;
         }
         return picture;

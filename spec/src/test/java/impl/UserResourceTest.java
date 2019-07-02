@@ -100,7 +100,7 @@ public class UserResourceTest {
     @Test
     public void shouldFetchExistingUserInDatabaseIfReturningUser() {
         // given
-        User user = insertUser();
+        User user = createUserInRocketFuelDb();
         ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken(user.getName(), user.getEmail(), user.getPicture());
         when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
@@ -117,7 +117,7 @@ public class UserResourceTest {
     @Test
     public void shouldAddCookieToHeader() {
         // given
-        User user = insertUser();
+        User user = createUserInRocketFuelDb();
         ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken(user.getName(), user.getEmail(), "pictureUrl");
         when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
@@ -137,68 +137,74 @@ public class UserResourceTest {
 
     @Test
     public void shouldUpdateExistingUserIfNewPictureIsProvided() {
+        final String newPicture = "new_picture.png";
+
         // given that the user already exists in rocket fuel
-        User user = insertUser();
+        User user = createUserInRocketFuelDb();
 
-        // and that the user has changed profile picture since last visit
-        ImmutableOpenIdToken openId = new ImmutableOpenIdToken(user.getName(), user.getEmail(), "new_picture.png");
-        when(openIdValidator.validate(any())).thenReturn(just(openId));
+        // when user signs in with a new picture
+        User   storedUser      = signIn(user.getName(), user.getEmail(), newPicture);
 
-        // when the user signs in
-        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
-
-        // then the user returned shall have the updated picture url
-        assertThat(returnedUser.getPicture()).isEqualTo(openId.picture);
-
-        // and the user in the database shall be updated with the new picture url
-        User storedUser = userResource.getUserById(returnedUser.getId()).toBlocking().single();
-        assertThat(storedUser.getPicture()).isEqualTo(openId.picture);
+        // then the new picture shall be used
+        assertThatUserHasFollowingProperties(storedUser, user.getName(), newPicture);
     }
 
     @Test
     public void shouldDefaultToDefaultImageIfUserGotNoImage() {
         // given that the user already exists in rocket fuel
-        User user = insertUser();
+        User user = createUserInRocketFuelDb();
 
-        // and that the user has removed the profile picture from last visit
-        ImmutableOpenIdToken openId = new ImmutableOpenIdToken(user.getName(), user.getEmail(), null);
-        when(openIdValidator.validate(any())).thenReturn(just(openId));
+        // when user signs in without any picture
+        User storedUser = signIn(user.getName(), user.getEmail(), null);
 
-        // when the user signs in
-        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+        // then default image shall be used.
+        assertThatUserHasFollowingProperties(storedUser, user.getName(), DEFAULT_PICTURE_URL);
+    }
 
-        // then the user returned shall have the updated picture url
-        assertThat(returnedUser.getPicture()).isEqualTo(DEFAULT_PICTURE_URL);
+    @Test
+    public void shouldDefaultToDefaultImageIfUserGotEmptyImage() {
+        // given that the user already exists in rocket fuel
+        User user = createUserInRocketFuelDb();
 
-        // and the user in the database shall be updated with the new picture url
-        User storedUser = userResource.getUserById(returnedUser.getId()).toBlocking().single();
-        assertThat(storedUser.getPicture()).isEqualTo(DEFAULT_PICTURE_URL);
+        // when user signs in without any picture
+        User storedUser = signIn(user.getName(), user.getEmail(), "");
+
+        // then default image shall be used.
+        assertThatUserHasFollowingProperties(storedUser, user.getName(), DEFAULT_PICTURE_URL);
     }
 
     @Test
     public void shouldUpdateExistingUserIfNewNameIsProvided() {
-        // given that the user already exists in rocket fuel
-        User user = insertUser();
-
-        // and that the user has changed name since last visit
-        ImmutableOpenIdToken openId = new ImmutableOpenIdToken("Arnold", user.getEmail(), user.getPicture());
-        when(openIdValidator.validate(any())).thenReturn(just(openId));
-
-        // when the user signs in
-        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
-
-        // then the user returned shall have the updated name
-        assertThat(returnedUser.getName()).isEqualTo(openId.name);
-
-        // and the user in the database shall be updated with the new name
-        User storedUser = userResource.getUserById(returnedUser.getId()).toBlocking().single();
-        assertThat(storedUser.getName()).isEqualTo(openId.name);
+        // given that the user exists in rocket fuel
+        User user = createUserInRocketFuelDb();
+        // and is given a new name
+        final String newName = "Arnold";
+        // when user signs in,
+        User updatedUser = signIn(newName, user.getEmail(), user.getPicture());
+        // then the new name should be persisted
+        assertThatUserHasFollowingProperties(updatedUser, newName, user.getPicture());
     }
+
+    private User signIn( String currentName, String email, String currentPicture) {
+        ImmutableOpenIdToken openId = new ImmutableOpenIdToken(currentName, email, currentPicture);
+        when(openIdValidator.validate(any())).thenReturn(just(openId));
+        return userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+    }
+
+    private void assertThatUserHasFollowingProperties(User returnedUser, String expectedName, String expectedPicture) {
+        assertThat(returnedUser.getName()).isEqualTo(expectedName);
+        assertThat(returnedUser.getPicture()).isEqualTo(expectedPicture);
+
+        User storedUser = userResource.getUserById(returnedUser.getId()).toBlocking().single();
+        assertThat(storedUser.getName()).isEqualTo(expectedName);
+        assertThat(storedUser.getPicture()).isEqualTo(expectedPicture);
+    }
+
 
     @Test
     public void shouldThrowInternalServerErrorIfUpdateOfUserFails() {
         // given that the user already exists in rocket fuel
-        User user = insertUser();
+        User user = createUserInRocketFuelDb();
         UserDao userDaoMock = mock(UserDao.class);
         when(userDaoMock.getUserByEmail(anyString())).thenReturn(just(user));
 
@@ -206,7 +212,7 @@ public class UserResourceTest {
         when(userDaoMock.updateUser(any(), anyString(), anyString())).thenReturn(error(new SQLException()));
 
         // and we make sure that we will not be able to insert a new user to db
-        rx.Observable<Integer> obs = just(1).doOnSubscribe(() -> fail("should not be called within this test"));
+        rx.Observable<Integer> obs = just(1).doOnSubscribe(() -> fail("should not be called within this signIn"));
         when(userDaoMock.insertUser(any())).thenReturn(obs);
 
         UserResource userResource = new UserResourceImpl(userDaoMock, responseHeaderHolder, openIdValidator, applicationTokenCreator, applicationTokenConfig);
@@ -229,7 +235,7 @@ public class UserResourceTest {
     @Test
     public void shouldFetchUserByEmail() {
         // given that the user exists in rocket-fuel
-        User user = insertUser();
+        User user = createUserInRocketFuelDb();
 
         // when we try to find the user by mail
         User foundUser = userResource.getUserByEmail(user.getEmail(), false).toBlocking().singleOrDefault(null);
@@ -244,7 +250,7 @@ public class UserResourceTest {
     @Test
     public void shouldFetchUserById() {
         // given
-        User user = insertUser();
+        User user = createUserInRocketFuelDb();
 
         // when
         User foundUser = userResource.getUserById(user.getId()).toBlocking().singleOrDefault(null);
@@ -290,11 +296,11 @@ public class UserResourceTest {
 
     }
 
-    private User insertUser() {
-        return insertUser("Test Subject", "picture");
+    private User createUserInRocketFuelDb() {
+        return createUserInRocketFuelDb("Test Subject", "picture");
     }
 
-    private User insertUser(String name, String picture) {
+    private User createUserInRocketFuelDb(String name, String picture) {
         final String generatedEmail = UUID.randomUUID().toString() + "@example.com";
         User user = new User();
         user.setEmail(generatedEmail);
