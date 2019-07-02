@@ -56,7 +56,11 @@ class Routing extends React.Component {
                 return;
             }
             User.signOut().finally(() => {
-                window.location.reload();
+                this.context.setState({
+                            user: null,
+                            token: null
+                        });
+                this.props.history.push('/');
             });
         });
     }
