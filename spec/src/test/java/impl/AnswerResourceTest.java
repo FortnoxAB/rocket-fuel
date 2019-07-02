@@ -7,9 +7,6 @@ import api.QuestionResource;
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
-import com.github.seratch.jslack.api.model.block.LayoutBlock;
-import com.github.seratch.jslack.api.model.block.SectionBlock;
-import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import com.google.inject.AbstractModule;
 import dao.AnswerDao;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
@@ -106,9 +103,18 @@ public class AnswerResourceTest {
         verify(mockedSlackResource).getUserId(questioner.getEmail());
         verify(mockedSlackResource).postMessageToSlackAsBotUser(eq(SLACK_USER_ID), matches(layoutBlocks -> {
             assertThat(layoutBlocks).hasSize(3);
-            assertLayoutBlock(layoutBlocks.get(0), format("Your question: *%s* got an answer:", question.getTitle()));
-            assertLayoutBlock(layoutBlocks.get(1), answer.getAnswer());
-            assertLayoutBlock(layoutBlocks.get(2), format("Head over to <%s|rocket-fuel> to accept the answer", applicationConfig.getBaseUrl() + "/question/" + question.getId() + "#answer_" + answer.getId()));
+
+            assertThat(layoutBlocks.get(0))
+                .extracting("text.text")
+                .containsExactly(format("Your question: *%s* got an answer:", question.getTitle()));
+
+            assertThat(layoutBlocks.get(1))
+                .extracting("text.text")
+                .containsExactly(answer.getAnswer());
+
+            assertThat(layoutBlocks.get(2))
+                .extracting("text.text")
+                .containsExactly(format("Head over to <%s|rocket-fuel> to accept the answer", applicationConfig.getBaseUrl() + "/question/" + question.getId() + "#answer_" + answer.getId()));
         }));
 
         // when the creator of the question marks a answer as the correct one
@@ -121,12 +127,6 @@ public class AnswerResourceTest {
 
         Question questionFromDb = questionResource.getQuestionById(returnedQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(questionFromDb.isAnswerAccepted()).isTrue();
-    }
-
-    private void assertLayoutBlock(LayoutBlock firstLayoutBlock, String wantedText) {
-        assertThat(firstLayoutBlock).isInstanceOf(SectionBlock.class);
-        assertThat(((SectionBlock)firstLayoutBlock).getText()).isInstanceOf(MarkdownTextObject.class);
-        assertThat(((MarkdownTextObject)((SectionBlock)firstLayoutBlock).getText()).getText()).isEqualTo(wantedText);
     }
 
     @Test
