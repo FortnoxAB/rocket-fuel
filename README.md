@@ -33,7 +33,15 @@ Feel free to contribute to rocket fuel. Create a issue, when the issue is accept
 ```
 docker run --name rocketfuel-postgres -p 15432:5432 -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_DB=rocket-fuel -d postgres
 ```
-* A [slack bot](https://api.slack.com/apps)
+* A [slack bot](https://api.slack.com/apps) with the follwing scopes
+    * channels:history
+    * channels:read
+    * channels:write
+    * chat:write:bot
+    * bot
+    * users:read
+    * users:read.email
+    * users:profile:read
 
 #### Running in intellij
 
