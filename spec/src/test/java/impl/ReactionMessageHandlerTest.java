@@ -8,17 +8,14 @@ import api.User;
 import api.UserResource;
 import api.auth.Auth;
 import com.google.gson.JsonObject;
-import com.google.inject.AbstractModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.observers.AssertableSubscriber;
 import slack.ReactionMessageHandler;
-import slack.SlackResource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,13 +33,7 @@ public class ReactionMessageHandlerTest {
 
     @BeforeClass
     public static void before() {
-        testSetup = new TestSetup(postgreSQLContainer, new AbstractModule() {
-            @Override
-            protected void configure() {
-                SlackResource slackResource = Mockito.mock(SlackResource.class);
-                binder().bind(SlackResource.class).toInstance(slackResource);
-            }
-        });
+        testSetup = new TestSetup(postgreSQLContainer);
 
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);

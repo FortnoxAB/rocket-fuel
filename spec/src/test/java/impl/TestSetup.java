@@ -24,12 +24,14 @@ import se.fortnox.reactivewizard.dbmigrate.LiquibaseMigrate;
 import se.fortnox.reactivewizard.logging.LoggingFactory;
 import se.fortnox.reactivewizard.server.ServerConfig;
 import slack.SlackRTMClient;
+import slack.SlackResource;
 
 import java.util.UUID;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+import static rx.Observable.empty;
 
 public class TestSetup {
 
@@ -51,8 +53,10 @@ public class TestSetup {
                 @Override
                 protected void configure() {
 
+                    SlackResource slackResource = mock(SlackResource.class, (org.mockito.stubbing.Answer)invocation -> empty());
                     SlackRTMClient slackRTMClient = mock(SlackRTMClient.class);
                     binder().bind(SlackRTMClient.class).toInstance(slackRTMClient);
+                    binder().bind(SlackResource.class).toInstance(slackResource);
                     binder().bind(JwkResource.class).toProvider(() -> mock(JwkResource.class));
                 }
             })));

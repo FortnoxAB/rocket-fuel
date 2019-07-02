@@ -68,22 +68,31 @@ public class AnswerResourceImpl implements AnswerResource {
         return this.answerDao.createAnswer(auth.getUserId(), questionId, answer)
             .flatMap(generatedKey -> {
                 answer.setId(generatedKey.getKey());
-                return first(notifyQuestionOwner(answer, questionId)).thenReturn(answer);
+                return first(notifyQuestionOwner(auth, answer, questionId)).thenReturn(answer);
             }).onErrorResumeNext(throwable ->
                 error(new WebException(INTERNAL_SERVER_ERROR, ERROR_ANSWER_NOT_CREATED, throwable)));
     }
 
-    private Observable<Void> notifyQuestionOwner(Answer answer, long questionId) {
+    /**
+     * Notifies the owner of the question unless the questioner and answerer is the same user
+     * @param answer the answer created
+     * @param questionId the id of the question
+     */
+    private Observable<Void> notifyQuestionOwner(Auth auth, Answer answer, long questionId) {
         return questionDao.getQuestionById(questionId)
-            .flatMap(question ->
-                userResource.getUserById(question.getUserId())
-                    .flatMap(user -> slackResource.getUserId(user.getEmail()))
-                    .flatMap(slackUserId ->
-                        slackResource.postMessageToSlackAsBotUser(slackUserId, notificationMessage(answer, question))))
-            .onErrorResumeNext(throwable -> {
-                LOG.warn("Could not notify question owner", throwable);
+            .flatMap(question -> {
+                if (!question.getUserId().equals(auth.getUserId())) {
+                    return userResource.getUserById(question.getUserId())
+                        .flatMap(user -> slackResource.getUserId(user.getEmail()))
+                        .filter(userId -> !userId.equals(String.valueOf(answer.getUserId()))) //Don't notify if question owner writes a response
+                        .flatMap(slackUserId -> slackResource.postMessageToSlackAsBotUser(slackUserId, notificationMessage(answer, question)))
+                        .onErrorResumeNext(throwable -> {
+                            LOG.warn("Could not notify question owner: " + question.getUserId(), throwable);
+                            return empty();
+                        });
+                }
                 return empty();
-        });
+            });
     }
 
     private List<LayoutBlock> notificationMessage(Answer answer, Question question) {

@@ -7,6 +7,7 @@ import api.QuestionResource;
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
+import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import com.google.inject.AbstractModule;
 import dao.AnswerDao;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
@@ -31,9 +32,12 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static rx.Observable.error;
@@ -49,18 +53,16 @@ public class AnswerResourceTest {
     public static  PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
     private static TestSetup           testSetup;
     private static UserResource        userResource;
-    private static SlackResource mockedSlackResource;
+    private static SlackResource       mockedSlackResource;
 
     @BeforeClass
     public static void before() {
         testSetup = new TestSetup(postgreSQLContainer, new AbstractModule() {
             @Override
             protected void configure() {
-                SlackResource slackResource = mock(SlackResource.class);
                 ApplicationConfig config = new ApplicationConfig();
                 config.setBaseUrl("https://fuel.fnox.se");
 
-                binder().bind(SlackResource.class).toInstance(slackResource);
                 binder().bind(ApplicationConfig.class).toInstance(config);
             }
         });
@@ -127,6 +129,29 @@ public class AnswerResourceTest {
 
         Question questionFromDb = questionResource.getQuestionById(returnedQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(questionFromDb.isAnswerAccepted()).isTrue();
+    }
+
+    @Test
+    public void shouldNotNotifySlackWhenAnswererAndQuestionerIsTheSame() {
+        // given user creates a question
+        Auth questioner = newUser();
+        when(mockedSlackResource.getUserId(questioner.getEmail())).thenReturn(just(SLACK_USER_ID));
+        Question question = newQuestion();
+
+        Question returnedQuestion = questionResource.createQuestion(questioner, question).toBlocking().singleOrDefault(null);
+        assertThat(returnedQuestion).isNotNull();
+        assertThat(returnedQuestion.getId()).isGreaterThan(0);
+
+        ApplicationConfig applicationConfig = testSetup.getInjector().getInstance(ApplicationConfig.class);
+
+        // and someone answers the question
+        Answer answer         = newAnswer();
+        Answer returnedAnswer = answerResource.answerQuestion(questioner, answer, returnedQuestion.getId()).toBlocking().singleOrDefault(null);
+        assertThat(returnedAnswer).isNotNull();
+
+        //Verify slack notification is send to the user who created the question
+        verify(mockedSlackResource, never()).getUserId(questioner.getEmail());
+        verify(mockedSlackResource, never()).postMessageToSlackAsBotUser(anyString(), anyListOf(LayoutBlock.class));
     }
 
     @Test

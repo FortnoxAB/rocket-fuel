@@ -14,13 +14,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.jaxrs.WebException;
-import slack.SlackResource;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -33,7 +30,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static rx.Observable.empty;
 
 public class QuestionResourceTest {
     private static QuestionResource     questionResource;
@@ -47,12 +43,7 @@ public class QuestionResourceTest {
 
     @BeforeClass
     public static void before() {
-        testSetup = new TestSetup(postgreSQLContainer, binder -> binder.bind(SlackResource.class).toInstance(Mockito.mock(SlackResource.class, new org.mockito.stubbing.Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return empty();
-            }
-        })));
+        testSetup = new TestSetup(postgreSQLContainer);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
