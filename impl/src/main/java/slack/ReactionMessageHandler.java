@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static rx.Observable.empty;
 import static rx.Observable.error;
+import static slack.MessageHandlerUtil.getUserId;
 
 /**
  * This class handles reactions made to answers
@@ -24,7 +25,7 @@ import static rx.Observable.error;
  * If you react to a message with a positive emoji it will count as a vote on that particular answer
  */
 @Singleton
-public class ReactionMessageHandler extends AbstractMessageHandler {
+public class ReactionMessageHandler implements SlackMessageHandler {
     static final         String REACTION_ADDED   = "reaction_added";
     private static final String REACTION_REMOVED = "reaction_removed";
     static final         String MESSAGE          = "message";
@@ -40,6 +41,8 @@ public class ReactionMessageHandler extends AbstractMessageHandler {
     private final        QuestionResource   questionResource;
     private final        AnswerResource     answerResource;
     private final        UserAnswerResource userAnswerResource;
+    private final        SlackResource      slackResource;
+    private final        UserResource       userResource;
 
     @Inject
     public ReactionMessageHandler(SlackResource slackResource,
@@ -49,7 +52,8 @@ public class ReactionMessageHandler extends AbstractMessageHandler {
         UserAnswerResource userAnswerResource
     ) {
 
-        super(slackResource, userResource);
+        this.slackResource = slackResource;
+        this.userResource = userResource;
         this.questionResource = questionResource;
         this.answerResource = answerResource;
         this.userAnswerResource = userAnswerResource;
@@ -63,46 +67,50 @@ public class ReactionMessageHandler extends AbstractMessageHandler {
     @Override
     public Observable<Void> handleMessage(JsonObject message) {
 
-        final AtomicReference<Boolean> upVote = getUpVoteValue(message);
-        //No recognized reaction
-        if (upVote.get() == null) {
-            return empty();
-        }
+        final Boolean upVote = getUpVoteValue(message);
 
-        //Reaction removed -> invert the vote
-        if (REACTION_REMOVED.equals(message.get(TYPE).getAsString())) {
-            upVote.set(!upVote.get());
+        //No recognized reaction
+        if (upVote == null) {
+            return empty();
         }
 
         final String threadId = getThread(message);
         return slackResource.getMessageFromSlack(getChannel(message), getThread(message))
-            .flatMap(mainMessage -> getUserId(mainMessage)
+            .flatMap(mainMessage -> getUserId(slackResource, userResource, mainMessage)
                 .flatMap(userId -> questionResource.getQuestionBySlackThreadId(threadId)
                     .onErrorResumeNext(throwable -> {
                         //thread id is not a question but an answer
                         if (NOT_FOUND.equals(((WebException)throwable).getStatus())) {
                             return answerResource.getAnswerBySlackId(threadId)
-                                .flatMap(answer -> upVote.get() ?
+                                .flatMap(answer -> upVote ?
                                     userAnswerResource.upVoteAnswer(userId, answer.getId()).cast(Question.class) :
                                     userAnswerResource.downVoteAnswer(userId, answer.getId()).cast(Question.class));
                         }
                         return error(throwable);
                     })
-                    .flatMap(question -> upVote.get() ? questionResource.upVoteQuestion(threadId) : questionResource.downVoteQuestion(threadId))));
+                    .flatMap(question -> upVote ? questionResource.upVoteQuestion(threadId) : questionResource.downVoteQuestion(threadId))));
     }
 
-    private static AtomicReference<Boolean> getUpVoteValue(JsonObject message) {
-        AtomicReference<Boolean> upVote   = new AtomicReference<>();
-        String                   reaction = message.get(REACTION).getAsString();
+    private static Boolean getUpVoteValue(JsonObject message) {
+
+        String reaction = message.get(REACTION).getAsString();
+
+        Boolean value = null;
 
         if (POSITIVE_EMOJIS.contains(reaction)) {
-            upVote.set(true);
+            value = true;
         }
 
         if (NEGATIVE_EMOJIS.contains(reaction)) {
-            upVote.set(false);
+            value = false;
         }
-        return upVote;
+
+        //Reaction removed -> invert the vote
+        if (value != null && REACTION_REMOVED.equals(message.get(TYPE).getAsString())) {
+            value = !value;
+        }
+
+        return value;
     }
 
     private static String getChannel(JsonObject message) {

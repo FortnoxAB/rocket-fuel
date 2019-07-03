@@ -10,6 +10,7 @@ import dao.Vote;
 import dao.VoteDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Observable;
+import rx.functions.Func1;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.util.List;
@@ -18,7 +19,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static rx.Observable.error;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
-import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
 @Singleton
 public class UserAnswerResourceImpl implements UserAnswerResource {
@@ -87,23 +87,31 @@ public class UserAnswerResourceImpl implements UserAnswerResource {
     }
 
     private Observable<Void> handleVote(Vote newVote) {
-
-        return first(answerDao.getAnswerById(newVote.getAnswerId()).flatMap(answer -> {
-                if (answer.getUserId() == newVote.getUserId()) { // no voting for your own answer
-                    return error(new WebException(BAD_REQUEST, INVALID_VOTE));
-                }
-                return voteDao.findVote(newVote.getUserId(), newVote.getAnswerId());
-            })
-            .flatMap(existingVote -> {
-                int totalVote = newVote.getValue() + existingVote.getValue();
-                if (totalVote == 0) {
-                    return voteDao.deleteVote(existingVote.getUserId(), existingVote.getAnswerId())
-                        .map(i -> existingVote);
-                }
-                return error(new WebException(BAD_REQUEST, INVALID_VOTE));
-            })
+        return answerDao.getAnswerById(newVote.getAnswerId())
+            .flatMap(validateAnswerAndGetExistingVote(newVote))
+            .flatMap(validateVoteAndRemoveIfZero(newVote))
             .switchIfEmpty(voteDao.createVote(newVote).map(i -> newVote))
-        )
-            .thenReturnEmpty();
+            .ignoreElements()
+            .cast(Void.class);
+    }
+
+    private Func1<Answer, Observable<Vote>> validateAnswerAndGetExistingVote(Vote newVote) {
+        return answer -> {
+            if (answer.getUserId() == newVote.getUserId()) { // no voting for your own answer
+                return error(new WebException(BAD_REQUEST, INVALID_VOTE));
+            }
+            return voteDao.findVote(newVote.getUserId(), newVote.getAnswerId());
+        };
+    }
+
+    private Func1<Vote, Observable<Vote>> validateVoteAndRemoveIfZero(Vote newVote) {
+        return existingVote -> {
+            int totalVote = newVote.getValue() + existingVote.getValue();
+            if (totalVote == 0) {
+                return voteDao.deleteVote(existingVote.getUserId(), existingVote.getAnswerId())
+                    .map(i -> existingVote);
+            }
+            return error(new WebException(BAD_REQUEST, INVALID_VOTE));
+        };
     }
 }

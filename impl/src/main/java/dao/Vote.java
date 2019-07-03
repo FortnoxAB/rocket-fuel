@@ -2,15 +2,17 @@ package dao;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 public class Vote {
 
-    long userId;
+    private long userId;
 
-    long answerId;
+    private long answerId;
 
     @Max(1)
     @Min(-1)
+    @NotNull
     int value;
 
     public Vote() {

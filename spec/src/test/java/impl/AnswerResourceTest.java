@@ -137,7 +137,7 @@ public class AnswerResourceTest {
             .hasOnlyOneElementSatisfying(acceptedAnswer -> {
                 assertThat(acceptedAnswer.isAccepted()).isTrue();
                 assertThat(acceptedAnswer.getVotes()).isZero();
-                assertThat(acceptedAnswer.getUserVote()).isZero();
+                assertThat(acceptedAnswer.getCurrentUserVote()).isZero();
             });
         assertThat(answers.size()).isEqualTo(1);
 
@@ -207,7 +207,7 @@ public class AnswerResourceTest {
     }
 
     @Test
-    public void getAnswerById() {
+    public void shouldReturnAnswerByIdWithCorrectVotes() {
 
         Question question = questionResource.createQuestion(newUser(), newQuestion()).toBlocking().singleOrDefault(null);
         Answer answer = answerResource.answerQuestion(newUser(), newAnswer(), question.getId()).toBlocking().singleOrDefault(null);
@@ -226,7 +226,7 @@ public class AnswerResourceTest {
     }
 
     @Test
-    public void getAnswerById_notFound() {
+    public void shouldThrowNotFoundWhenNotFindingAnswerById() {
 
         assertThatExceptionOfType(WebException.class)
             .isThrownBy(() -> answerResource.getAnswerById(42).toBlocking().single())
@@ -237,7 +237,7 @@ public class AnswerResourceTest {
     }
 
     @Test
-    public void getAnswerByQuestionId() {
+    public void shouldReturnAnswerByQuestionIdWithCorrectVotes() {
 
         Auth user1 = newUser();
         Auth user2 = newUser();
@@ -246,35 +246,35 @@ public class AnswerResourceTest {
         Question question = questionResource.createQuestion(user1, newQuestion()).toBlocking().singleOrDefault(null);
         Answer answer1 = answerResource.answerQuestion(user1, newAnswer(), question.getId()).toBlocking().singleOrDefault(null);
 
-        assertAnswersByQuestionId(user1, question, tuple(0, 0));
+        assertVotesByQuestionId(user1, question, tuple(0, 0));
 
         addVote(user1, answer1, 1);
-        assertAnswersByQuestionId(user1, question, tuple(1, 1));
-        assertAnswersByQuestionId(user2, question, tuple(1, 0));
+        assertVotesByQuestionId(user1, question, tuple(1, 1));
+        assertVotesByQuestionId(user2, question, tuple(1, 0));
 
         addVote(user2, answer1, 1);
-        assertAnswersByQuestionId(user1, question, tuple(2, 1));
+        assertVotesByQuestionId(user1, question, tuple(2, 1));
 
         addVote(user3, answer1, -1);
-        assertAnswersByQuestionId(user3, question, tuple(1, -1));
+        assertVotesByQuestionId(user3, question, tuple(1, -1));
 
         Answer answer2 = answerResource.answerQuestion(user1, newAnswer(), question.getId()).toBlocking().singleOrDefault(null);
-        assertAnswersByQuestionId(user3, question, tuple(1, -1), tuple(0, 0));
+        assertVotesByQuestionId(user3, question, tuple(1, -1), tuple(0, 0));
 
         addVote(user3, answer2, -1);
-        assertAnswersByQuestionId(user3, question, tuple(1, -1), tuple(-1, -1));
-        assertAnswersByQuestionId(user1, question, tuple(1, 1), tuple(-1, 0));
+        assertVotesByQuestionId(user3, question, tuple(1, -1), tuple(-1, -1));
+        assertVotesByQuestionId(user1, question, tuple(1, 1), tuple(-1, 0));
     }
 
     private void addVote(Auth auth, Answer answer, int value) {
         voteDao.createVote(new Vote(auth.getUserId(), answer.getId(), value)).test().awaitTerminalEvent().assertNoErrors();
     }
 
-    private void assertAnswersByQuestionId(Auth auth, Question question, Tuple ... votesAndUserVote) {
+    private void assertVotesByQuestionId(Auth auth, Question question, Tuple ... votesAndUserVote) {
         assertThat(answerResource.getAnswers(auth, question.getId()).test().awaitTerminalEvent().getOnNextEvents())
             .hasOnlyOneElementSatisfying(answers ->  {
                 assertThat(answers)
-                    .extracting(Answer::getVotes, Answer::getUserVote)
+                    .extracting(Answer::getVotes, Answer::getCurrentUserVote)
                     .containsExactlyInAnyOrder(votesAndUserVote);
             });
     }

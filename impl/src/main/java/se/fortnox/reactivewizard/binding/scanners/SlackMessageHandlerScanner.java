@@ -2,6 +2,7 @@ package se.fortnox.reactivewizard.binding.scanners;
 
 import com.google.inject.Singleton;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.matchprocessor.ImplementingClassMatchProcessor;
 import slack.SlackMessageHandler;
 
 import java.util.HashSet;
@@ -21,11 +22,7 @@ public class SlackMessageHandlerScanner extends AbstractClassScanner {
 
     @Override
     public void visit(FastClasspathScanner classpathScanner) {
-        classpathScanner.matchClassesImplementing(SlackMessageHandler.class, clazz -> {
-            if(!isAbstract(clazz.getModifiers())) {
-                messageHandlers.add(clazz);
-            }
-        });
+        classpathScanner.matchClassesImplementing(SlackMessageHandler.class, handler -> messageHandlers.add(handler));
     }
 
     public Set<Class<? extends SlackMessageHandler>> getMessageHandlers() {

@@ -25,18 +25,22 @@ import static rx.Observable.just;
 import static rx.Observable.merge;
 import static rx.Observable.zip;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
+import static slack.MessageHandlerUtil.getUserId;
 
 @Singleton
-public class ThreadMessageHandler extends AbstractMessageHandler {
+public class ThreadMessageHandler implements SlackMessageHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThreadMessageHandler.class);
 
-    private static final String            SLACK_THREAD_ID = "thread_ts";
-    private static final String            CHANNEL         = "channel";
-    private final        QuestionResource  questionResource;
-    private final        AnswerResource    answerResource;
-    private final        ApplicationConfig applicationConfig;
-    private static final int               DEFAULT_BOUNTY  = 50;
+    private static final String SLACK_THREAD_ID = "thread_ts";
+    private static final String CHANNEL         = "channel";
+    private static final int    DEFAULT_BOUNTY  = 50;
+
+    private final SlackResource    slackResource;
+    private final UserResource     userResource;
+    private final QuestionResource questionResource;
+    private final AnswerResource   answerResource;
+    private final ApplicationConfig applicationConfig;
 
     @Inject
     public ThreadMessageHandler(QuestionResource questionResource,
@@ -45,7 +49,8 @@ public class ThreadMessageHandler extends AbstractMessageHandler {
         AnswerResource answerResource,
         ApplicationConfig applicationConfig
     ) {
-        super(slackResource, userResource);
+        this.slackResource = slackResource;
+        this.userResource = userResource;
         this.questionResource = questionResource;
         this.answerResource = answerResource;
         this.applicationConfig = applicationConfig;
@@ -113,7 +118,7 @@ public class ThreadMessageHandler extends AbstractMessageHandler {
 
         return
             slackResource.getMessageFromSlack(channel, mainMessageId)
-                .flatMap(mainMessage -> getUserId(mainMessage)
+                .flatMap(mainMessage -> getUserId(slackResource, userResource, mainMessage)
                     .flatMap(auth -> {
                         Question question = new Question();
 

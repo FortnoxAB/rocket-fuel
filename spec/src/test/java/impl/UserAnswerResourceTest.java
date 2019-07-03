@@ -19,7 +19,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -101,7 +100,7 @@ public class UserAnswerResourceTest {
         updatedAnswerInput.setAnswer("this is an updated body of the answer");
         updatedAnswerInput.setAccepted(false);
 
-        userAnswerResource.updateAnswer(createdUserAuth, question.getId(), updatedAnswerInput).toBlocking().singleOrDefault(null);
+        userAnswerResource.updateAnswer(createdUserAuth, answer.getId(), updatedAnswerInput).toBlocking().singleOrDefault(null);
 
         Answer updatedAnswer = getFirstAnswer(createdUserAuth, question);
 
@@ -168,7 +167,7 @@ public class UserAnswerResourceTest {
     }
 
     @Test
-    public void votes() {
+    public void shouldYieldCorrectVotesWhenDownVotingAndUpVoting() {
 
         Auth auth1 = newAuth();
         Auth auth2 = newAuth();
@@ -194,7 +193,7 @@ public class UserAnswerResourceTest {
     }
 
     @Test
-    public void userCantVoteOnOwnAnswer() {
+    public void shouldThrowErrorWhenUserVotesOnOwnAnswer() {
 
         Auth auth = newAuth();
         Answer answer = createQuestionAndAnswer(auth);

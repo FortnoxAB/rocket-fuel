@@ -193,17 +193,17 @@ class Post extends React.Component {
     }
 
     renderUpVote() {
-        return (
-            <div className={`vote${this.props.allowUpVote ? '' : '-disabled'}`}>
-                <i onClick={() => `${this.props.allowUpVote ? this.props.onUpVote(this.props.answerId) : ''}`} className="fa fa-caret-up" />
-            </div>
-        )
+        return this.renderVote(this.props.allowUpVote, this.props.onUpVote, 'fa-caret-up');
     }
 
     renderDownVote() {
+        return this.renderVote(this.props.allowDownVote, this.props.onDownVote, 'fa-caret-down');
+    }
+
+    renderVote(isVoteAllowed, onVote, faClass) {
         return (
-            <div className={`vote${this.props.allowDownVote ? '' : '-disabled'}`}>
-                <i onClick={() => `${this.props.allowDownVote ? this.props.onDownVote(this.props.answerId) : ''}`} className="fa fa-caret-down" />
+            <div className={`vote${isVoteAllowed ? '' : '-disabled'}`}>
+                <i onClick={() => `${isVoteAllowed ? onVote(this.props.answerId) : ''}`} className={'fa ' + faClass}/>
             </div>
         )
     }
@@ -308,7 +308,7 @@ Post.defaultProps = {
     userId: 0,
     created: new Date(),
     votes: 0,
-    userVote: 0,
+    currentUserVote: 0,
     answered: false,
     questionId: null,
     answerId: null,

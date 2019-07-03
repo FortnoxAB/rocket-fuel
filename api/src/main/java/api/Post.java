@@ -20,7 +20,7 @@
 
     private String slackId;
 
-    private Integer userVote;
+    private Integer currentUserVote;
 
     public String getCreatedBy() {
         return createdBy;
@@ -81,11 +81,11 @@
      /**
       * When populated, represents the value of the vote that the "current user" has applied to the post.
       */
-     public Integer getUserVote() {
-         return userVote;
+     public Integer getCurrentUserVote() {
+         return currentUserVote;
      }
 
-     public void setUserVote(Integer userVote) {
-         this.userVote = userVote;
+     public void setCurrentUserVote(Integer currentUserVote) {
+         this.currentUserVote = currentUserVote;
      }
  }

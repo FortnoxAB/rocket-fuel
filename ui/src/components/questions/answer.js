@@ -8,7 +8,7 @@ class Answer extends React.Component {
     }
 
     render() {
-        return(
+        return (
             <Post
                 className="answer"
                 body={this.props.answer.answer}
@@ -26,10 +26,14 @@ class Answer extends React.Component {
                 enableVote={true}
                 onUpVote={this.props.onUpVote.bind(this)}
                 onDownVote={this.props.onDownVote.bind(this)}
-                allowUpVote={this.context.state.user.id !== this.props.answer.userId && this.props.answer.userVote !==1}
-                allowDownVote={this.context.state.user.id !== this.props.answer.userId && this.props.answer.userVote !==-1}
+                allowUpVote={this.isVoteAllowed(1)}
+                allowDownVote={this.isVoteAllowed(-1)}
             />
         );
+    }
+
+    isVoteAllowed(voteValue) {
+        return this.context.state.user.id !== this.props.answer.userId && this.props.answer.currentUserVote !== voteValue;
     }
 }
 

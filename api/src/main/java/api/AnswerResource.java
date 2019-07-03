@@ -48,7 +48,7 @@ public interface AnswerResource {
     @GET
     Observable<Answer> getAnswerBySlackId(@PathParam("slackId") String slackId);
 
-    @Path("/{answerId}")
+    @Path("{answerId}")
     @GET
     Observable<Answer> getAnswerById(@PathParam("answerId") long answerId);
 }

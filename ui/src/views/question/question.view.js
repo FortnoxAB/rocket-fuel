@@ -43,7 +43,7 @@ class QuestionView extends React.Component {
     loadQuestionAndAnswers(questionId) {
         Promise.all([
             QuestionApi.getQuestionById(questionId),
-            AnswerApi.getAnswersByQuestionId(questionId, this.context.state.token)
+            AnswerApi.getAnswersByQuestionId(questionId)
         ]).then((resp) => {
             this.setState({
                 question: resp[0],
@@ -73,7 +73,7 @@ class QuestionView extends React.Component {
             answer: this.state.answer
         };
 
-        AnswerApi.answerQuestion(answer, this.props.match.params.id, this.context.state.token).then((resp) => {
+        AnswerApi.answerQuestion(answer, this.props.match.params.id).then((resp) => {
             this.setState({
                 answer: '',
                 postingAnswer: false

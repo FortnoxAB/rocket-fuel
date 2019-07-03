@@ -1,27 +1,21 @@
 import ApiFetch from '../components/utils/apifetch';
 
-export function answerQuestion(answer, questionId, token) {
+export function answerQuestion(answer, questionId) {
 
     const options = {
         url: `/api/answers/question/${questionId}`,
         method: 'POST',
-        body: answer,
-        headers: {
-            authorizationToken: token
-        }
+        body: answer
     };
 
     return ApiFetch(options);
 
 }
 
-export function getAnswersByQuestionId(id, token) {
+export function getAnswersByQuestionId(id) {
     const options = {
         url: `/api/answers/question/${id}`,
-        method: 'GET',
-        headers: {
-            authorizationToken: token
-        }
+        method: 'GET'
     };
 
     return ApiFetch(options);
@@ -57,8 +51,8 @@ export function deleteAnswer(answerId) {
 
 export function upVoteAnswer(answerId) {
     const options = {
-        url: `/api/users/me/answers/upvote/${answerId}`,
-        method: 'PATCH'
+        url: `/api/users/me/answers/${answerId}/upvote`,
+        method: 'POST'
     };
 
     return ApiFetch(options);
@@ -66,8 +60,8 @@ export function upVoteAnswer(answerId) {
 
 export function downVoteAnswer(answerId) {
     const options = {
-        url: `/api/users/me/answers/downvote/${answerId}`,
-        method: 'PATCH'
+        url: `/api/users/me/answers/${answerId}/downvote`,
+        method: 'POST'
     };
 
     return ApiFetch(options);
