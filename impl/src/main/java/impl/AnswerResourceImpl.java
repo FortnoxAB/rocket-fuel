@@ -26,7 +26,6 @@ import java.util.Objects;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static java.util.Arrays.asList;
-import static java.util.Objects.nonNull;
 import static rx.Observable.empty;
 import static rx.Observable.error;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
@@ -123,9 +122,6 @@ public class AnswerResourceImpl implements AnswerResource {
      * @return a slack friendly link
      */
     public static String slackUrl(Long questionId, @Nullable Long answerId, ApplicationConfig applicationConfig) {
-        nonNull(questionId);
-        nonNull(applicationConfig);
-
         String link = "<" + applicationConfig.getBaseUrl() + "/question/" + questionId;
 
         if (answerId != null) {
