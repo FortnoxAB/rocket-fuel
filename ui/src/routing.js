@@ -13,8 +13,6 @@ import SearchView from './views/search.view';
 import FaqView from './views/faq.view';
 import CreateQuestionView from './views/question/createquestion.view';
 import PageNotFoundView from './views/pagenotfound.view';
-
-// import { googleClientId } from '../config';
 import * as User from './models/user';
 import Loader from './components/utils/loader';
 
@@ -57,8 +55,13 @@ class Routing extends React.Component {
                 this.signInUser(token);
                 return;
             }
-            document.cookie = 'application=; expires=' + new Date(0).toUTCString();
-            window.location.reload();
+            User.signOut().finally(() => {
+                this.context.setState({
+                            user: null,
+                            token: null
+                        });
+                this.props.history.push('/');
+            });
         });
     }
 

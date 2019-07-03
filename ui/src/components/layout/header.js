@@ -50,7 +50,10 @@ class Header extends React.Component {
     }
 
     logoutUser() {
-        console.log('logout');
+        this.GoogleAuth = gapi.auth2.getAuthInstance();
+        this.GoogleAuth.signOut().catch(() => {
+            User.signOut();
+        });
     }
 
     render() {

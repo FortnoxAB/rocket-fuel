@@ -23,14 +23,14 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
 
+import static impl.UserResourceImpl.SESSION_MAX_AGE_SECONDS;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static impl.UserResourceImpl.DEFAULT_PICTURE_URL;
 import static impl.UserResourceImpl.FAILED_TO_UPDATE_USER_NAME_OR_PICTURE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.anyString;
@@ -89,12 +89,37 @@ public class UserResourceTest {
         when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
-        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+        User returnedUser = userResource.signIn(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
 
         // then
         assertNotNull(returnedUser);
         User insertedUser = userResource.getUserByEmail("jeppe@email.com", false).toBlocking().singleOrDefault(null);
         assertEquals("jeppe", insertedUser.getName());
+    }
+
+    @Test
+    public void shouldInvalidateCookieOnUserSignOut() {
+        // given a valid auth
+        Auth auth = new Auth();
+        auth.setUserId(1234);
+
+        // when the user sign out from rocket fuel
+        long userId = userResource.signOut(auth).toBlocking().singleOrDefault(null);
+
+        // then we shall invalidate the cookie by setting the cookie to an invalid value and set the cookie as expired
+        ArgumentCaptor<Map> mapArgumentCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(responseHeaderHolder, times(1)).addHeaders(any(), mapArgumentCaptor.capture());
+        final String setCookieHeader = (String) mapArgumentCaptor.getValue().get("Set-Cookie");
+
+        assertThat(setCookieHeader).contains("application=;");
+        assertThat(setCookieHeader).contains("Path=/;");
+        assertThat(setCookieHeader).contains("Domain="+applicationTokenConfig.getDomain()+";");
+        assertThat(setCookieHeader).contains("Max-Age=0;");
+        assertThat(setCookieHeader).contains("HttpOnly;");
+        assertThat(setCookieHeader).contains("Secure");
+        assertThat(setCookieHeader).contains("SameSite=Strict;");
+        // and assert that user id is returned in the response to the client
+        assertThat(userId).isEqualTo(1234);
     }
 
     @Test
@@ -105,7 +130,7 @@ public class UserResourceTest {
         when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
         // when
-        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+        User returnedUser = userResource.signIn(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
 
         // then
         assertNotNull(returnedUser);
@@ -116,23 +141,26 @@ public class UserResourceTest {
 
     @Test
     public void shouldAddCookieToHeader() {
-        // given
+        // given a openId user
         User user = createUserInRocketFuelDb();
         ImmutableOpenIdToken openIdObject = new ImmutableOpenIdToken(user.getName(), user.getEmail(), "pictureUrl");
         when(openIdValidator.validate(any())).thenReturn(just(openIdObject));
 
-        // when
-        User returnedUser = userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+        // when the user signs in.
+        User returnedUser = userResource.signIn(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
 
-        // then
+        // then a secure cookie should be created
         ArgumentCaptor<Map> mapArgumentCaptor = ArgumentCaptor.forClass(Map.class);
         assertNotNull(returnedUser);
         verify(responseHeaderHolder, times(1)).addHeaders(any(), mapArgumentCaptor.capture());
         String setCookieHeader = (String) mapArgumentCaptor.getValue().get("Set-Cookie");
-        assertTrue(setCookieHeader.contains("application="));
-        assertTrue(setCookieHeader.contains("application="));
-        assertTrue(setCookieHeader.contains("; path=/; domain=.rocket-fuel;"));
-
+        assertThat(setCookieHeader).contains("application=ey");
+        assertThat(setCookieHeader).contains("Path=/;");
+        assertThat(setCookieHeader).contains("Domain="+applicationTokenConfig.getDomain()+";");
+        assertThat(setCookieHeader).contains("Max-Age="+SESSION_MAX_AGE_SECONDS+";");
+        assertThat(setCookieHeader).contains("HttpOnly;");
+        assertThat(setCookieHeader).contains("Secure");
+        assertThat(setCookieHeader).contains("SameSite=Strict;");
     }
 
     @Test
@@ -188,7 +216,7 @@ public class UserResourceTest {
     private User signIn( String currentName, String email, String currentPicture) {
         ImmutableOpenIdToken openId = new ImmutableOpenIdToken(currentName, email, currentPicture);
         when(openIdValidator.validate(any())).thenReturn(just(openId));
-        return userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
+        return userResource.signIn(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null);
     }
 
     private void assertThatUserHasFollowingProperties(User returnedUser, String expectedName, String expectedPicture) {
@@ -223,7 +251,7 @@ public class UserResourceTest {
 
         // when the user shall update name
         assertThatExceptionOfType(WebException.class)
-            .isThrownBy(() -> userResource.generateToken(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null))
+            .isThrownBy(() -> userResource.signIn(OPEN_ID_TOKEN).toBlocking().singleOrDefault(null))
             .satisfies(e -> {
                 // then a internal server error is returned
                 assertEquals(INTERNAL_SERVER_ERROR, e.getStatus());

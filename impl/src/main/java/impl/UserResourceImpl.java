@@ -28,7 +28,9 @@ import static rx.Observable.just;
 @Singleton
 public class UserResourceImpl implements UserResource {
 
+
     private static final Logger LOG = LoggerFactory.getLogger(UserResourceImpl.class);
+    public static final int SESSION_MAX_AGE_SECONDS = 3600;
     public static final String FAILED_TO_UPDATE_USER_NAME_OR_PICTURE = "failed.to.update.user.name.or.picture";
     public static final String FAILED_TO_SEARCH_FOR_USER = "failed.to.search.for.user";
     public static final String DEFAULT_PICTURE_URL =  "https://via.placeholder.com/96";
@@ -78,7 +80,7 @@ public class UserResourceImpl implements UserResource {
     }
 
     @Override
-    public Observable<User> generateToken(@NotNull String openIdToken) {
+    public Observable<User> signIn(@NotNull String openIdToken) {
         return openIdValidator.validate(openIdToken).flatMap(validOpenId ->
                 userDao.getUserByEmail(validOpenId.email)
                 .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_USER, throwable)))
@@ -141,8 +143,21 @@ public class UserResourceImpl implements UserResource {
 
     private void addAsCookie(final ApplicationToken applicationToken, User user) {
         Map<String, Object> headers = new HashMap<>();
-        headers.put("Set-Cookie", "application=" + applicationToken.getApplicationToken() + "; path=/; domain=" + applicationTokenConfig.getDomain() + ";");
+        headers.put("Set-Cookie", formatCookie(applicationToken.getApplicationToken(), SESSION_MAX_AGE_SECONDS, applicationTokenConfig.getDomain()));
         responseHeaderHolder.addHeaders(user, headers);
+    }
+
+    @Override
+    public Observable<Long> signOut(Auth auth) {
+        int expireNow = 0;
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("Set-Cookie", formatCookie("", expireNow, applicationTokenConfig.getDomain()));
+        responseHeaderHolder.addHeaders(auth.getUserId(), headers);
+        return Observable.just(auth.getUserId());
+    }
+
+    private static String formatCookie(String applicationToken, int maxAge, String domain){
+        return String.format("application=%s; Path=/; Max-Age=%d; Domain=%s; SameSite=Strict; HttpOnly; Secure;", applicationToken, maxAge, domain);
     }
 
 }
