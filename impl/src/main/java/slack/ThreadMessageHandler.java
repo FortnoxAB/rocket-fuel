@@ -25,7 +25,6 @@ import static rx.Observable.just;
 import static rx.Observable.merge;
 import static rx.Observable.zip;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
-import static slack.MessageHandlerUtil.getUserId;
 
 @Singleton
 public class ThreadMessageHandler implements SlackMessageHandler {
@@ -118,7 +117,7 @@ public class ThreadMessageHandler implements SlackMessageHandler {
 
         return
             slackResource.getMessageFromSlack(channel, mainMessageId)
-                .flatMap(mainMessage -> getUserId(slackResource, userResource, mainMessage)
+                .flatMap(mainMessage -> slackResource.getUserId(mainMessage)
                     .flatMap(auth -> {
                         Question question = new Question();
 

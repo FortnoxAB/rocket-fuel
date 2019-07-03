@@ -12,12 +12,9 @@ import com.google.inject.Singleton;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static rx.Observable.empty;
 import static rx.Observable.error;
-import static slack.MessageHandlerUtil.getUserId;
 
 /**
  * This class handles reactions made to answers
@@ -42,18 +39,15 @@ public class ReactionMessageHandler implements SlackMessageHandler {
     private final        AnswerResource     answerResource;
     private final        UserAnswerResource userAnswerResource;
     private final        SlackResource      slackResource;
-    private final        UserResource       userResource;
 
     @Inject
     public ReactionMessageHandler(SlackResource slackResource,
-        UserResource userResource,
         QuestionResource questionResource,
         AnswerResource answerResource,
         UserAnswerResource userAnswerResource
     ) {
 
         this.slackResource = slackResource;
-        this.userResource = userResource;
         this.questionResource = questionResource;
         this.answerResource = answerResource;
         this.userAnswerResource = userAnswerResource;
@@ -76,19 +70,29 @@ public class ReactionMessageHandler implements SlackMessageHandler {
 
         final String threadId = getThread(message);
         return slackResource.getMessageFromSlack(getChannel(message), getThread(message))
-            .flatMap(mainMessage -> getUserId(slackResource, userResource, mainMessage)
+            .flatMap(mainMessage -> slackResource.getUserId(mainMessage)
                 .flatMap(userId -> questionResource.getQuestionBySlackThreadId(threadId)
                     .onErrorResumeNext(throwable -> {
                         //thread id is not a question but an answer
                         if (NOT_FOUND.equals(((WebException)throwable).getStatus())) {
                             return answerResource.getAnswerBySlackId(threadId)
-                                .flatMap(answer -> upVote ?
-                                    userAnswerResource.upVoteAnswer(userId, answer.getId()).cast(Question.class) :
-                                    userAnswerResource.downVoteAnswer(userId, answer.getId()).cast(Question.class));
+                                .flatMap(answer -> {
+                                    if (upVote) {
+                                        return userAnswerResource.upVoteAnswer(userId, answer.getId());
+                                    }
+                                    return userAnswerResource.downVoteAnswer(userId, answer.getId());
+                                })
+                                .cast(Question.class);
                         }
                         return error(throwable);
                     })
-                    .flatMap(question -> upVote ? questionResource.upVoteQuestion(threadId) : questionResource.downVoteQuestion(threadId))));
+                    .cast(Question.class)
+                    .flatMap(question -> {
+                        if (upVote) {
+                            return questionResource.upVoteQuestion(threadId);
+                        }
+                        return questionResource.downVoteQuestion(threadId);
+                    })));
     }
 
     private static Boolean getUpVoteValue(JsonObject message) {

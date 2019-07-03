@@ -21,6 +21,8 @@ import rx.observers.AssertableSubscriber;
 import static impl.TestSetup.insertUser;
 import static java.lang.System.currentTimeMillis;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static rx.Observable.just;
 import static slack.ReactionMessageHandler.CHANNEL;
@@ -82,7 +84,7 @@ public class ReactionMessageHandlerTest {
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(0);
 
         String channel = "someChannel";
-        mockSlackUser(user, question.getSlackId(), channel);
+        mockSlackUserAndMessage(user, question.getSlackId(), channel);
 
         //When
         JsonObject jsonObject = new JsonObject();
@@ -98,7 +100,7 @@ public class ReactionMessageHandlerTest {
         assertThat(reactionMessageHandler.shouldHandle("reaction_added", jsonObject)).isTrue();
 
         AssertableSubscriber<Void> test = reactionMessageHandler.handleMessage(jsonObject).test();
-        test.awaitTerminalEvent();
+        test.awaitTerminalEvent().assertNoErrors();
 
         questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().single();
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(1);
@@ -107,7 +109,7 @@ public class ReactionMessageHandlerTest {
         jsonObject.addProperty("type", "reaction_removed");
         assertThat(reactionMessageHandler.shouldHandle("reaction_removed", jsonObject)).isTrue();
         test = reactionMessageHandler.handleMessage(jsonObject).test();
-        test.awaitTerminalEvent();
+        test.awaitTerminalEvent().assertNoErrors();
 
         questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().single();
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(0);
@@ -116,7 +118,7 @@ public class ReactionMessageHandlerTest {
         jsonObject.addProperty("type", "reaction_added");
         jsonObject.addProperty("reaction", "-1");
         test = reactionMessageHandler.handleMessage(jsonObject).test();
-        test.awaitTerminalEvent();
+        test.awaitTerminalEvent().assertNoErrors();
 
         questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().single();
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(-1);
@@ -150,7 +152,7 @@ public class ReactionMessageHandlerTest {
         assertThat(storedAnswer.getVotes()).isEqualTo(0);
 
         String channel = "someChannel";
-        mockSlackUser(insertUser(userResource), answer.getSlackId(), channel);
+        mockSlackUserAndMessage(insertUser(userResource), answer.getSlackId(), channel);
 
         //When
         JsonObject jsonObject = new JsonObject();
@@ -167,7 +169,7 @@ public class ReactionMessageHandlerTest {
         assertThat(reactionMessageHandler.shouldHandle(REACTION_ADDED, jsonObject)).isTrue();
 
         AssertableSubscriber<Void> test = reactionMessageHandler.handleMessage(jsonObject).test();
-        test.awaitTerminalEvent();
+        test.awaitTerminalEvent().assertNoErrors();
 
         Answer upvotedAnswer = answerResource.getAnswerBySlackId(answer.getSlackId()).toBlocking().single();
         assertThat(upvotedAnswer.getVotes()).isEqualTo(1);
@@ -176,7 +178,7 @@ public class ReactionMessageHandlerTest {
         jsonObject.addProperty("type", "reaction_removed");
         assertThat(reactionMessageHandler.shouldHandle("reaction_removed", jsonObject)).isTrue();
         test = reactionMessageHandler.handleMessage(jsonObject).test();
-        test.awaitTerminalEvent();
+        test.awaitTerminalEvent().assertNoErrors();
 
         Answer downVotedAnswer = answerResource.getAnswerBySlackId(answer.getSlackId()).toBlocking().single();
         assertThat(downVotedAnswer.getVotes()).isEqualTo(0);
@@ -185,7 +187,7 @@ public class ReactionMessageHandlerTest {
         jsonObject.addProperty("reaction", "-1");
         //remvove reaction on question already with votes 0
         test = reactionMessageHandler.handleMessage(jsonObject).test();
-        test.awaitTerminalEvent();
+        test.awaitTerminalEvent().assertNoErrors();
 
         downVotedAnswer = answerResource.getAnswerBySlackId(answer.getSlackId()).toBlocking().single();
         assertThat(downVotedAnswer.getVotes()).isEqualTo(-1);
@@ -197,9 +199,11 @@ public class ReactionMessageHandlerTest {
         return auth;
     }
 
-    private void mockSlackUser(User user, String slackId, String channel) {
+    private void mockSlackUserAndMessage(User user, String slackId, String channel) {
 
         String slackUser = "someUser";
+
+        when(slackResource.getUserId(any(Message.class))).thenReturn(just(as(user)));
 
         when(slackResource.getMessageFromSlack(channel, slackId))
             .thenAnswer(i -> {
@@ -207,7 +211,5 @@ public class ReactionMessageHandlerTest {
                 message.setUser(slackUser);
                 return just(message);
             });
-        when(slackResource.getUserEmail(slackUser))
-            .thenReturn(just(user.getEmail()));
     }
 }

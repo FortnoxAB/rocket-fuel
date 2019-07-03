@@ -2,13 +2,10 @@ package se.fortnox.reactivewizard.binding.scanners;
 
 import com.google.inject.Singleton;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.matchprocessor.ImplementingClassMatchProcessor;
 import slack.SlackMessageHandler;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import static java.lang.reflect.Modifier.isAbstract;
 
 /**
  * Scans classpath for classes implementing the SlackMessageHandler-Interface

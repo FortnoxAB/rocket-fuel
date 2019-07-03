@@ -1,5 +1,7 @@
 package slack;
 
+import api.UserResource;
+import api.auth.Auth;
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import rx.Observable;
@@ -17,4 +19,6 @@ public interface SlackResource {
     Observable<Void> postMessageToSlackAsBotUser(String channel, List<LayoutBlock> message);
 
     Observable<Message> getMessageFromSlack(String channel, String mainMessageId);
+
+    Observable<Auth> getUserId(Message mainMessage);
 }

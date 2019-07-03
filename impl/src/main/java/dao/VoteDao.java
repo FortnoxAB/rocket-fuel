@@ -8,14 +8,14 @@ public interface VoteDao {
 
     @Query(
         "SELECT " +
-            "v.user_id, " +
-            "v.answer_id, " +
-            "v.value " +
+            "answer_vote.user_id, " +
+            "answer_vote.answer_id, " +
+            "answer_vote.value " +
         "FROM " +
-            "answer_vote v " +
+            "answer_vote " +
         "WHERE " +
-            "v.user_id = :userId AND " +
-            "v.answer_id = :answerId"
+            "answer_vote.user_id = :userId AND " +
+            "answer_vote.answer_id = :answerId"
     )
     Observable<Vote> findVote(long userId, long answerId);
 
@@ -39,17 +39,6 @@ public interface VoteDao {
         ")"
     )
     Observable<Integer> createVote(Vote vote);
-
-
-    @Update(
-        "UPDATE answer_vote SET " +
-            "value = :vote.value, " +
-            "modified_at = NOW() " +
-        "WHERE " +
-            "user_id = :vote.userId AND " +
-            "answer_id = :vote.answerId"
-    )
-    Observable<Integer> updateVote(Vote vote);
 
     @Update(
         "DELETE FROM " +

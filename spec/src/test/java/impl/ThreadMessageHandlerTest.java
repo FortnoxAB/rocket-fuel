@@ -21,6 +21,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
@@ -40,8 +41,6 @@ public class ThreadMessageHandlerTest {
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
-
-
 
     @BeforeClass
     public static void before() {
@@ -67,16 +66,15 @@ public class ThreadMessageHandlerTest {
         when(slackResourceMock.postMessageToSlack(anyString(), anyString(), anyString())).thenReturn(empty());
     }
 
-
     @Test
     public void shouldCreateNewThreadWhenNewThreadIsCreatedInSlack() {
 
         //Given
-        User user = TestSetup.insertUser(userResource);
+        User user                = TestSetup.insertUser(userResource);
         User originalMessageUser = TestSetup.insertUser(userResource);
 
-        long questionIdLong = System.currentTimeMillis();
-        String questionId = String.valueOf(System.currentTimeMillis());
+        long   questionIdLong = System.currentTimeMillis();
+        String questionId     = String.valueOf(System.currentTimeMillis());
 
         Message message = new Message();
         message.setUser("original_message_user");
@@ -86,13 +84,20 @@ public class ThreadMessageHandlerTest {
         when(slackResourceMock.getUserEmail("user_id")).thenReturn(just(user.getEmail()));
         when(slackResourceMock.getUserEmail("original_message_user")).thenReturn(just(originalMessageUser.getEmail()));
         when(slackResourceMock.getMessageFromSlack(eq("channel"), eq(message.getTs()))).thenReturn(just(message));
-
+        when(slackResourceMock.getUserId(any(Message.class)))
+            .then(invocation -> {
+                Message mess = (Message)invocation.getArguments()[0];
+                if (mess.equals(message)) {
+                    return just(new MockAuth(originalMessageUser.getId()));
+                }
+                return just(new MockAuth(user.getId()));
+            });
 
         //When
         JsonObject slackMessage = new JsonObject();
 
         slackMessage.addProperty("thread_ts", questionId);
-        slackMessage.addProperty("ts", questionId+1);
+        slackMessage.addProperty("ts", questionId + 1);
         slackMessage.addProperty("channel", "channel");
         slackMessage.addProperty("user", "user_id");
         slackMessage.addProperty("text", "an answer to your question");
@@ -110,7 +115,6 @@ public class ThreadMessageHandlerTest {
                 eq("This looks like an interesting conversation, added it to <null/question/" + whateverQuestion.getId() + "|rocket-fuel>"),
                 eq(slackMessage.get("thread_ts").getAsString()));
 
-
         assertNotNull(whateverQuestion);
         assertThat(whateverQuestion.getUserId()).isEqualTo(originalMessageUser.getId());
 
@@ -123,7 +127,7 @@ public class ThreadMessageHandlerTest {
         JsonObject messageNo2 = new JsonObject();
 
         messageNo2.addProperty("thread_ts", questionId);
-        messageNo2.addProperty("ts", String.valueOf(questionIdLong+1));
+        messageNo2.addProperty("ts", String.valueOf(questionIdLong + 1));
         messageNo2.addProperty("channel", "channel");
         messageNo2.addProperty("user", "user_id");
         messageNo2.addProperty("text", "yet another answer");
