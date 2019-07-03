@@ -19,12 +19,14 @@ import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackResource;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static java.util.Arrays.asList;
+import static java.util.Objects.nonNull;
 import static rx.Observable.empty;
 import static rx.Observable.error;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
@@ -82,14 +84,14 @@ public class AnswerResourceImpl implements AnswerResource {
         return questionDao.getQuestionById(questionId)
             .flatMap(question -> {
                 if (!question.getUserId().equals(auth.getUserId())) {
-                    return userResource.getUserById(question.getUserId())
-                        .flatMap(user -> slackResource.getUserId(user.getEmail()))
-                        .filter(userId -> !userId.equals(String.valueOf(answer.getUserId()))) //Don't notify if question owner writes a response
-                        .flatMap(slackUserId -> slackResource.postMessageToSlackAsBotUser(slackUserId, notificationMessage(answer, question)))
-                        .onErrorResumeNext(throwable -> {
-                            LOG.warn("Could not notify question owner: " + question.getUserId(), throwable);
-                            return empty();
-                        });
+                return userResource.getUserById(question.getUserId())
+                    .flatMap(user -> slackResource.getUserId(user.getEmail()))
+                    .filter(userId -> !userId.equals(String.valueOf(answer.getUserId()))) //Don't notify if question owner writes a response
+                    .flatMap(slackUserId -> slackResource.postMessageToSlackAsBotUser(slackUserId, notificationMessage(answer, question)))
+                    .onErrorResumeNext(throwable -> {
+                        LOG.warn("Could not notify question owner: " + question.getUserId(), throwable);
+                        return empty();
+                    });
                 }
                 return empty();
             });
@@ -103,7 +105,7 @@ public class AnswerResourceImpl implements AnswerResource {
                 .text(markdownText(answer.getAnswer()))
                 .build(),
             SectionBlock.builder()
-                .text(markdownText("Head over to <%s|rocket-fuel> to accept the answer", answerUrl(question.getId(), answer.getId())))
+                .text(markdownText("Head over to %s to accept the answer", slackUrl(question.getId(), answer.getId(), applicationConfig)))
                 .build());
     }
 
@@ -113,8 +115,24 @@ public class AnswerResourceImpl implements AnswerResource {
             .build();
     }
 
-    private String answerUrl(Long questionId, Long answerId) {
-        return applicationConfig.getBaseUrl() + "/question/" + questionId + "#answer_" + answerId;
+    /**
+     * Creates a link element to be used in slack messages
+     * @param questionId the id of the question
+     * @param answerId optionally
+     * @param applicationConfig the application config to get the baseurl from
+     * @return a slack friendly link
+     */
+    public static String slackUrl(Long questionId, @Nullable Long answerId, ApplicationConfig applicationConfig) {
+        nonNull(questionId);
+        nonNull(applicationConfig);
+
+        String link = "<" + applicationConfig.getBaseUrl() + "/question/" + questionId;
+
+        if (answerId != null) {
+            link = link + "#answer_" + answerId;
+        }
+
+        return link + "|rocket-fuel>";
     }
 
     @Override
