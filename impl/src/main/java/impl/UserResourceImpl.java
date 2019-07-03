@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static rx.Observable.defer;
 import static rx.Observable.error;
 import static rx.Observable.just;
@@ -115,7 +116,7 @@ public class UserResourceImpl implements UserResource {
     }
 
     private String getPicture(String picture) {
-        if(picture == null || picture.isEmpty()) {
+        if(isNullOrEmpty(picture)) {
             return DEFAULT_PICTURE_URL;
         }
         return picture;
