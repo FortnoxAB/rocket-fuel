@@ -55,7 +55,7 @@ The tests inside the spec module requires Docker and at least two gigabytes of f
 
 #### Running the UI in developer mode
 
-Okay, so you have a running backend, congratulations! The frontend is an React app and will be served with the help of Webpack. First you need to run ´npm install´ in the ´ui´ folder. Now you need to supply the UI with the OpenID client id from Google. Open `config.js` in the ´ui´ folder and replace `window.googleClientId = '{{ .Env.OPENID_CLIENT_ID }}';` with the real OpenID. Now, you stay in the ´ui´ folder and type 'npm run dev'. Webpack will start a dev server that will run the UI and proxy API request to the Rocket fuel backend. That's all. You are ready to start coding.
+Okay, so you have a running backend, congratulations! The frontend is an React app and will be served with the help of Webpack. First you need to run `npm install` in the `ui` folder. Now you need to supply the UI with the OpenID client id from Google. Open `config.js` in the `ui` folder and replace `window.googleClientId = '{{ .Env.OPENID_CLIENT_ID }}';` with the real OpenID. Now, you stay in the `ui` folder and type `npm run dev`. Webpack will start a dev server that will run the UI and proxy API request to the Rocket fuel backend. That's all. You are ready to start coding.
 
 #### Release
 
