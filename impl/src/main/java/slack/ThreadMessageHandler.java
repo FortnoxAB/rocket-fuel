@@ -10,14 +10,19 @@ import api.auth.Auth;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import impl.ApplicationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
+import static impl.AnswerResourceImpl.slackUrl;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static rx.Observable.concat;
+import static java.lang.String.format;
+import static rx.Observable.defer;
+import static rx.Observable.empty;
 import static rx.Observable.error;
+import static rx.Observable.just;
 import static rx.Observable.merge;
 import static rx.Observable.zip;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
@@ -33,18 +38,21 @@ public class ThreadMessageHandler implements SlackMessageHandler {
     private final        SlackResource    slackResource;
     private final        UserResource     userResource;
     private final        AnswerResource   answerResource;
+    private final ApplicationConfig applicationConfig;
     private static final int              DEFAULT_BOUNTY  = 50;
 
     @Inject
     public ThreadMessageHandler(QuestionResource questionResource,
         SlackResource slackResource,
         UserResource userResource,
-        AnswerResource answerResource
+        AnswerResource answerResource,
+        ApplicationConfig applicationConfig
     ) {
         this.questionResource = questionResource;
         this.slackResource = slackResource;
         this.userResource = userResource;
         this.answerResource = answerResource;
+        this.applicationConfig = applicationConfig;
     }
 
     @Override
@@ -75,7 +83,7 @@ public class ThreadMessageHandler implements SlackMessageHandler {
         return false;
     }
     private Observable<Question> createQuestionAndPostToSlack(JsonObject message) {
-        return concat(createMainQuestion(message), postToSlack(message).cast(Question.class));
+        return createMainQuestion(message).flatMap(question -> postToSlack(message, question.getId()).cast(Question.class).concatWith(just(question)));
     }
 
     /**
@@ -84,12 +92,16 @@ public class ThreadMessageHandler implements SlackMessageHandler {
      * @param message the thread
      * @return
      */
-    private Observable<Void> postToSlack(JsonObject message) {
+    private Observable<Void> postToSlack(JsonObject message, long questionId) {
         return slackResource.postMessageToSlack(
             message.get(CHANNEL).getAsString(),
-            "This looks like an interesting conversation, added it to rocket-fuel",
+            format("This looks like an interesting conversation, added it to %s", createQuestionUrl(questionId)),
             message.get(SLACK_THREAD_ID).getAsString())
             .ignoreElements();
+    }
+
+    private String createQuestionUrl(long questionId) {
+        return slackUrl(questionId, null, applicationConfig);
     }
 
     /**
@@ -117,7 +129,12 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                         question.setBounty(DEFAULT_BOUNTY);
 
                         return first(questionResource.createQuestion(as(userId), question).doOnError(throwable -> LOG.error("Could not post message to slack", throwable))).thenReturn(question);
-                    }));
+                    }))
+                .doOnError(throwable -> LOG.error("Could not create question: ", throwable))
+                .switchIfEmpty(defer(() -> {
+                    LOG.error("Could not create question empty");
+                    return empty();
+                }));
     }
 
     private Auth as(Long userId) {

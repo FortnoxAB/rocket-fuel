@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-
 public class UserQuestionResourceTest {
 
     private static UserQuestionResource userQuestionResource;

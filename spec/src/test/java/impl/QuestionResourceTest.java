@@ -1,10 +1,19 @@
 package impl;
 
-import api.*;
+import api.Answer;
+import api.AnswerResource;
+import api.Question;
+import api.QuestionResource;
+import api.User;
+import api.UserResource;
 import api.auth.Auth;
 import dao.QuestionDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import rx.observers.AssertableSubscriber;

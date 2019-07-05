@@ -8,13 +8,11 @@ import api.UserAnswerResource;
 import api.UserResource;
 import com.github.seratch.jslack.api.model.Message;
 import com.google.gson.JsonObject;
-import com.google.inject.AbstractModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.testcontainers.containers.PostgreSQLContainer;
 import slack.SlackResource;
 import slack.ThreadMessageHandler;
@@ -47,13 +45,7 @@ public class ThreadMessageHandlerTest {
 
     @BeforeClass
     public static void before() {
-        testSetup = new TestSetup(postgreSQLContainer, new AbstractModule() {
-            @Override
-            protected void configure() {
-                SlackResource slackResource = Mockito.mock(SlackResource.class);
-                binder().bind(SlackResource.class).toInstance(slackResource);
-            }
-        });
+        testSetup = new TestSetup(postgreSQLContainer);
 
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
@@ -109,13 +101,16 @@ public class ThreadMessageHandlerTest {
 
         //Then
         //Make sure the message is posted to slack
-        verify(slackResourceMock).postMessageToSlack(
-                eq(slackMessage.get("channel").getAsString()),
-                eq("This looks like an interesting conversation, added it to rocket-fuel"),
-                eq(slackMessage.get("thread_ts").getAsString()));
 
         //Make sure the question is created connected to the user connected to the slack user email
         Question whateverQuestion = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().singleOrDefault(null);
+
+        verify(slackResourceMock).postMessageToSlack(
+                eq(slackMessage.get("channel").getAsString()),
+                eq("This looks like an interesting conversation, added it to <null/question/" + whateverQuestion.getId() + "|rocket-fuel>"),
+                eq(slackMessage.get("thread_ts").getAsString()));
+
+
         assertNotNull(whateverQuestion);
         assertThat(whateverQuestion.getUserId()).isEqualTo(originalMessageUser.getId());
 
