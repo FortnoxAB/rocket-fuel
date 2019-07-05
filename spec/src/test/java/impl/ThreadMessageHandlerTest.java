@@ -84,13 +84,13 @@ public class ThreadMessageHandlerTest {
         when(slackResourceMock.getUserEmail("user_id")).thenReturn(just(user.getEmail()));
         when(slackResourceMock.getUserEmail("original_message_user")).thenReturn(just(originalMessageUser.getEmail()));
         when(slackResourceMock.getMessageFromSlack(eq("channel"), eq(message.getTs()))).thenReturn(just(message));
-        when(slackResourceMock.getAuth(any()))
+        when(slackResourceMock.getUser(any()))
             .then(invocation -> {
                 Message mess = (Message)invocation.getArguments()[0];
                 if (mess.equals(message)) {
-                    return just(new MockAuth(originalMessageUser.getId()));
+                    return just(originalMessageUser);
                 }
-                return just(new MockAuth(user.getId()));
+                return just(user);
             });
 
         //When

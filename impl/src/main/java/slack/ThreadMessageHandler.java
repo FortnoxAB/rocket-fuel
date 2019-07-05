@@ -35,10 +35,10 @@ public class ThreadMessageHandler implements SlackMessageHandler {
     private static final String CHANNEL         = "channel";
     private static final int    DEFAULT_BOUNTY  = 50;
 
-    private final SlackResource    slackResource;
-    private final UserResource     userResource;
-    private final QuestionResource questionResource;
-    private final AnswerResource   answerResource;
+    private final SlackResource     slackResource;
+    private final UserResource      userResource;
+    private final QuestionResource  questionResource;
+    private final AnswerResource    answerResource;
     private final ApplicationConfig applicationConfig;
 
     @Inject
@@ -117,17 +117,17 @@ public class ThreadMessageHandler implements SlackMessageHandler {
 
         return
             slackResource.getMessageFromSlack(channel, mainMessageId)
-                .flatMap(mainMessage -> slackResource.getAuth(mainMessage)
-                    .flatMap(auth -> {
+                .flatMap(mainMessage -> slackResource.getUser(mainMessage)
+                    .flatMap(user -> {
                         Question question = new Question();
 
                         question.setTitle(mainMessage.getText());
-                        question.setUserId(auth.getUserId());
+                        question.setUserId(user.getId());
                         question.setQuestion(mainMessage.getText());
                         question.setSlackId(mainMessageId);
                         question.setBounty(DEFAULT_BOUNTY);
 
-                        return first(questionResource.createQuestion(as(auth.getUserId()), question).doOnError(throwable -> LOG.error("Could not post message to slack", throwable)))
+                        return first(questionResource.createQuestion(as(user.getId()), question).doOnError(throwable -> LOG.error("Could not post message to slack", throwable)))
                             .thenReturn(question);
                     }))
                 .doOnError(throwable -> LOG.error("Could not create question: ", throwable))

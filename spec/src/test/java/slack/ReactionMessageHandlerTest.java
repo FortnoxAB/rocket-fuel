@@ -217,7 +217,7 @@ public class ReactionMessageHandlerTest {
 
         String slackUser = "someUser";
 
-        when(slackResource.getAuth(any())).thenReturn(just(as(user)));
+        when(slackResource.getUser(any())).thenReturn(just(user));
 
         when(slackResource.getMessageFromSlack(channel, slackId))
             .thenAnswer(i -> {

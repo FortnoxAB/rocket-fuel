@@ -4,6 +4,7 @@ import api.Answer;
 import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
+import api.User;
 import api.UserAnswerResource;
 import api.auth.Auth;
 import com.google.common.collect.ImmutableList;
@@ -82,13 +83,13 @@ public class ReactionMessageHandler implements SlackMessageHandler {
 
         final String threadId = getThread(message);
         return slackResource.getMessageFromSlack(getChannel(message), getThread(message))
-            .flatMap(mainMessage -> slackResource.getAuth(mainMessage)
-                .flatMap(auth -> questionResource.getQuestionBySlackThreadId(threadId)
+            .flatMap(mainMessage -> slackResource.getUser(mainMessage)
+                .flatMap(user -> questionResource.getQuestionBySlackThreadId(threadId)
                     .onErrorResumeNext(throwable -> {
                         //thread id is not a question but an answer
                         if (NOT_FOUND.equals(((WebException)throwable).getStatus())) {
                             return answerResource.getAnswerBySlackId(threadId)
-                                .flatMap(voteOnAnswer(upVote, auth))
+                                .flatMap(voteOnAnswer(upVote, user))
                                 .cast(Question.class);
                         }
                         return error(throwable);
@@ -107,7 +108,8 @@ public class ReactionMessageHandler implements SlackMessageHandler {
         };
     }
 
-    private Func1<Answer, Observable<Void>> voteOnAnswer(boolean upVote, Auth auth) {
+    private Func1<Answer, Observable<Void>> voteOnAnswer(boolean upVote, User user) {
+        Auth auth = new Auth(user.getId());
         return answer -> {
             if (upVote) {
                 return userAnswerResource.upVoteAnswer(auth, answer.getId());
