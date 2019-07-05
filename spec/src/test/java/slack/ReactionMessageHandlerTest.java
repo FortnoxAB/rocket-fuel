@@ -22,7 +22,6 @@ import static impl.TestSetup.insertUser;
 import static java.lang.System.currentTimeMillis;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static rx.Observable.just;
 import static slack.ReactionMessageHandler.CHANNEL;
@@ -30,6 +29,7 @@ import static slack.ReactionMessageHandler.ITEM;
 import static slack.ReactionMessageHandler.MESSAGE;
 import static slack.ReactionMessageHandler.REACTION;
 import static slack.ReactionMessageHandler.REACTION_ADDED;
+import static slack.ReactionMessageHandler.REACTION_REMOVED;
 import static slack.ReactionMessageHandler.THREAD;
 import static slack.ReactionMessageHandler.TYPE;
 
@@ -175,8 +175,8 @@ public class ReactionMessageHandlerTest {
         assertThat(upvotedAnswer.getVotes()).isEqualTo(1);
 
         //Remove reaction on answer
-        jsonObject.addProperty("type", "reaction_removed");
-        assertThat(reactionMessageHandler.shouldHandle("reaction_removed", jsonObject)).isTrue();
+        jsonObject.addProperty("type", REACTION_REMOVED);
+        assertThat(reactionMessageHandler.shouldHandle(REACTION_REMOVED, jsonObject)).isTrue();
         test = reactionMessageHandler.handleMessage(jsonObject).test();
         test.awaitTerminalEvent().assertNoErrors();
 
@@ -193,6 +193,20 @@ public class ReactionMessageHandlerTest {
         assertThat(downVotedAnswer.getVotes()).isEqualTo(-1);
     }
 
+    @Test
+    public void shouldHandleShouldBeNullSafe() {
+
+        assertThat(reactionMessageHandler.shouldHandle(null, null)).isFalse();
+        assertThat(reactionMessageHandler.shouldHandle(REACTION_REMOVED, null)).isFalse();
+
+        JsonObject jsonObject = new JsonObject();
+
+        assertThat(reactionMessageHandler.shouldHandle(REACTION_REMOVED, jsonObject)).isFalse();
+
+        jsonObject.add(ITEM, new JsonObject());
+        assertThat(reactionMessageHandler.shouldHandle(REACTION_REMOVED, jsonObject)).isFalse();
+    }
+
     private Auth as(User user) {
         Auth auth = new Auth();
         auth.setUserId(user.getId());
@@ -203,7 +217,7 @@ public class ReactionMessageHandlerTest {
 
         String slackUser = "someUser";
 
-        when(slackResource.getUserId(any(Message.class))).thenReturn(just(as(user)));
+        when(slackResource.getAuth(any())).thenReturn(just(as(user)));
 
         when(slackResource.getMessageFromSlack(channel, slackId))
             .thenAnswer(i -> {

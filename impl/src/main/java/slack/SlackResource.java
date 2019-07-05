@@ -20,5 +20,5 @@ public interface SlackResource {
 
     Observable<Message> getMessageFromSlack(String channel, String mainMessageId);
 
-    Observable<Auth> getUserId(Message mainMessage);
+    Observable<Auth> getAuth(Message mainMessage);
 }

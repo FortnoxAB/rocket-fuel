@@ -84,7 +84,7 @@ public class ThreadMessageHandlerTest {
         when(slackResourceMock.getUserEmail("user_id")).thenReturn(just(user.getEmail()));
         when(slackResourceMock.getUserEmail("original_message_user")).thenReturn(just(originalMessageUser.getEmail()));
         when(slackResourceMock.getMessageFromSlack(eq("channel"), eq(message.getTs()))).thenReturn(just(message));
-        when(slackResourceMock.getUserId(any(Message.class)))
+        when(slackResourceMock.getAuth(any()))
             .then(invocation -> {
                 Message mess = (Message)invocation.getArguments()[0];
                 if (mess.equals(message)) {

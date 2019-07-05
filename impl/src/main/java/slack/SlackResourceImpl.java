@@ -151,7 +151,7 @@ public class SlackResourceImpl implements SlackResource {
     }
 
     @Override
-    public Observable<Auth> getUserId(Message mainMessage) {
+    public Observable<Auth> getAuth(Message mainMessage) {
         return getUserEmail(mainMessage.getUser())
             .flatMap(email -> userResource.getUserByEmail(email, true))
             .map(User::getId)

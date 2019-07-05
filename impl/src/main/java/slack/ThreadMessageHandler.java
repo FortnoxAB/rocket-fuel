@@ -117,7 +117,7 @@ public class ThreadMessageHandler implements SlackMessageHandler {
 
         return
             slackResource.getMessageFromSlack(channel, mainMessageId)
-                .flatMap(mainMessage -> slackResource.getUserId(mainMessage)
+                .flatMap(mainMessage -> slackResource.getAuth(mainMessage)
                     .flatMap(auth -> {
                         Question question = new Question();
 
