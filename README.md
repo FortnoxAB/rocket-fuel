@@ -14,11 +14,11 @@ After some time, a lot of questions and answers will be added to Rocket fuel. Yo
 
 ## This is how it works. 
 
-### The Slack way
+### Questions and answers are created through slack (Work in progress)
 
 As a thread is started in Slack, the Rocket fuel bot detects that a question has been asked and the bot asks the members of the thread if they want to save the question and the answers in Rocket fuel, so that anyone in the organisation easily can find the question and the answers later on, instead of asking the question again. 
 
-### The normal way
+### Questions and answers are created in the UI.
 A user can add a question to Rocket fuel directly in the UI, and then wait for anyone to answer it, this is very similar to how it works on Stack overflow. When an answer has been submitted, the user will be notified through Slack. The user will be given a link to the question. Then its up to the user to accept the answer or write back. 
 
 
@@ -52,14 +52,14 @@ docker run --name rocketfuel-postgres -p 15432:5432 -e POSTGRES_PASSWORD=mysecre
 ##### Slack
 
 A [slack bot](https://api.slack.com/apps) with the follwing scopes is needed.
-    * channels:history
-    * channels:read
-    * channels:write
-    * chat:write:bot
-    * bot
-    * users:read
-    * users:read.email
-    * users:profile:read
+* channels:history
+* channels:read
+* channels:write
+* chat:write:bot
+* bot
+* users:read
+* users:read.email
+* users:profile:read
     
 
 #### Running Rocket fuel in developer mode in IntelliJ
