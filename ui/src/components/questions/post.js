@@ -258,7 +258,7 @@ class Post extends React.Component {
 
     render() {
         return (
-            <div className={this.getClasses()}>
+            <div id={this.getId()} className={this.getClasses()}>
                 {this.renderDeleteDialog()}
                 {this.renderEditDialog()}
                 <div className="post-sidebar">
@@ -289,6 +289,10 @@ class Post extends React.Component {
                 </div>
             </div>
         );
+    }
+
+    getId() {
+        return this.props.questionId ? `question_${this.props.questionId}` : `answer_${this.props.answerId}`;
     }
 }
 

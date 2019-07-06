@@ -43,6 +43,24 @@ Rocket fuel interacts with Google OpenID and Slack. Knowledge how to setup OpenI
 
 Rocket fuel depends on a configuration file that needs to be correctly configured or you will only be able to run unit tests but not the application in it self. If you want to run the application locally you should start with the instructions in `impl/config.example.yml`. You can then continue reading ***Running Rocket fuel in developer mode in IntelliJ*** or ***Compiling with Maven***. The UI is a story on its own, and has its own chapter further down "running the UI".
  
+##### Postgres
+If you dont have access to postgres, you can run one with docker.
+
+```
+docker run --name rocketfuel-postgres -p 15432:5432 -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_DB=rocket-fuel -d postgres
+```
+##### Slack
+
+A [slack bot](https://api.slack.com/apps) with the follwing scopes is needed.
+    * channels:history
+    * channels:read
+    * channels:write
+    * chat:write:bot
+    * bot
+    * users:read
+    * users:read.email
+    * users:profile:read
+    
 
 #### Running Rocket fuel in developer mode in IntelliJ
 
