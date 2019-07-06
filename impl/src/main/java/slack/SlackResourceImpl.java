@@ -1,6 +1,5 @@
 package slack;
 
-import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.request.channels.ChannelsRepliesRequest;
 import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import com.github.seratch.jslack.api.methods.request.users.UsersInfoRequest;
@@ -18,40 +17,41 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import static rx.Observable.empty;
 import static rx.Observable.error;
-import static rx.Observable.fromCallable;
 
 @Singleton
 public class SlackResourceImpl implements SlackResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(SlackResourceImpl.class);
-    private final Slack slack;
+    public static final String USER_EMAIL_FROM_SLACK_IS_NULL_AND_MIGHT_BE_DUE_TO_MISSING_SCOPE_USERS_READ_EMAIL = "User email from slack is null and might be due to missing scope users:read.email";
+    public static final String COULD_NOT_GET_USER_BY_EMAIL_FROM_SLACK = "Could not get user by email from slack: ";
+    public static final String COULD_NOT_FETCH_USER_EMAIL_FROM_SLACK = "Could not fetch user email from slack: ";
     private final SlackConfig slackConfig;
+    private final SlackClient slackClient;
 
     @Inject
-    public SlackResourceImpl(SlackConfig slackConfig) {
-        slack = new Slack();
+    public SlackResourceImpl(SlackConfig slackConfig, SlackClient slackClient) {
         this.slackConfig = slackConfig;
+        this.slackClient = slackClient;
     }
 
     static String handleUserInfoResponse(UsersInfoResponse usersInfoResponse) {
         if (usersInfoResponse.isOk()) {
             if (usersInfoResponse.getUser().getProfile().getEmail() == null) {
                 LOG.warn("Could not fetch users email, maybe scope users:read.email is missing");
-                throw new IllegalStateException("User email from slack is null and might be due to missing scope users:read.email");
+                throw new IllegalStateException(USER_EMAIL_FROM_SLACK_IS_NULL_AND_MIGHT_BE_DUE_TO_MISSING_SCOPE_USERS_READ_EMAIL);
             }
             return usersInfoResponse.getUser().getProfile().getEmail();
         } else {
-            throw new IllegalStateException("Could not fetch user email from slack: " + usersInfoResponse.getError());
+            throw new IllegalStateException(COULD_NOT_FETCH_USER_EMAIL_FROM_SLACK + usersInfoResponse.getError());
         }
     }
 
     static String handleUserByEmailResponse(UsersLookupByEmailResponse usersLookupByEmailResponse) {
         if (!usersLookupByEmailResponse.isOk()) {
-            throw new IllegalStateException("Could not get user by email from slack: " + usersLookupByEmailResponse.getError());
+            throw new IllegalStateException(COULD_NOT_GET_USER_BY_EMAIL_FROM_SLACK + usersLookupByEmailResponse.getError());
         }
 
         return usersLookupByEmailResponse.getUser().getId();
@@ -75,73 +75,59 @@ public class SlackResourceImpl implements SlackResource {
 
     @Override
     public Observable<String> getUserEmail(String userId) {
-        return callSlack(() -> {
-
-            final UsersInfoRequest slackRequest = UsersInfoRequest
-                .builder()
-                .user(userId)
-                .token(slackConfig.getApiToken())
-                .build();
-
-            return slack.methods().usersInfo(slackRequest);
-        }).map(SlackResourceImpl::handleUserInfoResponse);
-    }
-
-    private <T> Observable<T> callSlack(Callable<T> callable) {
-        return fromCallable(callable);
+        final UsersInfoRequest slackRequest = UsersInfoRequest
+            .builder()
+            .user(userId)
+            .token(slackConfig.getApiToken())
+            .build();
+        return slackClient.usersInfo(slackRequest).map(SlackResourceImpl::handleUserInfoResponse);
     }
 
     @Override
     public Observable<String> getUserId(String email) {
-        return callSlack(() -> {
-            final UsersLookupByEmailRequest requestByEmail = UsersLookupByEmailRequest
+        final UsersLookupByEmailRequest requestByEmail = UsersLookupByEmailRequest
                 .builder()
                 .email(email)
                 .token(slackConfig.getBotUserToken())
                 .build();
-            return slack.methods().usersLookupByEmail(requestByEmail);
-        }).map(SlackResourceImpl::handleUserByEmailResponse);
+        return slackClient.usersLookupByEmail(requestByEmail).map(SlackResourceImpl::handleUserByEmailResponse);
     }
 
     @Override
     public Observable<Void> postMessageToSlack(String channel, String message, String threadId) {
-        return callSlack(() -> {
-            final ChatPostMessageRequest chatPostMessageRequest = ChatPostMessageRequest
-                .builder()
-                .channel(channel)
-                .threadTs(threadId)
-                .text(message)
-                .token(slackConfig.getApiToken())
-                .build();
-
-            return slack.methods().chatPostMessage(chatPostMessageRequest);
-        }).flatMap(SlackResourceImpl::handleChatPostMessageResponse);
+        final ChatPostMessageRequest chatPostMessageRequest = ChatPostMessageRequest
+            .builder()
+            .channel(channel)
+            .threadTs(threadId)
+            .text(message)
+            .token(slackConfig.getApiToken())
+            .build();
+        return slackClient.chatPostMessage(chatPostMessageRequest)
+            .flatMap(SlackResourceImpl::handleChatPostMessageResponse);
     }
 
     @Override
     public Observable<Void> postMessageToSlackAsBotUser(String channel, List<LayoutBlock> message) {
-        return callSlack(() -> {
-            final ChatPostMessageRequest chatPostMessageRequest = ChatPostMessageRequest
+        final ChatPostMessageRequest chatPostMessageRequest = ChatPostMessageRequest
                 .builder()
                 .channel(channel)
                 .blocks(message)
                 .asUser(true)
                 .token(slackConfig.getBotUserToken())
                 .build();
-            return slack.methods().chatPostMessage(chatPostMessageRequest);
-        }).flatMap(SlackResourceImpl::handleChatPostMessageResponse);
+        return slackClient.chatPostMessage(chatPostMessageRequest)
+            .flatMap(SlackResourceImpl::handleChatPostMessageResponse);
     }
 
     @Override
     public Observable<Message> getMessageFromSlack(String channel, String messageId) {
-        return callSlack(() -> {
-            final ChannelsRepliesRequest getMessageFromSlack = ChannelsRepliesRequest
-                .builder()
-                .channel(channel)
-                .threadTs(messageId)
-                .token(slackConfig.getApiToken())
-                .build();
-            return slack.methods().channelsReplies(getMessageFromSlack);
-        }).map(SlackResourceImpl::handleGetMessageResponse);
+        final ChannelsRepliesRequest getMessageFromSlack = ChannelsRepliesRequest
+            .builder()
+            .channel(channel)
+            .threadTs(messageId)
+            .token(slackConfig.getApiToken())
+            .build();
+        return slackClient.channelsReplies(getMessageFromSlack)
+            .map(SlackResourceImpl::handleGetMessageResponse);
     }
 }
