@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static rx.Observable.just;
 import static slack.SlackResourceImpl.COULD_NOT_FETCH_USER_EMAIL_FROM_SLACK;
 import static slack.SlackResourceImpl.COULD_NOT_GET_USER_BY_EMAIL_FROM_SLACK;
-import static slack.SlackResourceImpl.USER_EMAIL_FROM_SLACK_IS_NULL_AND_MIGHT_BE_DUE_TO_MISSING_SCOPE_USERS_READ_EMAIL;
+import static slack.SlackResourceImpl.MISSING_USER_EMAIL;
 
 public class SlackResourceImplTest {
 
@@ -85,7 +85,7 @@ public class SlackResourceImplTest {
         // then we should get exception
         assertThatExceptionOfType(IllegalStateException.class)
             .isThrownBy(() -> slackResource.getUserEmail(userId).toBlocking().single())
-            .withMessage(USER_EMAIL_FROM_SLACK_IS_NULL_AND_MIGHT_BE_DUE_TO_MISSING_SCOPE_USERS_READ_EMAIL);
+            .withMessage(MISSING_USER_EMAIL);
     }
 
 

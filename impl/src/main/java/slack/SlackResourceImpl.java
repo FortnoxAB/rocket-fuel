@@ -24,12 +24,12 @@ import static rx.Observable.error;
 @Singleton
 public class SlackResourceImpl implements SlackResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SlackResourceImpl.class);
-    public static final String USER_EMAIL_FROM_SLACK_IS_NULL_AND_MIGHT_BE_DUE_TO_MISSING_SCOPE_USERS_READ_EMAIL = "User email from slack is null and might be due to missing scope users:read.email";
-    public static final String COULD_NOT_GET_USER_BY_EMAIL_FROM_SLACK = "Could not get user by email from slack: ";
-    public static final String COULD_NOT_FETCH_USER_EMAIL_FROM_SLACK = "Could not fetch user email from slack: ";
-    private final SlackConfig slackConfig;
-    private final SlackClient slackClient;
+    private static final Logger LOG                                    = LoggerFactory.getLogger(SlackResourceImpl.class);
+    public static final String  MISSING_USER_EMAIL                     = "User email from slack is null and might be due to missing scope users:read.email";
+    public static final String  COULD_NOT_GET_USER_BY_EMAIL_FROM_SLACK = "Could not get user by email from slack: ";
+    public static final String  COULD_NOT_FETCH_USER_EMAIL_FROM_SLACK  = "Could not fetch user email from slack: ";
+    private final SlackConfig   slackConfig;
+    private final SlackClient   slackClient;
 
     @Inject
     public SlackResourceImpl(SlackConfig slackConfig, SlackClient slackClient) {
@@ -41,7 +41,7 @@ public class SlackResourceImpl implements SlackResource {
         if (usersInfoResponse.isOk()) {
             if (usersInfoResponse.getUser().getProfile().getEmail() == null) {
                 LOG.warn("Could not fetch users email, maybe scope users:read.email is missing");
-                throw new IllegalStateException(USER_EMAIL_FROM_SLACK_IS_NULL_AND_MIGHT_BE_DUE_TO_MISSING_SCOPE_USERS_READ_EMAIL);
+                throw new IllegalStateException(MISSING_USER_EMAIL);
             }
             return usersInfoResponse.getUser().getProfile().getEmail();
         } else {
