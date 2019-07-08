@@ -28,9 +28,11 @@ import static impl.UserAnswerResourceImpl.INVALID_VOTE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static util.ObservableAssertions.assertThat;
+import static util.ObservableAssertions.assertThatExceptionOfType;
+import static util.ObservableAssertions.assertThatList;
 
 public class UserAnswerResourceTest {
 
@@ -76,7 +78,7 @@ public class UserAnswerResourceTest {
 
         Answer answer = createAnswer();
 
-        answerResource.answerQuestion(createdUserAuth, answer, question.getId()).toBlocking().singleOrDefault(null);
+        assertThat(answerResource.answerQuestion(createdUserAuth, answer, question.getId())).hasNoErrors();
 
         Answer createdAnswer = getFirstAnswer(createdUserAuth, question);
         assertFalse(createdAnswer.isAccepted());
@@ -124,19 +126,21 @@ public class UserAnswerResourceTest {
         Answer createdAnswer = getFirstAnswer(auth, question);
 
         // when we delete a answer
-        userAnswerResource.deleteAnswer(auth,  createdAnswer.getId()).toBlocking().singleOrDefault(null);
+        userAnswerResource.deleteAnswer(auth, createdAnswer.getId()).toBlocking().singleOrDefault(null);
 
         // then only the answer we want to delete should be deleted
-        List<Answer> remainingAnswers = userAnswerResource.getAnswers(auth.getUserId(), question.getId()).toBlocking().single();
-        assertThat(remainingAnswers.size()).isEqualTo(1);
+        assertThatList(userAnswerResource.getAnswers(auth.getUserId(), question.getId()))
+            .hasNoErrors()
+            .hasSize(1);
     }
 
     @Test
     public void shouldNotDeleteAnswerThatDoesNotExist() {
         Auth auth = newAuth();
         long nonExistingAnswerId = 12;
+
         assertThatExceptionOfType(WebException.class)
-            .isThrownBy(() -> userAnswerResource.deleteAnswer(auth,  nonExistingAnswerId).toBlocking().singleOrDefault(null))
+            .isThrownBy(() -> userAnswerResource.deleteAnswer(auth,  nonExistingAnswerId))
             .satisfies(e -> {
                 assertEquals(NOT_FOUND, e.getStatus());
                 assertEquals(ANSWER_NOT_FOUND, e.getError());
