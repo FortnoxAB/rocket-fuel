@@ -10,6 +10,9 @@ import api.auth.Auth;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import com.google.inject.AbstractModule;
 import dao.AnswerDao;
+import dao.Vote;
+import dao.VoteDao;
+import org.assertj.core.groups.Tuple;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
 import org.junit.After;
 import org.junit.Before;
@@ -28,9 +31,11 @@ import static impl.AnswerResourceImpl.ERROR_ANSWER_NOT_CREATED;
 import static impl.AnswerResourceImpl.ERROR_NOT_OWNER_OF_QUESTION;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyLong;
@@ -54,6 +59,7 @@ public class AnswerResourceTest {
     private static TestSetup           testSetup;
     private static UserResource        userResource;
     private static SlackResource       mockedSlackResource;
+    private static VoteDao             voteDao;
 
     @BeforeClass
     public static void before() {
@@ -70,6 +76,7 @@ public class AnswerResourceTest {
         answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         mockedSlackResource = testSetup.getInjector().getInstance(SlackResource.class);
+        voteDao = testSetup.getInjector().getInstance(VoteDao.class);
     }
 
     @After
@@ -85,8 +92,10 @@ public class AnswerResourceTest {
     @Test
     public void shouldMarkBothQuestionAndAnswerAsAcceptedWhenUserAcceptsAnAnswer() {
         // given user creates a question
+
         Auth questioner = newUser();
         when(mockedSlackResource.getUserId(questioner.getEmail())).thenReturn(just(SLACK_USER_ID));
+
         Question question = newQuestion();
 
         Question returnedQuestion = questionResource.createQuestion(questioner, question).toBlocking().singleOrDefault(null);
@@ -123,9 +132,14 @@ public class AnswerResourceTest {
         answerResource.markAsAcceptedAnswer(questioner, returnedAnswer.getId()).toBlocking().singleOrDefault(null);
 
         // then both answer and question should be updated and state that they are accepted.
-        List<Answer> answers = answerResource.getAnswers(returnedQuestion.getId()).toBlocking().singleOrDefault(new ArrayList<>());
+        List<Answer> answers = answerResource.getAnswers(questioner, returnedQuestion.getId()).toBlocking().singleOrDefault(new ArrayList<>());
+        assertThat(answers)
+            .hasOnlyOneElementSatisfying(acceptedAnswer -> {
+                assertThat(acceptedAnswer.isAccepted()).isTrue();
+                assertThat(acceptedAnswer.getVotes()).isZero();
+                assertThat(acceptedAnswer.getCurrentUserVote()).isZero();
+            });
         assertThat(answers.size()).isEqualTo(1);
-        assertThat(answers.get(0).isAccepted()).isTrue();
 
         Question questionFromDb = questionResource.getQuestionById(returnedQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(questionFromDb.isAnswerAccepted()).isTrue();
@@ -190,6 +204,85 @@ public class AnswerResourceTest {
                 assertThat(e.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
                 assertThat(e.getError()).isEqualTo(ERROR_ANSWER_NOT_CREATED);
             });
+    }
+
+    @Test
+    public void shouldReturnAnswerByIdWithCorrectVotes() {
+
+        Question question = questionResource.createQuestion(newUser(), newQuestion()).toBlocking().singleOrDefault(null);
+        Answer answer = answerResource.answerQuestion(newUser(), newAnswer(), question.getId()).toBlocking().singleOrDefault(null);
+        Auth user = newUser();
+
+        assertAnswerById(answer, 0);
+
+        addVote(user, answer, -1);
+        assertAnswerById(answer, -1);
+
+        voteDao.deleteVote(user.getUserId(), answer.getId()).test().awaitTerminalEvent().assertNoErrors();
+        assertAnswerById(answer, 0);
+
+        addVote(user, answer, 1);
+        assertAnswerById(answer, 1);
+    }
+
+    @Test
+    public void shouldThrowNotFoundWhenNotFindingAnswerById() {
+
+        assertThatExceptionOfType(WebException.class)
+            .isThrownBy(() -> answerResource.getAnswerById(42).toBlocking().single())
+            .satisfies(e -> {
+                assertThat(e).isInstanceOf(WebException.class);
+                assertThat(e).hasFieldOrPropertyWithValue("status", NOT_FOUND);
+            });
+    }
+
+    @Test
+    public void shouldReturnAnswerByQuestionIdWithCorrectVotes() {
+
+        Auth user1 = newUser();
+        Auth user2 = newUser();
+        Auth user3 = newUser();
+
+        Question question = questionResource.createQuestion(user1, newQuestion()).toBlocking().singleOrDefault(null);
+        Answer answer1 = answerResource.answerQuestion(user1, newAnswer(), question.getId()).toBlocking().singleOrDefault(null);
+
+        assertVotesByQuestionId(user1, question, tuple(0, 0));
+
+        addVote(user1, answer1, 1);
+        assertVotesByQuestionId(user1, question, tuple(1, 1));
+        assertVotesByQuestionId(user2, question, tuple(1, 0));
+
+        addVote(user2, answer1, 1);
+        assertVotesByQuestionId(user1, question, tuple(2, 1));
+
+        addVote(user3, answer1, -1);
+        assertVotesByQuestionId(user3, question, tuple(1, -1));
+
+        Answer answer2 = answerResource.answerQuestion(user1, newAnswer(), question.getId()).toBlocking().singleOrDefault(null);
+        assertVotesByQuestionId(user3, question, tuple(1, -1), tuple(0, 0));
+
+        addVote(user3, answer2, -1);
+        assertVotesByQuestionId(user3, question, tuple(1, -1), tuple(-1, -1));
+        assertVotesByQuestionId(user1, question, tuple(1, 1), tuple(-1, 0));
+    }
+
+    private void addVote(Auth auth, Answer answer, int value) {
+        voteDao.createVote(new Vote(auth.getUserId(), answer.getId(), value)).test().awaitTerminalEvent().assertNoErrors();
+    }
+
+    private void assertVotesByQuestionId(Auth auth, Question question, Tuple ... votesAndUserVote) {
+        assertThat(answerResource.getAnswers(auth, question.getId()).test().awaitTerminalEvent().getOnNextEvents())
+            .hasOnlyOneElementSatisfying(answers ->  {
+                assertThat(answers)
+                    .extracting(Answer::getVotes, Answer::getCurrentUserVote)
+                    .containsExactlyInAnyOrder(votesAndUserVote);
+            });
+    }
+
+    private void assertAnswerById(Answer answer, int votes) {
+        assertThat(answerResource.getAnswerById(answer.getId()).test().awaitTerminalEvent().getOnNextEvents())
+            .extracting(Answer::getId, Answer::getVotes)
+            .containsExactly(tuple(answer.getId(), votes));
     }
 
     private static Auth newUser() {

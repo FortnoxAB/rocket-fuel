@@ -24,6 +24,11 @@ $picture-size: 40px;
             &:hover {
                 color: contrast($background-color);
             }
+
+            &-disabled {
+                font-size: 2em;
+                color: rgba($gray-light-more, 90%);
+            }
         }
 
         .accepted {

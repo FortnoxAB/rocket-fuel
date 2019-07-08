@@ -1,5 +1,8 @@
 package slack;
 
+import api.User;
+import api.UserResource;
+import api.auth.Auth;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.request.channels.ChannelsRepliesRequest;
 import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
@@ -30,11 +33,13 @@ public class SlackResourceImpl implements SlackResource {
     private static final Logger LOG = LoggerFactory.getLogger(SlackResourceImpl.class);
     private final Slack slack;
     private final SlackConfig slackConfig;
+    private final UserResource userResource;
 
     @Inject
-    public SlackResourceImpl(SlackConfig slackConfig) {
+    public SlackResourceImpl(SlackConfig slackConfig, UserResource userResource) {
         slack = new Slack();
         this.slackConfig = slackConfig;
+        this.userResource = userResource;
     }
 
     static String handleUserInfoResponse(UsersInfoResponse usersInfoResponse) {
@@ -143,5 +148,11 @@ public class SlackResourceImpl implements SlackResource {
                 .build();
             return slack.methods().channelsReplies(getMessageFromSlack);
         }).map(SlackResourceImpl::handleGetMessageResponse);
+    }
+
+    @Override
+    public Observable<User> getUser(Message mainMessage) {
+        return getUserEmail(mainMessage.getUser())
+            .flatMap(email -> userResource.getUserByEmail(email, true));
     }
 }
