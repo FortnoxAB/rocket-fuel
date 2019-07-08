@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -46,16 +45,15 @@ public class SlackResourceImplTest {
     public void shouldReturnUserEmailBySlackId() {
         // given that slack has the user we are asking for
         UsersInfoResponse usersInfoResponse = createSuccessfulUserResponse();
-        final String slackId = usersInfoResponse.getUser().getId();
+        final String userId = usersInfoResponse.getUser().getId();
         final User.Profile profile = usersInfoResponse.getUser().getProfile();
 
         when(slackClient.usersInfo(any())).thenReturn(just(usersInfoResponse));
         // when we ask slack for the users mail with given id
-        String foundEmail = slackResource.getUserEmail(slackId).toBlocking().single();
+        String foundEmail = slackResource.getUserEmail(userId).toBlocking().single();
 
         // then we should get the mail address
         assertThat(foundEmail).isEqualTo(profile.getEmail());
-
     }
 
     @Test
@@ -64,14 +62,14 @@ public class SlackResourceImplTest {
         UsersInfoResponse usersInfoResponse = createSuccessfulUserResponse();
         usersInfoResponse.setOk(false);
         usersInfoResponse.setError("error");
-        final String slackId = usersInfoResponse.getUser().getId();
+        final String userId = usersInfoResponse.getUser().getId();
         when(slackClient.usersInfo(any())).thenReturn(just(usersInfoResponse));
 
         // when we try to get user email by slack Id
         // then we should get exception
         assertThatExceptionOfType(IllegalStateException.class)
-            .isThrownBy(() -> slackResource.getUserEmail(slackId).toBlocking().single())
-            .satisfies(e -> assertThat(e.getMessage()).isEqualTo(COULD_NOT_FETCH_USER_EMAIL_FROM_SLACK+"error"));
+            .isThrownBy(() -> slackResource.getUserEmail(userId).toBlocking().single())
+            .withMessage(COULD_NOT_FETCH_USER_EMAIL_FROM_SLACK+"error");
     }
 
     @Test
@@ -80,14 +78,14 @@ public class SlackResourceImplTest {
         UsersInfoResponse usersInfoResponse = createSuccessfulUserResponse();
         usersInfoResponse.setOk(true);
         usersInfoResponse.getUser().getProfile().setEmail(null);
-        final String slackId = usersInfoResponse.getUser().getId();
+        final String userId = usersInfoResponse.getUser().getId();
         when(slackClient.usersInfo(any())).thenReturn(just(usersInfoResponse));
 
         // when we try to get user email by slack Id
         // then we should get exception
         assertThatExceptionOfType(IllegalStateException.class)
-            .isThrownBy(() -> slackResource.getUserEmail(slackId).toBlocking().single())
-            .satisfies(e -> assertThat(e.getMessage()).isEqualTo(USER_EMAIL_FROM_SLACK_IS_NULL_AND_MIGHT_BE_DUE_TO_MISSING_SCOPE_USERS_READ_EMAIL));
+            .isThrownBy(() -> slackResource.getUserEmail(userId).toBlocking().single())
+            .withMessage(USER_EMAIL_FROM_SLACK_IS_NULL_AND_MIGHT_BE_DUE_TO_MISSING_SCOPE_USERS_READ_EMAIL);
     }
 
 
@@ -113,7 +111,7 @@ public class SlackResourceImplTest {
         final User user = usersLookupByEmailResponse.getUser();
         when(slackClient.usersLookupByEmail(any())).thenReturn(just(usersLookupByEmailResponse));
 
-        //when we asks slack for userId by email
+        //when we ask slack for userId by email
         String userId = slackResource.getUserId("any.email@will.do").toBlocking().single();
 
         // then we should get the userId
@@ -128,9 +126,7 @@ public class SlackResourceImplTest {
         usersLookupByEmailResponse.setError("error");
         assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> {
             SlackResourceImpl.handleUserByEmailResponse(usersLookupByEmailResponse);
-        }).satisfies(e -> {
-            assertThat(e.getMessage()).isEqualTo(COULD_NOT_GET_USER_BY_EMAIL_FROM_SLACK+ "error");
-        });
+        }).withMessage(COULD_NOT_GET_USER_BY_EMAIL_FROM_SLACK + "error");
     }
 
     @Test
@@ -150,18 +146,16 @@ public class SlackResourceImplTest {
 
     @Test
     public void shouldThrowExceptionWhenFailurePostingMessageToSlack() {
-        // given that slack will accept our chat message
+        // given that we will get a bad response from slack
         ChatPostMessageResponse chatPostMessageResponse = new ChatPostMessageResponse();
         chatPostMessageResponse.setOk(false);
         chatPostMessageResponse.setError("error");
         when(slackClient.chatPostMessage(any())).thenReturn(just(chatPostMessageResponse));
 
-        //then call should return exception
+        // then call should return exception
         assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> {
             slackResource.postMessageToSlack("channel", "message","threadId").toBlocking().singleOrDefault(null);
-        }).satisfies(e -> {
-            assertThat(e.getMessage()).isEqualTo("error");
-        });
+        }).withMessage("error");
     }
 
     @Test
@@ -170,7 +164,7 @@ public class SlackResourceImplTest {
         ChannelsRepliesResponse channelsRepliesResponse = createSuccessfulChannelRepliesResponse();
         when(slackClient.channelsReplies(any())).thenReturn(just(channelsRepliesResponse));
 
-        //when we asks slack for messages
+        //when we ask slack for messages
         Message message = slackResource.getMessageFromSlack("channel", "messageId").toBlocking().single();
 
         // then we should get the message
@@ -180,15 +174,15 @@ public class SlackResourceImplTest {
     @Test
     public void shouldThrowExceptionWhenFailureToRetriveMessage() {
         ChannelsRepliesResponse channelsRepliesResponse = new ChannelsRepliesResponse();
-        //  given that we will get a bad response from slack
+        // given that we will get a bad response from slack
         channelsRepliesResponse.setOk(false);
         channelsRepliesResponse.setError("error");
         channelsRepliesResponse.setWarning("warning");
         when(slackClient.channelsReplies(any())).thenReturn(just(channelsRepliesResponse));
-        // when we asks slack for the message, then a exception should be returned
+        // when we ask slack for the message, then a exception should be returned
         assertThatExceptionOfType(IllegalStateException.class)
             .isThrownBy(() -> slackResource.getMessageFromSlack("channel", "messageId").toBlocking().single())
-            .satisfies(e -> assertThat(e.getMessage()).isEqualTo("error warning"));
+            .withMessage("error warning");
     }
 
     @Test
@@ -199,7 +193,7 @@ public class SlackResourceImplTest {
         chatPostMessageResponse.setOk(true);
         when(slackClient.chatPostMessage(any())).thenReturn(just(chatPostMessageResponse));
 
-        //when we asks slack for messages
+        //when we ask slack for messages
         List<LayoutBlock> layoutBlocks = new ArrayList<>();
         layoutBlocks.add( new DividerBlock("123"));
 

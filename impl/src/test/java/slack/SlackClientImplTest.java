@@ -17,12 +17,14 @@ import org.junit.Before;
 import org.junit.Test;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
 
-
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static se.fortnox.reactivewizard.test.TestUtil.matches;
 
 public class SlackClientImplTest {
@@ -63,8 +65,6 @@ public class SlackClientImplTest {
         UsersLookupByEmailResponse response = slackClient.usersLookupByEmail(usersLookupByEmailRequest).toBlocking().single();
         // then the real method should be invoked
         verify(methodsClient, times(1)).usersLookupByEmail(usersLookupByEmailRequest);
-        // and the token in the config should be used
-        assertThat(usersLookupByEmailRequest.getToken()).isEqualTo(slackConfig.getApiToken());
         // and the expected response is returned
         assertThat(response).isEqualTo(usersLookupByEmailResponse);
     }
@@ -83,8 +83,6 @@ public class SlackClientImplTest {
         ChatPostMessageResponse response = slackClient.chatPostMessage(chatPostMessageRequest).toBlocking().single();
         // then the real method should be invoked
         verify(methodsClient, times(1)).chatPostMessage(chatPostMessageRequest);
-        // and the token in the config should be used
-        assertThat(chatPostMessageRequest.getToken()).isEqualTo(slackConfig.getApiToken());
         // and the expected response is returned
         assertThat(response).isEqualTo(usersLookupByEmailResponse);
     }
@@ -104,8 +102,6 @@ public class SlackClientImplTest {
         ChannelsRepliesResponse response = slackClient.channelsReplies(chatPostMessageRequest).toBlocking().single();
         // then the real method should be invoked
         verify(methodsClient, times(1)).channelsReplies(chatPostMessageRequest);
-        // and the token in the config should be used
-        assertThat(chatPostMessageRequest.getToken()).isEqualTo(slackConfig.getApiToken());
         // and the expected response is returned
         assertThat(response).isEqualTo(usersLookupByEmailResponse);
     }
@@ -124,8 +120,6 @@ public class SlackClientImplTest {
         UsersInfoResponse response = slackClient.usersInfo(chatPostMessageRequest).toBlocking().single();
         // then the real method should be invoked
         verify(methodsClient, times(1)).usersInfo(chatPostMessageRequest);
-        // and the token in the config should be used
-        assertThat(chatPostMessageRequest.getToken()).isEqualTo(slackConfig.getApiToken());
         // and the expected response is returned
         assertThat(response).isEqualTo(usersLookupByEmailResponse);
     }
