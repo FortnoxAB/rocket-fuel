@@ -30,7 +30,7 @@ class QuestionsView extends React.Component {
             searched: false
         });
         const trimedValue = value.trim();
-        if (!value ||trimedValue === '' || this.state[name].trim() === trimedValue) {
+        if (trimedValue === '' || this.state[name].trim() === trimedValue) {
             return;
         }
 
