@@ -1,6 +1,6 @@
 import React from 'react';
 import { t } from 'ttag';
-import { withRouter, NavLink } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import QuestionRow from '../../components/questions/questionrow';
 import Loader from '../../components/utils/loader';
 import Button from '../../components/forms/button';
@@ -12,7 +12,7 @@ class QuestionsView extends React.Component {
         super(props);
 
         this.state = {
-            loaded: false,
+            loaded: true,
             questions: [],
             searchStr: '',
             loadingSearch: false,
@@ -21,26 +21,23 @@ class QuestionsView extends React.Component {
         };
     }
 
-    componentDidMount() {
-        this.fetchQuestions();
-    }
-
     handleChange(node) {
         const value = node.target.value;
         clearTimeout(this.searchTimer);
-
         const name = node.target.name;
         this.setState({
-            [name]: value,
+            searchStr: value,
             searched: false
         });
-
-        if (value === '') {
+        const trimedValue = value.trim();
+        if (trimedValue === '' || this.state[name].trim() === trimedValue) {
             this.setState({
-                searchResult: []
+                loadingSearch: false,
+                searched: true
             });
             return;
         }
+
         this.searchTimer = setTimeout(() => {
             this.fetchSearch();
             this.setState({
@@ -51,26 +48,11 @@ class QuestionsView extends React.Component {
     }
 
     fetchSearch() {
-        Question.searchQuestions(this.state.searchStr).then((questions) => {
+        Question.searchQuestions(this.state.searchStr.trim()).then((questions) => {
             this.setState({
                 searchResult: questions,
                 loadingSearch: false
             });
-        });
-    }
-
-    fetchQuestions() {
-        Question.getQuestionsFromUser(2).then((questions) => {
-            this.setState({
-                questions: questions,
-                loaded: true
-            });
-        });
-    }
-
-    renderQuestionRows() {
-        return this.state.questions.map((question, index) => {
-            return <QuestionRow key={index} question={question} />;
         });
     }
 
@@ -132,7 +114,6 @@ class QuestionsView extends React.Component {
 
                 <div>
                     {this.renderSearchResult()}
-                    {this.renderQuestionRows()}
                 </div>
             </div>
         );

@@ -12,10 +12,12 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Collections.emptyList;
 import static rx.Observable.error;
+import static rx.Observable.just;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 
 @Singleton
@@ -76,9 +78,9 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<List<Question>> getQuestionsBySearchQuery(@NotNull String searchQuery) {
-        if (searchQuery == null || searchQuery.isEmpty()) {
-            return error(new WebException(HttpResponseStatus.BAD_REQUEST, FAILED_TO_SEARCH_FOR_QUESTIONS));
+    public Observable<List<Question>> getQuestionsBySearchQuery(String searchQuery) {
+        if (isNullOrEmpty(searchQuery)) {
+            return just(emptyList());
         }
         return questionDao.getQuestions(searchQuery)
             .onErrorResumeNext(e -> {
