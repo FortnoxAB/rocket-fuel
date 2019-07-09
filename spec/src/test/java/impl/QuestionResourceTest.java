@@ -1,10 +1,20 @@
 package impl;
 
-import api.*;
+import api.Answer;
+import api.AnswerResource;
+import api.Question;
+import api.QuestionResource;
+import api.User;
+import api.UserResource;
 import api.auth.Auth;
 import dao.QuestionDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.junit.*;
+import org.jetbrains.annotations.NotNull;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import rx.observers.AssertableSubscriber;
@@ -131,11 +141,22 @@ public class QuestionResourceTest {
 
     private Question createQuestionAndAnswer(Auth mockAuth) {
         // given a question
-        Question question = TestSetup.getQuestion("Question title", "Question");
-        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        Question question = createQuestion(mockAuth, "Question title", "Question");
         // and an answer
-        Answer answer = TestSetup.getAnswer("Answer body");
-        answerResource.answerQuestion(mockAuth, answer, question.getId()).toBlocking().singleOrDefault(null);
+        createAnswer(mockAuth, question.getId(), "Answer body");
+        return question;
+    }
+
+    private Answer createAnswer(Auth mockAuth, long questionId, String answerBody) {
+        Answer answer = TestSetup.getAnswer(answerBody);
+        answerResource.answerQuestion(mockAuth, answer, questionId).toBlocking().singleOrDefault(null);
+        return answer;
+    }
+
+    @NotNull
+    private Question createQuestion(Auth mockAuth, String title, String body) {
+        Question question = TestSetup.getQuestion(title, body);
+        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
         return question;
     }
 
@@ -182,6 +203,24 @@ public class QuestionResourceTest {
     }
 
     @Test
+    public void shouldBePossibleToSearchForAnswersThatAreNotCreatedByTheQuestionOwner() {
+        // given two users
+        Auth firstUserAuth = createUserAndAuth();
+        Auth secondUserAuth = createUserAndAuth();
+
+        // and answers created both by the question owner and the other user
+        long questionId = createQuestion(firstUserAuth, "Question?","Question?").getId();
+        createAnswer(firstUserAuth, questionId, "1");
+        Answer answerNotCreatedByOwner = createAnswer(secondUserAuth, questionId, "2");
+
+        // when searching by the answer that is not created by the question owner
+        List<Question> searchResult = questionResource.getQuestionsBySearchQuery(answerNotCreatedByOwner.getAnswer()).toBlocking().single();
+
+        // then the question should be returned
+        assertThat(searchResult.size()).isEqualTo(1);
+    }
+
+    @Test
     public void shouldReturnErrorIfQueryFails() {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
@@ -211,8 +250,7 @@ public class QuestionResourceTest {
         Auth mockAuth = createUserAndAuth();
 
         for (int i = 1; i <= questionsToGenerate; i++) {
-            Question question = TestSetup.getQuestion("my question title " + i, "my question");
-            questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+            createQuestion(mockAuth, "my question title " + i, "my question");
         }
     }
 

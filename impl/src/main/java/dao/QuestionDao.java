@@ -183,7 +183,7 @@ public interface QuestionDao {
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
         "LEFT JOIN  " +
-            "answer on answer.question_id = question.id and answer.user_id = question.user_id " +
+            "answer on answer.question_id = question.id " +
         "WHERE  " +
             "question.title ILIKE ('%' || :search || '%') " +
         "OR " +
