@@ -1,6 +1,5 @@
 package dao;
 
-
 import api.Answer;
 import rx.Observable;
 import se.fortnox.reactivewizard.db.GeneratedKey;
@@ -8,20 +7,6 @@ import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 
 public interface AnswerDao {
-
-    String SELECT_ANSWER = "SELECT " +
-                                "a.id, " +
-                                "a.user_id, " +
-                                "a.answer, " +
-                                "a.created_at, " +
-                                "a.accepted, " +
-                                "a.votes, " +
-                                "u.picture, " +
-                                "a.slack_id, " +
-                                "a.question_id, ";
-
-    String FROM_ANSWER = "FROM answer a " +
-                            "INNER JOIN \"user\" u on u.id = a.user_id ";
 
     @Update(
         "UPDATE answer " +
@@ -31,27 +16,62 @@ public interface AnswerDao {
     Observable<Integer> markAsAccepted(long answerId);
 
     @Query(
-        SELECT_ANSWER +
-            "u.name AS created_by " +
-        FROM_ANSWER +
+        "SELECT " +
+            "answer.id, " +
+            "answer.user_id, " +
+            "answer.answer, " +
+            "answer.created_at, " +
+            "answer.accepted, " +
+            "\"user\".picture, " +
+            "answer.slack_id, " +
+            "answer.question_id, " +
+            "\"user\".name AS created_by, " +
+            "(SELECT COALESCE(SUM(answer_vote.value), 0) FROM answer_vote WHERE answer_vote.answer_id = answer.id) AS votes " +
+        "FROM answer " +
+            "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
         "WHERE user_id=:userId AND question_id=:questionId"
     )
     Observable<Answer> getAnswers(long userId, long questionId);
 
     @Query(
-        SELECT_ANSWER +
-            "u.name AS created_by " +
-        FROM_ANSWER +
+        "SELECT " +
+            "answer.id, " +
+            "answer.user_id, " +
+            "answer.answer, " +
+            "answer.created_at, " +
+            "answer.accepted, " +
+            "\"user\".picture, " +
+            "answer.slack_id, " +
+            "answer.question_id, " +
+            "\"user\".name AS created_by, " +
+            "(SELECT COALESCE(SUM(answer_vote.value), 0) " +
+                "FROM answer_vote " +
+                "WHERE answer_vote.answer_id = answer.id) AS votes, " +
+            "(SELECT COALESCE(SUM(answer_vote.value), 0) " +
+                "FROM answer_vote " +
+                "WHERE answer_vote.answer_id = answer.id AND answer_vote.user_id = :userId) AS current_user_vote " +
+        "FROM answer " +
+            "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
         "WHERE question_id=:questionId " +
-        "ORDER BY a.accepted desc, a.votes desc, a.created_at desc"
+        "ORDER BY answer.accepted desc, \"votes\" desc, answer.created_at desc"
     )
-    Observable<Answer> getAnswers(long questionId);
+    Observable<Answer> getAnswersWithUserVotes(long userId, long questionId);
 
 
     @Query(
-        SELECT_ANSWER +
-            "u.name AS created_by " +
-        FROM_ANSWER +
+        "SELECT " +
+            "answer.id, " +
+            "answer.user_id, " +
+            "answer.answer, " +
+            "answer.created_at, " +
+            "answer.accepted, " +
+            "\"user\".picture, " +
+            "answer.slack_id, " +
+            "answer.question_id, " +
+            "\"user\".name AS created_by, " +
+            "(SELECT COALESCE(SUM(answer_vote.value), 0) FROM answer_vote WHERE answer_vote.answer_id = answer.id) AS votes " +
+        "FROM answer " +
+            "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
         "WHERE slack_id=:slackId"
     )
     Observable<Answer> getAnswer(String slackId);
@@ -60,7 +80,6 @@ public interface AnswerDao {
         "INSERT INTO answer " +
             "(" +
                 "answer, " +
-                "votes, " +
                 "created_at, " +
                 "accepted, " +
                 "question_id, " +
@@ -69,7 +88,6 @@ public interface AnswerDao {
             ")" +
             "VALUES(" +
                 ":answer.answer, " +
-                "0, " +
                 "NOW(), " +
                 "false, " +
                 ":questionId, " +
@@ -81,33 +99,47 @@ public interface AnswerDao {
 
     @Update(
         "UPDATE answer SET " +
-            "answer=:answer.answer " +
+            "answer=:answer.answer, " +
+            "accepted=:answer.accepted " +
         "WHERE " +
             "answer.id=:answerId " +
             "AND answer.user_id=:userId")
     Observable<Void> updateAnswer(long userId, long answerId, Answer answer);
 
-    @Update(
-        "UPDATE answer SET " +
-            "votes=votes+1 " +
-        "WHERE " +
-            "slack_id = :threadId")
-    Observable<Void> upVoteAnswer(String threadId);
-
-    @Update(
-        "UPDATE answer " +
-        "SET votes=votes-1 " +
-        "WHERE " +
-            "slack_id = :threadId")
-    Observable<Void> downVoteAnswer(String threadId);
+    static final String S = "SELECT " +
+        "answer.id, " +
+        "answer.user_id, " +
+        "answer.answer, " +
+        "answer.created_at, " +
+        "answer.accepted, " +
+        "\"user\".picture, " +
+        "answer.slack_id, " +
+        "answer.question_id, " +
+        "\"user\".name AS created_by, " +
+        "question.user_id AS \"question.user_id\", " +
+        "(SELECT COALESCE(SUM(answer_vote.value), 0) FROM answer_vote WHERE answer_vote.answer_id = answer.id) AS votes " +
+        "FROM answer " +
+        "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
+        "INNER JOIN question on question.id = answer.question_id " +
+        "WHERE answer.id=:id";
 
     @Query(
-        SELECT_ANSWER +
-            "u.name AS created_by, " +
-            "q.user_id AS \"question.user_id\" " +
-        FROM_ANSWER +
-        "INNER JOIN question q on q.id = a.question_id " +
-        "WHERE a.id=:id")
+        "SELECT " +
+            "answer.id, " +
+            "answer.user_id, " +
+            "answer.answer, " +
+            "answer.created_at, " +
+            "answer.accepted, " +
+            "\"user\".picture, " +
+            "answer.slack_id, " +
+            "answer.question_id, " +
+            "\"user\".name AS created_by, " +
+            "question.user_id AS \"question.user_id\", " +
+            "(SELECT COALESCE(SUM(answer_vote.value), 0) FROM answer_vote WHERE answer_vote.answer_id = answer.id) AS votes " +
+        "FROM answer " +
+            "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
+            "INNER JOIN question on question.id = answer.question_id " +
+        "WHERE answer.id=:id")
     Observable<AnswerInternal> getAnswerById(long id);
 
     @Update(

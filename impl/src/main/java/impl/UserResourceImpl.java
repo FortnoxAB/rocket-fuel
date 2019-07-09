@@ -25,6 +25,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static rx.Observable.defer;
 import static rx.Observable.error;
 import static rx.Observable.just;
+import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 
 @Singleton
 public class UserResourceImpl implements UserResource {
@@ -54,7 +55,7 @@ public class UserResourceImpl implements UserResource {
     @Override
     public Observable<User> getCurrent(Auth auth) {
         return userDao.getUserById(auth.getUserId())
-                .switchIfEmpty(error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "current.user.not.found")));
+                .switchIfEmpty(exception(() -> new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "current.user.not.found")));
     }
 
     @Override
@@ -77,7 +78,7 @@ public class UserResourceImpl implements UserResource {
     @Override
     public Observable<User> getUserById(long userId) {
         return this.userDao.getUserById(userId)
-                .switchIfEmpty(error(new WebException(HttpResponseStatus.NOT_FOUND)));
+                .switchIfEmpty(exception(() -> new WebException(HttpResponseStatus.NOT_FOUND)));
     }
 
     @Override
