@@ -31,6 +31,10 @@ class QuestionsView extends React.Component {
         });
         const trimedValue = value.trim();
         if (trimedValue === '' || this.state[name].trim() === trimedValue) {
+            this.setState({
+                loadingSearch: false,
+                searched: true
+            });
             return;
         }
 
