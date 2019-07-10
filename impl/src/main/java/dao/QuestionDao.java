@@ -183,13 +183,13 @@ public interface QuestionDao {
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
         "LEFT JOIN  " +
-            "answer on answer.question_id = question.id and answer.user_id = question.user_id " +
+            "answer on answer.question_id = question.id " +
         "WHERE  " +
-            "question.title like ('%' || :search || '%') " +
+            "question.title ILIKE ('%' || :search || '%') " +
         "OR " +
-            "question.question like ('%' || :search || '%') " +
+            "question.question ILIKE ('%' || :search || '%') " +
         "OR " +
-            "answer.answer  like ('%' || :search || '%') " +
+            "answer.answer  ILIKE ('%' || :search || '%') " +
         "ORDER BY  " +
             "question.votes desc, " +
             "question.created_at desc")
