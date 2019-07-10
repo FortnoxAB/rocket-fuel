@@ -3,10 +3,11 @@
  import api.auth.Auth;
  import rx.Observable;
 
- import javax.ws.rs.Path;
- import javax.ws.rs.PUT;
- import javax.ws.rs.GET;
  import javax.ws.rs.DELETE;
+ import javax.ws.rs.GET;
+ import javax.ws.rs.POST;
+ import javax.ws.rs.PUT;
+ import javax.ws.rs.Path;
  import javax.ws.rs.PathParam;
  import java.util.List;
 
@@ -52,4 +53,28 @@ public interface UserAnswerResource {
     @DELETE
     @Path("me/answers/{answerId}")
     Observable<Void> deleteAnswer(Auth auth, @PathParam("answerId") long answerId);
+
+    /**
+     * Upvotes (+1) an answer.
+     * Upvoting an existing downvote will result in a neutral (0) vote.
+     * Upvoting an existing upvote will result in error.
+     * @param auth
+     * @param answerId
+     * @return
+     */
+    @POST
+    @Path("me/answers/{answerId}/upvote")
+    Observable<Void> upVoteAnswer(Auth auth, @PathParam("answerId") long answerId);
+
+    /**
+     * Downvotes (-1) an answer.
+     * Downvoting an existing upvote will result in a neutral (0) vote.
+     * Downvoting and existing downvote will result in error.
+     * @param auth
+     * @param answerId
+     * @return
+     */
+    @POST
+    @Path("me/answers/{answerId}/downvote")
+    Observable<Void> downVoteAnswer(Auth auth, @PathParam("answerId") long answerId);
 }

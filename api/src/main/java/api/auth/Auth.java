@@ -13,6 +13,14 @@ import java.time.OffsetDateTime;
     private String name;
     private String picture;
 
+    public Auth() {
+
+    }
+
+    public Auth(long userId) {
+        this.userId = userId;
+    }
+
     public void setUserId(long userId) {
         this.userId = userId;
     }

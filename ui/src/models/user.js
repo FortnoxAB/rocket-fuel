@@ -11,9 +11,19 @@ export function getUser(id) {
 export function signIn(token) {
     const options = {
         url: '/api/user/authenticate/',
+        method: 'POST',
         headers: {
             authorizationToken: token
         }
+    };
+
+    return ApiFetch(options);
+}
+
+export function signOut() {
+    const options = {
+        url: '/api/user/authenticate/',
+        method: 'DELETE'
     };
 
     return ApiFetch(options);

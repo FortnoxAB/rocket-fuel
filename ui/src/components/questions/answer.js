@@ -1,5 +1,6 @@
 import React from 'react'
 import Post from './post';
+import { UserContext } from '../../usercontext';
 
 class Answer extends React.Component {
     constructor(props) {
@@ -22,8 +23,17 @@ class Answer extends React.Component {
                 onEdit={this.props.onEditAnswer.bind(this)}
                 enableAccept={this.props.enableAccept}
                 onAnswer={this.props.onAnswer.bind(this)}
+                enableVote={true}
+                onUpVote={this.props.onUpVote.bind(this)}
+                onDownVote={this.props.onDownVote.bind(this)}
+                allowUpVote={this.isVoteAllowed(1)}
+                allowDownVote={this.isVoteAllowed(-1)}
             />
         );
+    }
+
+    isVoteAllowed(voteValue) {
+        return this.context.state.user.id !== this.props.answer.userId && this.props.answer.currentUserVote !== voteValue;
     }
 }
 
@@ -32,7 +42,11 @@ Answer.defaultProps = {
     enableAccept: true,
     onEditAnswer: () => {},
     onDeleteAnswer: () => {},
-    onAnswer: () => {}
+    onAnswer: () => {},
+    onUpVote: () => {},
+    onDownVote: () => {}
 };
 
 export default Answer;
+
+Answer.contextType = UserContext;

@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-
 public class UserQuestionResourceTest {
 
     private static UserQuestionResource userQuestionResource;
@@ -196,10 +195,10 @@ public class UserQuestionResourceTest {
         assertThat(remaningQuestions.get(0).getTitle()).isEqualTo("my question title2");
 
         // and the answers should be deleted as well for the deleted question
-        List<Answer> answersForTheNonDeletedQuestion = answerResource.getAnswers(questionsSaved.get(1).getId()).toBlocking().singleOrDefault(null);
+        List<Answer> answersForTheNonDeletedQuestion = answerResource.getAnswers(mockAuth, questionsSaved.get(1).getId()).toBlocking().singleOrDefault(null);
         assertThat(answersForTheNonDeletedQuestion).isNotEmpty();
 
-        List<Answer> answersForTheDeletedQuestion = answerResource.getAnswers(questionsSaved.get(0).getId()).toBlocking().singleOrDefault(null);
+        List<Answer> answersForTheDeletedQuestion = answerResource.getAnswers(mockAuth, questionsSaved.get(0).getId()).toBlocking().singleOrDefault(null);
         assertThat(answersForTheDeletedQuestion).isEmpty();
     }
 

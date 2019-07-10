@@ -32,6 +32,10 @@ applicationTokenConfig:
   secret: a-valid-but-not-secure-secret
   domain: <your-domain-where-the-application-is-hosted>
 
+# Contains configuration where rocket-fuel is deployed to be able to send correct links to answers and questions
+application:
+  baseUrl: <url to rocket-fuel>
+
 # Contains configuration used for slack.
 slack:
   botUserToken: <your-slack-app-bot-user-token>
