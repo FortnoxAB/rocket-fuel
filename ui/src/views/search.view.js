@@ -3,7 +3,6 @@ import { t } from 'ttag';
 import { withRouter } from 'react-router-dom';
 import QuestionRow from '../components/questions/questionrow';
 import Loader from '../components/utils/loader';
-import Button from '../components/forms/button';
 import InputField from '../components/forms/inputfield';
 import * as Question from '../models/question';
 
@@ -22,36 +21,41 @@ class SearchView extends React.Component {
 
     handleChange(node) {
         const value = node.target.value;
-        clearTimeout(this.searchTimer);
-
         const name = node.target.name;
+
+        const searchQuery = value.trim().toLowerCase();
+        const oldSearchQuery = this.state.searchStr.trim().toLowerCase();
+
         this.setState({
-            [name]: value,
-            searched: false
+            searchStr:value
         });
 
-        if (value === '') {
-            this.setState({
-                searchResult: []
-            });
+        if(oldSearchQuery === searchQuery) {
             return;
         }
-        this.searchTimer = setTimeout(() => {
-            this.fetchSearch();
-            this.setState({
-                loadingSearch: true,
-                searched: true
-            });
-        }, 700);
-    }
 
-    fetchSearch() {
-        Question.searchQuestions(this.state.searchStr).then((questions) => {
+        if(searchQuery === '') {
             this.setState({
-                searchResult: questions,
-                loadingSearch: false
+                loadingSearch: false,
+                searched: false
             });
-        });
+        } else {
+            this.setState({
+                searched: false,
+                loadingSearch: true
+            });
+            clearTimeout(this.searchTimer);
+            this.searchTimer = setTimeout(() => {
+                Question.searchQuestions(searchQuery).then((questions) => {
+                    console.log(questions);
+                    this.setState({
+                        searchResult: questions,
+                        loadingSearch: false,
+                        searched: true
+                    });
+                });
+            }, 700);
+        }
     }
 
     renderQuestionRows() {
@@ -65,14 +69,16 @@ class SearchView extends React.Component {
             return <div className="padded-vertical"><Loader /></div>;
         }
 
-        if (this.state.searchResult.length <= 0 && this.state.searchStr.length > 0 && this.state.searched) {
+        if (this.state.searchStr.trim() === "") {
             return <div className="padded-bottom-large">
-                {t`No questions found.`}
+                {t`What are you waiting for? Type something!`}
             </div>;
         }
 
-        if (this.state.searchResult.length <= 0) {
-            return null;
+        if (this.state.searchResult.length === 0 && this.state.searched) {
+            return <div className="padded-bottom-large">
+                {t`No questions found.`}
+            </div>;
         }
 
         const searchResult = this.state.searchResult.map((question, index) => {
