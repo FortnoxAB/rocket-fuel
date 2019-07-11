@@ -1,10 +1,15 @@
 package api;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+
 public class Answer extends Post {
 
     private String answer;
 
     private boolean accepted;
+
+    private LocalDateTime acceptedAt;
 
     private long questionId;
 
@@ -30,5 +35,13 @@ public class Answer extends Post {
 
     public void setQuestionId(long questionId) {
         this.questionId = questionId;
+    }
+
+    public LocalDateTime getAcceptedAt() {
+        return acceptedAt;
+    }
+
+    public void setAcceptedAt(LocalDateTime acceptedAt) {
+        this.acceptedAt = acceptedAt;
     }
 }

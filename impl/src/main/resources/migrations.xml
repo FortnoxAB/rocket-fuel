@@ -188,4 +188,10 @@
         <dropColumn tableName="answer_vote" columnName="modified_at"/>
     </changeSet>
 
+    <changeSet id="add_accepted_at_to_answer" author="rickard.blomkvist">
+        <addColumn tableName="answer">
+            <column name="accepted_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -33,9 +33,12 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.lang.String.format;
+import static java.time.LocalDateTime.now;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyLong;
@@ -136,6 +139,7 @@ public class AnswerResourceTest {
         assertThat(answers)
             .hasOnlyOneElementSatisfying(acceptedAnswer -> {
                 assertThat(acceptedAnswer.isAccepted()).isTrue();
+                assertThat(acceptedAnswer.getAcceptedAt()).isCloseTo(now(), within(1, SECONDS));
                 assertThat(acceptedAnswer.getVotes()).isZero();
                 assertThat(acceptedAnswer.getCurrentUserVote()).isZero();
             });

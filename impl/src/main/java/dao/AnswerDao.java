@@ -10,7 +10,8 @@ public interface AnswerDao {
 
     @Update(
         "UPDATE answer " +
-        "SET accepted=true " +
+        "SET accepted=true, " +
+            "accepted_at=NOW() " +
         "WHERE id=:answerId"
     )
     Observable<Integer> markAsAccepted(long answerId);
@@ -22,6 +23,7 @@ public interface AnswerDao {
             "answer.answer, " +
             "answer.created_at, " +
             "answer.accepted, " +
+            "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
             "answer.question_id, " +
@@ -40,6 +42,7 @@ public interface AnswerDao {
             "answer.answer, " +
             "answer.created_at, " +
             "answer.accepted, " +
+            "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
             "answer.question_id, " +
@@ -65,6 +68,7 @@ public interface AnswerDao {
             "answer.answer, " +
             "answer.created_at, " +
             "answer.accepted, " +
+            "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
             "answer.question_id, " +
@@ -106,23 +110,6 @@ public interface AnswerDao {
             "AND answer.user_id=:userId")
     Observable<Void> updateAnswer(long userId, long answerId, Answer answer);
 
-    static final String S = "SELECT " +
-        "answer.id, " +
-        "answer.user_id, " +
-        "answer.answer, " +
-        "answer.created_at, " +
-        "answer.accepted, " +
-        "\"user\".picture, " +
-        "answer.slack_id, " +
-        "answer.question_id, " +
-        "\"user\".name AS created_by, " +
-        "question.user_id AS \"question.user_id\", " +
-        "(SELECT COALESCE(SUM(answer_vote.value), 0) FROM answer_vote WHERE answer_vote.answer_id = answer.id) AS votes " +
-        "FROM answer " +
-        "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
-        "INNER JOIN question on question.id = answer.question_id " +
-        "WHERE answer.id=:id";
-
     @Query(
         "SELECT " +
             "answer.id, " +
@@ -130,6 +117,7 @@ public interface AnswerDao {
             "answer.answer, " +
             "answer.created_at, " +
             "answer.accepted, " +
+            "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
             "answer.question_id, " +

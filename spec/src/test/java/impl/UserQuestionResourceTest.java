@@ -19,7 +19,6 @@ import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.function.BiFunction;
 
 import static impl.TestSetup.getQuestion;
