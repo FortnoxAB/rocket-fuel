@@ -4,7 +4,7 @@ import api.UserAnswerResource;
 import api.auth.Auth;
 import dao.AnswerDao;
 import dao.AnswerInternal;
-import dao.VoteDao;
+import dao.AnswerVoteDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
@@ -40,12 +40,12 @@ public class UserAnswerResourceImplTest {
     private AnswerDao          answerDao;
 
     @Mock
-    private VoteDao            voteDao;
+    private AnswerVoteDao answerVoteDao;
 
     @Before
     public void beforeEach() {
         initMocks(this);
-        userAnswerResource = new UserAnswerResourceImpl(answerDao, voteDao);
+        userAnswerResource = new UserAnswerResourceImpl(answerDao, answerVoteDao);
         auth = new Auth();
         auth.setUserId(123);
 

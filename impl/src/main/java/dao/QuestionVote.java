@@ -4,23 +4,23 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-public class Vote {
+public class QuestionVote {
 
     private long userId;
 
-    private long answerId;
+    private long questionId;
 
     @Max(1)
     @Min(-1)
     @NotNull
     int value;
 
-    public Vote() {
+    public QuestionVote() {
     }
 
-    public Vote(long userId, long answerId, int value) {
+    public QuestionVote(long userId, long questionId, int value) {
         this.userId = userId;
-        this.answerId = answerId;
+        this.questionId = questionId;
         this.value = value;
     }
 
@@ -32,12 +32,12 @@ public class Vote {
         this.userId = userId;
     }
 
-    public long getAnswerId() {
-        return answerId;
+    public long getQuestionId() {
+        return questionId;
     }
 
-    public void setAnswerId(long answerId) {
-        this.answerId = answerId;
+    public void setQuestionId(long questionId) {
+        this.questionId = questionId;
     }
 
     public int getValue() {

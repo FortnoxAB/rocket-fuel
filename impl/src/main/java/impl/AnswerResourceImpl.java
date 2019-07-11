@@ -82,7 +82,7 @@ public class AnswerResourceImpl implements AnswerResource {
      * @param questionId the id of the question
      */
     private Observable<Void> notifyQuestionOwner(Auth auth, Answer answer, long questionId) {
-        return questionDao.getQuestionById(questionId)
+        return questionDao.getQuestion(questionId)
             .flatMap(question -> {
                 if (!question.getUserId().equals(auth.getUserId())) {
                     return userResource.getUserById(question.getUserId())

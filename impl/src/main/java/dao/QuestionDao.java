@@ -18,7 +18,8 @@ public interface QuestionDao {
             "question.votes, " +
             "question.created_at, " +
             "question,user_id, " +
-            "question.slack_id, \"user\".picture, \"user\".name as created_by " +
+            "question.slack_id, \"user\".picture, \"user\".name as created_by, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
         "FROM " +
             "question " +
         "INNER JOIN " +
@@ -36,7 +37,8 @@ public interface QuestionDao {
             "question.created_at, " +
             "question,user_id, " +
             "question.slack_id, " +
-            "\"user\".picture, \"user\".name as created_by " +
+            "\"user\".picture, \"user\".name as created_by, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
         "FROM " +
             "question " +
         "INNER JOIN " +
@@ -85,18 +87,22 @@ public interface QuestionDao {
             "created_at, " +
             "user_id, " +
             "slack_id, " +
-            "\"user\".picture " +
+            "\"user\".picture, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) " +
+                "FROM question_vote " +
+                "WHERE question_vote.question_id = question.id AND question_vote.user_id = :userId) AS current_user_vote " +
         "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
         "WHERE " +
-            "user_id = :userId AND question.id=:questionId")
+            "question.id=:questionId")
     Observable<Question> getQuestion(long userId, long questionId);
 
     @Query(
         "SELECT " +
-            "id, " +
+            "question.id, " +
             "question, " +
             "title, " +
             "bounty, " +
@@ -104,32 +110,18 @@ public interface QuestionDao {
             "answer_accepted, " +
             "created_at, " +
             "user_id, " +
-            "slack_id " +
-        "FROM " +
-            "question " +
-        "WHERE " +
-            "id=:questionId")
-    Observable<Question> getQuestion(long questionId);
-
-    @Query(
-        "SELECT " +
-            "question.id, " +
-            "question.question, " +
-            "question.title, " +
-            "question.bounty, " +
-            "question.votes, " +
-            "question.answer_accepted, " +
-            "question.created_at, " +
-            "question.slack_id, " +
-            "u.name as created_by, " +
+            "slack_id, " +
             "u.id AS user_id, " +
-            "u.picture " +
+            "u.name as created_by, " +
+            "u.picture as picture, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
         "FROM " +
             "question " +
         "LEFT JOIN " +
             "\"user\" u on u.id = question.user_id " +
-        "WHERE question.id=:questionId")
-    Observable<Question> getQuestionById(long questionId);
+        "WHERE " +
+            "question.id=:questionId")
+    Observable<Question> getQuestion(long questionId);
 
     @Update(
         "UPDATE " +
@@ -147,17 +139,12 @@ public interface QuestionDao {
             "votes, " +
             "answer_accepted, " +
             "created_at, user_id, " +
-            "slack_id " +
+            "slack_id, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
         "FROM " +
             "question " +
         "WHERE slack_id = :slackId")
     Observable<Question> getQuestionBySlackThreadId(String slackId);
-
-    @Update("UPDATE question set votes=votes+1 WHERE slack_id = :threadId")
-    Observable<Void> upVoteQuestion(String threadId);
-
-    @Update(value = "UPDATE question set votes=votes-1 WHERE slack_id = :threadId")
-    Observable<Void> downVoteQuestion(String threadId);
 
     @Update(
         "DELETE FROM " +
@@ -177,7 +164,8 @@ public interface QuestionDao {
             "question.created_at, " +
             "question, " +
             "question.user_id, " +
-            "\"user\".name as created_by " +
+            "\"user\".name as created_by, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
         "FROM " +
             "question " +
         "INNER JOIN " +

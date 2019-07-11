@@ -9,7 +9,7 @@ import api.UserAnswerResource;
 import api.UserQuestionResource;
 import api.UserResource;
 import api.auth.Auth;
-import dao.VoteDao;
+import dao.AnswerVoteDao;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -39,7 +39,7 @@ public class UserAnswerResourceTest {
     private static UserResource         userResource;
     private static UserAnswerResource   userAnswerResource;
     private static AnswerResource       answerResource;
-    private static VoteDao              voteDao;
+    private static AnswerVoteDao        answerVoteDao;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
@@ -55,7 +55,7 @@ public class UserAnswerResourceTest {
         userAnswerResource = testSetup.getInjector().getInstance(UserAnswerResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
-        voteDao = testSetup.getInjector().getInstance(VoteDao.class);
+        answerVoteDao = testSetup.getInjector().getInstance(AnswerVoteDao.class);
     }
 
     @After
@@ -222,7 +222,7 @@ public class UserAnswerResourceTest {
     }
 
     private void assertNoVote(Auth auth, Answer answer) {
-        voteDao.findVote(auth.getUserId(), answer.getId()).test().awaitTerminalEvent()
+        answerVoteDao.findVote(auth.getUserId(), answer.getId()).test().awaitTerminalEvent()
             .assertNoValues();
     }
 

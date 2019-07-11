@@ -6,8 +6,8 @@ import api.auth.Auth;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.AnswerDao;
-import dao.Vote;
-import dao.VoteDao;
+import dao.AnswerVote;
+import dao.AnswerVoteDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Observable;
 import rx.functions.Func1;
@@ -32,13 +32,13 @@ public class UserAnswerResourceImpl implements UserAnswerResource {
 
     static final String INVALID_VOTE = "invalid.vote";
 
-    private final AnswerDao answerDao;
-    private final VoteDao   voteDao;
+    private final AnswerDao     answerDao;
+    private final AnswerVoteDao answerVoteDao;
 
     @Inject
-    public UserAnswerResourceImpl(AnswerDao answerDao, VoteDao voteDao) {
+    public UserAnswerResourceImpl(AnswerDao answerDao, AnswerVoteDao answerVoteDao) {
         this.answerDao = answerDao;
-        this.voteDao = voteDao;
+        this.answerVoteDao = answerVoteDao;
     }
 
     @Override
@@ -78,37 +78,37 @@ public class UserAnswerResourceImpl implements UserAnswerResource {
 
     @Override
     public Observable<Void> upVoteAnswer(Auth auth, long answerId) {
-        return handleVote(new Vote(auth.getUserId(), answerId, 1));
+        return handleVote(new AnswerVote(auth.getUserId(), answerId, 1));
     }
 
     @Override
     public Observable<Void> downVoteAnswer(Auth auth, long answerId) {
-        return handleVote(new Vote(auth.getUserId(), answerId, -1));
+        return handleVote(new AnswerVote(auth.getUserId(), answerId, -1));
     }
 
-    private Observable<Void> handleVote(Vote newVote) {
+    private Observable<Void> handleVote(AnswerVote newVote) {
         return answerDao.getAnswerById(newVote.getAnswerId())
             .flatMap(validateAnswerAndGetExistingVote(newVote))
             .flatMap(validateVoteAndRemoveIfZero(newVote))
-            .switchIfEmpty(voteDao.createVote(newVote).map(i -> newVote))
+            .switchIfEmpty(answerVoteDao.createVote(newVote).map(i -> newVote))
             .ignoreElements()
             .cast(Void.class);
     }
 
-    private Func1<Answer, Observable<Vote>> validateAnswerAndGetExistingVote(Vote newVote) {
+    private Func1<Answer, Observable<AnswerVote>> validateAnswerAndGetExistingVote(AnswerVote newVote) {
         return answer -> {
             if (answer.getUserId() == newVote.getUserId()) { // no voting for your own answer
                 return error(new WebException(BAD_REQUEST, INVALID_VOTE));
             }
-            return voteDao.findVote(newVote.getUserId(), newVote.getAnswerId());
+            return answerVoteDao.findVote(newVote.getUserId(), newVote.getAnswerId());
         };
     }
 
-    private Func1<Vote, Observable<Vote>> validateVoteAndRemoveIfZero(Vote newVote) {
+    private Func1<AnswerVote, Observable<AnswerVote>> validateVoteAndRemoveIfZero(AnswerVote newVote) {
         return existingVote -> {
             int totalVote = newVote.getValue() + existingVote.getValue();
             if (totalVote == 0) {
-                return voteDao.deleteVote(existingVote.getUserId(), existingVote.getAnswerId())
+                return answerVoteDao.deleteVote(existingVote.getUserId(), existingVote.getAnswerId())
                     .map(i -> existingVote);
             }
             return error(new WebException(BAD_REQUEST, INVALID_VOTE));

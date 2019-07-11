@@ -8,6 +8,7 @@ import api.User;
 import api.UserResource;
 import api.auth.Auth;
 import dao.QuestionDao;
+import dao.QuestionVoteDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
@@ -24,6 +25,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import static impl.QuestionResourceImpl.FAILED_TO_SEARCH_FOR_QUESTIONS;
+import static impl.TestSetup.insertUser;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
@@ -35,9 +37,9 @@ import static org.mockito.Mockito.when;
 import static rx.Observable.error;
 
 public class QuestionResourceTest {
-    private static QuestionResource     questionResource;
-    private static AnswerResource       answerResource;
-    private static UserResource         userResource;
+    private static QuestionResource questionResource;
+    private static AnswerResource   answerResource;
+    private static UserResource     userResource;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
@@ -64,24 +66,23 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldThrowErrorWhenServerIsDown() {
-        QuestionDao questionDao = mock(QuestionDao.class);
+        QuestionDao          questionDao      = mock(QuestionDao.class);
         QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao);
         when(questionDao.getLatestQuestions(any())).thenReturn(error(new SQLException()));
 
         try {
             questionResource.getLatestQuestion(null).toBlocking().single();
             fail("Should have thrown exception");
-        } catch(WebException e) {
+        } catch (WebException e) {
             assertThat(e.getError()).isEqualTo("failed.to.get.latest.questions");
         }
     }
-
 
     @Test
     public void shouldBePossibleToGetQuestionBySlackThreadId() {
 
         User createdUser = TestSetup.insertUser(userResource);
-        Auth mockAuth = new MockAuth(createdUser.getId());
+        Auth mockAuth    = newAuth();
 
         Question question      = TestSetup.getQuestion("my question title", "my question");
         String   slackThreadId = String.valueOf(System.currentTimeMillis());
@@ -256,7 +257,7 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldListLatest5Questions() {
-        int limit = 5;
+        int limit               = 5;
         int questionsToGenerate = 10;
 
         generateQuestions(questionsToGenerate);
@@ -269,5 +270,11 @@ public class QuestionResourceTest {
             assertEquals("my question title " + (questionsToGenerate - i), insertedQuestion.getTitle());
             assertEquals("my question", insertedQuestion.getQuestion());
         }
+    }
+
+
+    private Auth newAuth() {
+        User createdUser = insertUser(userResource);
+        return new MockAuth(createdUser.getId());
     }
 }

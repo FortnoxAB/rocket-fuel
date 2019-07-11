@@ -4,6 +4,7 @@
  import rx.Observable;
 
  import javax.ws.rs.GET;
+ import javax.ws.rs.POST;
  import javax.ws.rs.PUT;
  import javax.ws.rs.DELETE;
  import javax.ws.rs.Path;
@@ -30,9 +31,9 @@ public interface UserQuestionResource {
     /**
      * Returns a specific question to the client
      */
-    @Path("{userId}/questions/{questionId}")
+    @Path("me/questions/{questionId}")
     @GET
-    Observable<Question> getQuestion(@PathParam("userId") long userId, @PathParam("questionId") long questionId);
+    Observable<Question> getQuestion(Auth auth, @PathParam("questionId") long questionId);
 
     /**
      * Updates the question with the given questionId
@@ -51,4 +52,29 @@ public interface UserQuestionResource {
     @DELETE
     @Path("me/questions/{questionId}")
     Observable<Void> deleteQuestion(Auth auth, @PathParam("questionId") long questionId);
+
+
+    /**
+     * Upvotes (+1) a question.
+     * Upvoting an existing downvote will result in a neutral (0) vote.
+     * Upvoting an existing upvote will result in error.
+     * @param auth
+     * @param questionId
+     * @return
+     */
+    @POST
+    @Path("me/questions/{questionId}/upvote")
+    Observable<Void> upVoteQuestion(Auth auth, @PathParam("questionId") long questionId);
+
+    /**
+     * Downvotes (-1) a question.
+     * Downvoting an existing upvote will result in a neutral (0) vote.
+     * Downvoting and existing downvote will result in error.
+     * @param auth
+     * @param questionId
+     * @return
+     */
+    @POST
+    @Path("me/questions/{questionId}/downvote")
+    Observable<Void> downVoteQuestion(Auth auth, @PathParam("questionId") long questionId);
 }

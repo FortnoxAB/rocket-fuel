@@ -99,10 +99,10 @@ class QuestionView extends React.Component {
                     key={index}
                     onDeleteAnswer={this.loadQuestionAndAnswers.bind(this, this.props.match.params.id)}
                     onEditAnswer={this.loadQuestionAndAnswers.bind(this, this.props.match.params.id)}
-                    onUpVote={this.onUpVote.bind(this)}
-                    onDownVote={this.onDownVote.bind(this)}
+                    onUpVote={this.onUpVoteAnswer.bind(this)}
+                    onDownVote={this.onDownVoteAnswer.bind(this)}
                 />
-             );
+            );
         });
     }
 
@@ -112,13 +112,23 @@ class QuestionView extends React.Component {
         });
     }
 
-    onUpVote(answerId) {
+    onUpVoteAnswer(answerId) {
         AnswerApi.upVoteAnswer(answerId)
             .then(() => this.loadQuestionAndAnswers(this.props.match.params.id));
     }
 
-    onDownVote(answerId) {
+    onDownVoteAnswer(answerId) {
         AnswerApi.downVoteAnswer(answerId)
+            .then(() => this.loadQuestionAndAnswers(this.props.match.params.id));
+    }
+
+    onUpVoteQuestion(questionId) {
+        QuestionApi.upVoteQuestion(questionId)
+            .then(() => this.loadQuestionAndAnswers(this.props.match.params.id));
+    }
+
+    onDownVoteQuestion(questionId) {
+        QuestionApi.downVoteQuestion(questionId)
             .then(() => this.loadQuestionAndAnswers(this.props.match.params.id));
     }
 
@@ -169,7 +179,11 @@ class QuestionView extends React.Component {
 
         return (
             <div className="content">
-                <Question question={this.state.question} />
+                <Question
+                    question={this.state.question}
+                    onUpVote={this.onUpVoteQuestion.bind(this)}
+                    onDownVote={this.onDownVoteQuestion.bind(this)}
+                />
                 <h3>{t`Answers`}</h3>
                 {this.renderAnswers()}
                 {this.renderAnswerForm()}

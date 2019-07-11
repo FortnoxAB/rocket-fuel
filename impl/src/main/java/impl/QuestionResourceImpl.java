@@ -33,18 +33,6 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<Void> upVoteQuestion(String threadId) {
-        return questionDao.upVoteQuestion(threadId)
-            .doOnError(throwable -> LOG.error("query failed", throwable));
-    }
-
-    @Override
-    public Observable<Void> downVoteQuestion(String threadId) {
-        return questionDao.downVoteQuestion(threadId)
-            .doOnError(throwable -> LOG.error("query failed", throwable));
-    }
-
-    @Override
     public Observable<Question> getQuestionBySlackThreadId(String slackThreadId) {
         return this.questionDao.getQuestionBySlackThreadId(slackThreadId).switchIfEmpty(
             exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not.found")));
@@ -52,7 +40,7 @@ public class QuestionResourceImpl implements QuestionResource {
 
 	@Override
 	public Observable<Question> getQuestionById(long questionId) {
-      return this.questionDao.getQuestionById(questionId).switchIfEmpty(
+      return this.questionDao.getQuestion(questionId).switchIfEmpty(
         exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not.found")));
 	}
 

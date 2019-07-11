@@ -71,20 +71,21 @@ public class ReactionMessageHandlerTest {
     public void testVotesOnQuestion() {
         Question question = TestSetup.getQuestion("whatever", "whatever");
         //Given
-        User user = insertUser(userResource);
+        User questioner = insertUser(userResource);
 
         long   currentTimeMillis = currentTimeMillis();
         String questionId        = String.valueOf(currentTimeMillis);
 
         question.setSlackId(questionId);
 
-        questionResource.createQuestion(as(user), question).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(as(questioner), question).toBlocking().singleOrDefault(null);
 
         Question questionBySlackThreadId = questionResource.getQuestionBySlackThreadId(questionId).toBlocking().singleOrDefault(null);
         assertThat(questionBySlackThreadId.getVotes()).isEqualTo(0);
 
         String channel = "someChannel";
-        mockSlackUserAndMessage(user, question.getSlackId(), channel);
+        User voter = insertUser(userResource);
+        mockSlackUserAndMessage(voter, question.getSlackId(), channel);
 
         //When
         JsonObject jsonObject = new JsonObject();
@@ -207,7 +208,7 @@ public class ReactionMessageHandlerTest {
         assertThat(reactionMessageHandler.shouldHandle(REACTION_REMOVED, jsonObject)).isFalse();
     }
 
-    private Auth as(User user) {
+    private static Auth as(User user) {
         Auth auth = new Auth();
         auth.setUserId(user.getId());
         return auth;
@@ -216,14 +217,12 @@ public class ReactionMessageHandlerTest {
     private void mockSlackUserAndMessage(User user, String slackId, String channel) {
 
         String slackUser = "someUser";
+        Message message = new Message();
+        message.setUser(slackUser);
 
-        when(slackResource.getUser(any())).thenReturn(just(user));
+        when(slackResource.getUser(message)).thenReturn(just(user));
 
         when(slackResource.getMessageFromSlack(channel, slackId))
-            .thenAnswer(i -> {
-                Message message = new Message();
-                message.setUser(slackUser);
-                return just(message);
-            });
+            .thenAnswer(i -> just(message));
     }
 }

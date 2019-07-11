@@ -18,7 +18,7 @@ export function getLatestQuestion(limit = 10) {
 
 export function getQuestionById(id) {
     const options = {
-        url: `/api/questions/${id}`
+        url: `/api/users/me/questions/${id}`
     };
 
     return ApiFetch(options);
@@ -63,3 +63,22 @@ export function updateQuestion(questionId, body) {
 
     return ApiFetch(options);
 }
+
+export function upVoteQuestion(questionId) {
+    const options = {
+        url: `/api/users/me/questions/${questionId}/upvote`,
+        method: 'POST'
+    };
+
+    return ApiFetch(options);
+}
+
+export function downVoteQuestion(questionId) {
+    const options = {
+        url: `/api/users/me/questions/${questionId}/downvote`,
+        method: 'POST'
+    };
+
+    return ApiFetch(options);
+}
+

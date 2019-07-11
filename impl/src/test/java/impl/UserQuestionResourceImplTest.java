@@ -4,10 +4,14 @@ import api.Question;
 import api.UserQuestionResource;
 import api.auth.Auth;
 import dao.QuestionDao;
+import dao.QuestionVoteDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 
@@ -24,19 +28,24 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 import static rx.Observable.error;
 import static rx.Observable.just;
 
 public class UserQuestionResourceImplTest {
 
-    private UserQuestionResource userQuestionResource;
+    @InjectMocks
+    private UserQuestionResourceImpl userQuestionResource;
+    @Mock
     private QuestionDao          questionDao;
+    @Mock
+    private QuestionVoteDao questionVoteDao;
     private Auth                 auth;
     private Question            question;
+
     @Before
     public void beforeEach() {
-        questionDao = mock(QuestionDao.class);
-        userQuestionResource = new UserQuestionResourceImpl(questionDao);
+        initMocks(this);
         auth = new Auth();
         auth.setUserId(123);
         question = createQuestion(123);
@@ -55,7 +64,7 @@ public class UserQuestionResourceImplTest {
     public void shouldReturnInternalServerErrorWhenGetQuestionFails() {
         when(questionDao.getQuestion(123, 123)).thenReturn(Observable.error(new SQLException("poff")));
 
-        assertException(() -> userQuestionResource.getQuestion( 123, 123).toBlocking().singleOrDefault(null),
+        assertException(() -> userQuestionResource.getQuestion( auth, 123).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_GET_QUESTION_FROM_DATABASE);
 

@@ -10,8 +10,8 @@ import api.auth.Auth;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import com.google.inject.AbstractModule;
 import dao.AnswerDao;
-import dao.Vote;
-import dao.VoteDao;
+import dao.AnswerVote;
+import dao.AnswerVoteDao;
 import org.assertj.core.groups.Tuple;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
 import org.junit.After;
@@ -59,7 +59,7 @@ public class AnswerResourceTest {
     private static TestSetup           testSetup;
     private static UserResource        userResource;
     private static SlackResource       mockedSlackResource;
-    private static VoteDao             voteDao;
+    private static AnswerVoteDao       answerVoteDao;
 
     @BeforeClass
     public static void before() {
@@ -76,7 +76,7 @@ public class AnswerResourceTest {
         answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         mockedSlackResource = testSetup.getInjector().getInstance(SlackResource.class);
-        voteDao = testSetup.getInjector().getInstance(VoteDao.class);
+        answerVoteDao = testSetup.getInjector().getInstance(AnswerVoteDao.class);
     }
 
     @After
@@ -218,7 +218,7 @@ public class AnswerResourceTest {
         addVote(user, answer, -1);
         assertAnswerById(answer, -1);
 
-        voteDao.deleteVote(user.getUserId(), answer.getId()).test().awaitTerminalEvent().assertNoErrors();
+        answerVoteDao.deleteVote(user.getUserId(), answer.getId()).test().awaitTerminalEvent().assertNoErrors();
         assertAnswerById(answer, 0);
 
         addVote(user, answer, 1);
@@ -267,7 +267,7 @@ public class AnswerResourceTest {
     }
 
     private void addVote(Auth auth, Answer answer, int value) {
-        voteDao.createVote(new Vote(auth.getUserId(), answer.getId(), value)).test().awaitTerminalEvent().assertNoErrors();
+        answerVoteDao.createVote(new AnswerVote(auth.getUserId(), answer.getId(), value)).test().awaitTerminalEvent().assertNoErrors();
     }
 
     private void assertVotesByQuestionId(Auth auth, Question question, Tuple ... votesAndUserVote) {

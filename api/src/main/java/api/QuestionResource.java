@@ -9,26 +9,10 @@ import java.util.List;
 
 @Path("api/questions")
 public interface QuestionResource {
-    /**
-     * Gives a positive vote on a question
-     * @param slackId
-     * @return
-     */
-    @PATCH
-    @Path("upvote/{slackId}")
-    Observable<Void> upVoteQuestion(@PathParam("slackId") String slackId);
-
-    /**
-     * Gives a negative vote on a question
-     * @param slackId
-     * @return
-     */
-    @PATCH
-    @Path("downvote/{slackId}")
-    Observable<Void> downVoteQuestion(@PathParam("slackId") String slackId);
 
     /**
      * Return a question if found by a slack id
+     *
      * @param slackId id from slack
      * @return question
      */
@@ -38,6 +22,7 @@ public interface QuestionResource {
 
     /**
      * Return a question if found by id
+     *
      * @param questionId
      * @return question
      */
@@ -47,6 +32,7 @@ public interface QuestionResource {
 
     /**
      * Return a list of latest questions with a limit
+     *
      * @param limit
      * @return questions
      */
