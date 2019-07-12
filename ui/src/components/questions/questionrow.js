@@ -17,9 +17,7 @@ class QuestionRow extends React.Component {
         super(props);
 
         this.state = {
-            user: null,
-            isDeleteQuestionDialogOpen: false,
-            isDeletingQuestion: false
+            user: null
         };
     }
 
@@ -77,92 +75,9 @@ class QuestionRow extends React.Component {
         this.props.history.push(`/question/${questionId}`);
     }
 
-    toggleDropdown() {
-        this.setState({
-            isDropdownOpen: !this.state.isDropdownOpen
-        });
-    }
-
-    closeDropdown() {
-        if (!this.state.isDropdownOpen) {
-            return;
-        }
-        this.setState({
-            isDropdownOpen: false
-        });
-    }
-
-    editQuestion() {
-        this.props.history.push(`/create/question/${this.props.question.id}`);
-    }
-
-    deleteQuestion() {
-        this.setState({
-            isDeleteQuestionDialogOpen: true
-        });
-    }
-
-    closeDialog() {
-        this.setState({
-            isDeleteQuestionDialogOpen: false
-        });
-    }
-
-    delete() {
-        this.setState({
-            isDeletingQuestion: true
-        });
-        Question.deleteQuestion(this.props.question.id).then(() => {
-            this.setState({
-                isDeletingQuestion: false,
-                isDeleteQuestionDialogOpen: false
-            });
-            this.props.onDeleteQuestion();
-        }).catch(() => {
-            this.setState({
-                isDeletingQuestion: false
-            });
-        });
-    }
-
-    renderRowMenu() {
-        if (this.props.question.userId !== this.context.state.user.id) {
-            return null;
-        }
-        return(
-            <div className="flex question-menu">
-                <div className="menu-button" onClick={this.toggleDropdown.bind(this)}>
-                    <i className="fa fa-ellipsis-v" />
-                </div>
-                <Dropdown
-                    isOpen={this.state.isDropdownOpen}
-                    close={this.closeDropdown.bind(this)}
-                >
-                    <ul>
-                        <li onClick={this.editQuestion.bind(this)}>
-                            <i className="fa fa-pencil" /> {t`Edit`}
-                        </li>
-                        <li onClick={this.deleteQuestion.bind(this)}>
-                            <i className="fa fa-trash" /> {t`Delete`}
-                        </li>
-                    </ul>
-                </Dropdown>
-            </div>
-        );
-    }
-
     render() {
         return (
             <div className={`${this.getClasses()} ${this.getState()}`}>
-                <Dialog isOpen={this.state.isDeleteQuestionDialogOpen} title={t`Delete question`}>
-                    <div className="padded-bottom-large">
-                        <b>{this.props.question.title}</b> {t`will be deleted from Rocket fuel.`}
-                    </div>
-                    <div className="flex flex-end">
-                        <Button onClick={this.closeDialog.bind(this)} text>{t`Cancel`}</Button>
-                        <Button onClick={this.delete.bind(this)} loading={this.state.isDeletingQuestion} text color="primary">{t`Delete`}</Button>
-                    </div>
-                </Dialog>
                 <div className="content" onClick={this.navigateToQuestion.bind(this, this.props.question.id)}>
                     {/*<Coins amount={this.props.question.bounty} />*/}
                     <div className="marks">
@@ -178,7 +93,6 @@ class QuestionRow extends React.Component {
                         </div>
                     </div>
                 </div>
-                {this.renderRowMenu()}
             </div>
         );
     }
@@ -188,8 +102,7 @@ QuestionRow.defaultProps = {
     user: {},
     question: {},
     small: false,
-    hideTags: false,
-    onDeleteQuestion: () => {}
+    hideTags: false
 };
 
 export default withRouter(QuestionRow);

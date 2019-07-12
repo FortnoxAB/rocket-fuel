@@ -38,16 +38,16 @@ class Dropdown extends React.Component {
     }
 
     resizeEvent() {
-        const dropdown                = this.dropdownNode;
-        const dropdownParent          = this.dropdownNode.parentElement;
+        const dropdown = this.dropdownNode;
+        const dropdownParent = this.dropdownNode.parentElement;
         const dropdownParentRectangle = dropdownParent.getBoundingClientRect();
         const offset = dropdownParentRectangle.width / 2;
+        dropdownParent.style.position = 'relative';
 
         if (dropdownParentRectangle.x > (window.innerWidth/2)) {
             dropdown.style.right = `${offset}px`;
             return;
         }
-
         dropdown.style.left = `${offset}px`;
     }
 
@@ -102,7 +102,7 @@ class Dropdown extends React.Component {
                 className={`dropdown ${this.getClasses()}`}
                 ref={(node) => {this.dropdownNode = node;}}
             >
-                <div className="content" ref={(node) => {this.contentNode = node;}}>
+                <div className="content">
                     {this.props.children}
                 </div>
             </div>

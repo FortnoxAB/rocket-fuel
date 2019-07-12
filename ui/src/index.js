@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { addLocale, useLocale } from 'ttag';
+import '@fortawesome/fontawesome-free/js/fontawesome';
 
 import App from './app';
 

@@ -15,7 +15,8 @@ class Header extends React.Component {
         super(props);
         this.state = {
             quickSearch: '',
-            isDropdownOpen: false
+            isDropdownOpen: false,
+            isCreateDropdownOpen: false
         }
     }
 
@@ -30,8 +31,9 @@ class Header extends React.Component {
         return <span>{this.context.state.user.name}</span>
     }
 
-    navigateToMain() {
-        this.props.history.push('/');
+
+    navigate(url) {
+        this.props.history.push(url);
     }
 
     toggleDropdown() {
@@ -49,6 +51,21 @@ class Header extends React.Component {
         });
     }
 
+    toggleCreateDropdown() {
+        this.setState({
+            isCreateDropdownOpen: !this.state.isCreateDropdownOpen
+        });
+    }
+
+    closeCreateDropdown() {
+        if (!this.state.isCreateDropdownOpen) {
+            return;
+        }
+        this.setState({
+            isCreateDropdownOpen: false
+        });
+    }
+
     logoutUser() {
         this.GoogleAuth = gapi.auth2.getAuthInstance();
         this.GoogleAuth.signOut().catch(() => {
@@ -61,7 +78,7 @@ class Header extends React.Component {
             <div>
                 <div className="header">
                     <div className="flex">
-                        <Logo onClick={this.navigateToMain.bind(this)} className="pointer"
+                        <Logo onClick={this.navigate.bind(this, '/')} className="pointer"
                               size="small" color="light" />
                         <MenuBar />
                     </div>
@@ -76,20 +93,33 @@ class Header extends React.Component {
                     />*/}
                     </div>
                     <div>
-                        <div className="user" onClick={this.toggleDropdown.bind(this)}>
-                            <Button color="primary" text>
-                                <i className="fa fa-user" /> {this.getUser()}
-                            </Button>
-                            {/*<Coins amount={172} />*/}
+                        <div className="item">
+                        <Button border small onClick={this.navigate.bind(this, '/create/question')}>
+                            <i className="fa fa-pen" /> {t`New question`}
+                        </Button>
+                            {/*<Dropdown
+                                isOpen={this.state.isCreateDropdownOpen}
+                                close={this.closeCreateDropdown.bind(this)}
+                            >
+                                <ul>
+                                    <li onClick={this.navigate.bind(this, '/create/question')}>New question</li>
+                                </ul>
+                            </Dropdown>*/}
                         </div>
-                        <Dropdown
-                            isOpen={this.state.isDropdownOpen}
-                            close={this.closeUserDropdown.bind(this)}
-                        >
-                            <ul>
-                                <li onClick={this.logoutUser.bind(this)}>{t`Logout`}</li>
-                            </ul>
-                        </Dropdown>
+                        <div className="user item">
+                            <Button color="primary" text onClick={this.toggleDropdown.bind(this)}>
+                                {this.getUser()}
+                                <img className="profile-picture" src={this.context.state.user.picture} alt="user" />
+                            </Button>
+                            <Dropdown
+                                isOpen={this.state.isDropdownOpen}
+                                close={this.closeUserDropdown.bind(this)}
+                            >
+                                <ul>
+                                    <li onClick={this.logoutUser.bind(this)}>{t`Logout`}</li>
+                                </ul>
+                            </Dropdown>
+                        </div>
                     </div>
                 </div>
                 <div className="header-placeholder" />

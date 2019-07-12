@@ -31,7 +31,8 @@ $arrow-size: 6px;
     }
 
     &.closed {
-        display: none;
+        pointer-events: none;
+        opacity: 0;
     }
 
     &.open {
