@@ -98,7 +98,6 @@ public class UserAnswerResourceTest {
 
         Answer updatedAnswerInput = new Answer();
         updatedAnswerInput.setAnswer("this is an updated body of the answer");
-        updatedAnswerInput.setAccepted(false);
 
         userAnswerResource.updateAnswer(createdUserAuth, answer.getId(), updatedAnswerInput).toBlocking().singleOrDefault(null);
 

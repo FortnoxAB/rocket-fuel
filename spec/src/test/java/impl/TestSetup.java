@@ -152,7 +152,6 @@ public class TestSetup {
     @NotNull
     public static Answer getAnswer(String answer) {
         Answer answerObject = new Answer();
-        answerObject.setAccepted(false);
         answerObject.setVotes(3);
         answerObject.setAnswer(answer);
         return answerObject;

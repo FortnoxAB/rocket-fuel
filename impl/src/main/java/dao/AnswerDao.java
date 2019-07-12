@@ -10,8 +10,7 @@ public interface AnswerDao {
 
     @Update(
         "UPDATE answer " +
-        "SET accepted=true, " +
-            "accepted_at=NOW() " +
+        "SET accepted_at=NOW() " +
         "WHERE id=:answerId"
     )
     Observable<Integer> markAsAccepted(long answerId);
@@ -22,7 +21,6 @@ public interface AnswerDao {
             "answer.user_id, " +
             "answer.answer, " +
             "answer.created_at, " +
-            "answer.accepted, " +
             "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
@@ -41,7 +39,6 @@ public interface AnswerDao {
             "answer.user_id, " +
             "answer.answer, " +
             "answer.created_at, " +
-            "answer.accepted, " +
             "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
@@ -56,7 +53,7 @@ public interface AnswerDao {
         "FROM answer " +
             "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
         "WHERE question_id=:questionId " +
-        "ORDER BY answer.accepted desc, \"votes\" desc, answer.created_at desc"
+        "ORDER BY answer.accepted_at desc, \"votes\" desc, answer.created_at desc"
     )
     Observable<Answer> getAnswersWithUserVotes(long userId, long questionId);
 
@@ -67,7 +64,6 @@ public interface AnswerDao {
             "answer.user_id, " +
             "answer.answer, " +
             "answer.created_at, " +
-            "answer.accepted, " +
             "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
@@ -85,7 +81,6 @@ public interface AnswerDao {
             "(" +
                 "answer, " +
                 "created_at, " +
-                "accepted, " +
                 "question_id, " +
                 "user_id, " +
                 "slack_id" +
@@ -93,7 +88,6 @@ public interface AnswerDao {
             "VALUES(" +
                 ":answer.answer, " +
                 "NOW(), " +
-                "false, " +
                 ":questionId, " +
                 ":userId, " +
                 ":answer.slackId" +
@@ -104,7 +98,7 @@ public interface AnswerDao {
     @Update(
         "UPDATE answer SET " +
             "answer=:answer.answer, " +
-            "accepted=:answer.accepted " +
+            "accepted_at=:answer.acceptedAt " +
         "WHERE " +
             "answer.id=:answerId " +
             "AND answer.user_id=:userId")
@@ -116,7 +110,6 @@ public interface AnswerDao {
             "answer.user_id, " +
             "answer.answer, " +
             "answer.created_at, " +
-            "answer.accepted, " +
             "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +

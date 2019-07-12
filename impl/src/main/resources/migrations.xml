@@ -194,4 +194,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="remove_accepted_from_answer" author="rickard.blomkvist">
+        <update tableName="answer">
+            <column name="accepted_at" value="NOW()" />
+            <where>accepted = TRUE</where>
+        </update>
+        <dropColumn tableName="answer" columnName="accepted"/>
+    </changeSet>
+
 </databaseChangeLog>

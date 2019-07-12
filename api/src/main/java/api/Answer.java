@@ -2,12 +2,13 @@ package api;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.Objects;
+
+import static java.util.Objects.nonNull;
 
 public class Answer extends Post {
 
     private String answer;
-
-    private boolean accepted;
 
     private LocalDateTime acceptedAt;
 
@@ -22,11 +23,7 @@ public class Answer extends Post {
     }
 
     public boolean isAccepted() {
-        return accepted;
-    }
-
-    public void setAccepted(boolean accepted) {
-        this.accepted = accepted;
+        return nonNull(acceptedAt);
     }
 
     public long getQuestionId() {
