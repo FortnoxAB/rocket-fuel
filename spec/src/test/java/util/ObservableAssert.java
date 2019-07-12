@@ -19,14 +19,17 @@ public class ObservableAssert<T> extends AbstractAssert<ObservableAssert<T>, Obs
     }
 
     /**
-     * Verifies that the Observable receives a single non-null event and no errors.
+     * Verifies that the Observable receives a single event and no errors.
      * @return a new assertion object whose object under test is the received event
      */
-    public ObjectAssert<T> hasNoErrors() {
+    public ObjectAssert<T> hasExactlyOne() {
         List<T> values = actual.test().awaitTerminalEvent().assertNoErrors().getOnNextEvents();
         Assertions.assertThat(values)
-            .hasSize(1)
-            .doesNotContainNull();
+            .hasSize(1);
         return Assertions.assertThat(values.get(0));
+    }
+
+    public void isEmpty() {
+        actual.test().awaitTerminalEvent().assertNoValues();
     }
 }

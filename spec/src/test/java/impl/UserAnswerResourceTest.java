@@ -48,7 +48,6 @@ public class UserAnswerResourceTest {
 
     private static TestSetup testSetup;
 
-
     @BeforeClass
     public static void before() {
         testSetup = new TestSetup(postgreSQLContainer);
@@ -73,12 +72,15 @@ public class UserAnswerResourceTest {
     @Test
     public void shouldAddAnswerToQuestion() {
 
-        Auth createdUserAuth = newAuth();
-        Question question = createQuestion(createdUserAuth);
+        Auth     createdUserAuth = newAuth();
+        Question question        = createQuestion(createdUserAuth);
 
         Answer answer = createAnswer();
 
-        assertThat(answerResource.answerQuestion(createdUserAuth, answer, question.getId())).hasNoErrors();
+        assertThat(answerResource.answerQuestion(createdUserAuth, answer, question.getId()))
+            .hasExactlyOne()
+            .extracting(Answer::getId)
+            .isNotNull();
 
         Answer createdAnswer = getFirstAnswer(createdUserAuth, question);
         assertFalse(createdAnswer.isAccepted());
@@ -90,19 +92,21 @@ public class UserAnswerResourceTest {
     @Test
     public void shouldBeAbleToUpdateAnswer() {
 
-        Auth createdUserAuth = newAuth();
-        Question question = createQuestion(createdUserAuth);
+        Auth     createdUserAuth = newAuth();
+        Question question        = createQuestion(createdUserAuth);
 
         Answer answer = new Answer();
         answer.setAnswer("this is the body of the answer");
 
-        answerResource.answerQuestion(createdUserAuth, answer, question.getId()).toBlocking().singleOrDefault(null);
+        assertThat(answerResource.answerQuestion(createdUserAuth, answer, question.getId()))
+            .hasExactlyOne();
 
         Answer updatedAnswerInput = new Answer();
         updatedAnswerInput.setAnswer("this is an updated body of the answer");
         updatedAnswerInput.setAccepted(false);
 
-        userAnswerResource.updateAnswer(createdUserAuth, answer.getId(), updatedAnswerInput).toBlocking().singleOrDefault(null);
+        assertThat(userAnswerResource.updateAnswer(createdUserAuth, answer.getId(), updatedAnswerInput))
+            .isEmpty();
 
         Answer updatedAnswer = getFirstAnswer(createdUserAuth, question);
 
@@ -114,33 +118,36 @@ public class UserAnswerResourceTest {
     @Test
     public void shouldBeAbleToDeleteAnswer() {
         // given answers exists
-        Auth auth = newAuth();
+        Auth     auth     = newAuth();
         Question question = createQuestion(auth);
 
-        Answer answer = createAnswer();
-        Answer answer2 = createAnswer("title2","answer2");
+        Answer answer  = createAnswer();
+        Answer answer2 = createAnswer("title2", "answer2");
 
-        answerResource.answerQuestion(auth, answer, question.getId()).toBlocking().singleOrDefault(null);
-        answerResource.answerQuestion(auth, answer2, question.getId()).toBlocking().singleOrDefault(null);
+        assertThat(answerResource.answerQuestion(auth, answer, question.getId()))
+            .hasExactlyOne();
+        assertThat(answerResource.answerQuestion(auth, answer2, question.getId()))
+            .hasExactlyOne();
 
         Answer createdAnswer = getFirstAnswer(auth, question);
 
         // when we delete a answer
-        userAnswerResource.deleteAnswer(auth, createdAnswer.getId()).toBlocking().singleOrDefault(null);
+        assertThat(userAnswerResource.deleteAnswer(auth, createdAnswer.getId()))
+            .isEmpty();
 
         // then only the answer we want to delete should be deleted
         assertThatList(userAnswerResource.getAnswers(auth.getUserId(), question.getId()))
-            .hasNoErrors()
+            .hasExactlyOne()
             .hasSize(1);
     }
 
     @Test
     public void shouldNotDeleteAnswerThatDoesNotExist() {
-        Auth auth = newAuth();
+        Auth auth                = newAuth();
         long nonExistingAnswerId = 12;
 
         assertThatExceptionOfType(WebException.class)
-            .isThrownBy(() -> userAnswerResource.deleteAnswer(auth,  nonExistingAnswerId))
+            .isThrownBy(() -> userAnswerResource.deleteAnswer(auth, nonExistingAnswerId))
             .satisfies(e -> {
                 assertEquals(NOT_FOUND, e.getStatus());
                 assertEquals(ANSWER_NOT_FOUND, e.getError());
@@ -150,8 +157,8 @@ public class UserAnswerResourceTest {
     @Test
     public void shouldBeAbleToFetchAnswersForGivenUserAndQuestion() {
 
-        Auth authUserOne = newAuth();
-        Question question = createQuestion(authUserOne);
+        Auth     authUserOne = newAuth();
+        Question question    = createQuestion(authUserOne);
 
         Answer answer = createAnswer();
 
@@ -160,8 +167,10 @@ public class UserAnswerResourceTest {
         Question questionForUserTwo = createQuestion(authUserTwo);
 
         Answer answerForUserTwo = createAnswer();
-        answerResource.answerQuestion(authUserOne, answer, question.getId()).toBlocking().singleOrDefault(null);
-        answerResource.answerQuestion(authUserTwo, answerForUserTwo, questionForUserTwo.getId()).toBlocking().singleOrDefault(null);
+        assertThat(answerResource.answerQuestion(authUserOne, answer, question.getId()))
+            .hasExactlyOne();
+        assertThat(answerResource.answerQuestion(authUserTwo, answerForUserTwo, questionForUserTwo.getId()))
+            .hasExactlyOne();
 
         Answer createdAnswer = getFirstAnswer(authUserOne, question);
         assertFalse(createdAnswer.isAccepted());
@@ -173,12 +182,12 @@ public class UserAnswerResourceTest {
     @Test
     public void shouldYieldCorrectVotesWhenDownVotingAndUpVoting() {
 
-        Auth auth1 = newAuth();
-        Auth auth2 = newAuth();
-        Auth auth3 = newAuth();
+        Auth   auth1  = newAuth();
+        Auth   auth2  = newAuth();
+        Auth   auth3  = newAuth();
         Answer answer = createQuestionAndAnswer(newAuth());
 
-        voteAndAssertSuccess(userAnswerResource::downVoteAnswer, auth1, answer,-1);
+        voteAndAssertSuccess(userAnswerResource::downVoteAnswer, auth1, answer, -1);
         voteAndAssertFailure(userAnswerResource::downVoteAnswer, auth1, answer);
         voteAndAssertSuccess(userAnswerResource::upVoteAnswer, auth1, answer, 0);
         assertNoVote(auth1, answer);
@@ -199,7 +208,7 @@ public class UserAnswerResourceTest {
     @Test
     public void shouldThrowErrorWhenUserVotesOnOwnAnswer() {
 
-        Auth auth = newAuth();
+        Auth   auth   = newAuth();
         Answer answer = createQuestionAndAnswer(auth);
 
         voteAndAssertFailure(userAnswerResource::downVoteAnswer, auth, answer);
@@ -207,12 +216,12 @@ public class UserAnswerResourceTest {
     }
 
     private void voteAndAssertSuccess(BiFunction<Auth, Long, Observable<Void>> call, Auth auth, Answer answer, int expectedVotes) {
-        call.apply(auth, answer.getId()).test()
-            .awaitTerminalEvent()
-            .assertNoErrors();
-        assertThat(answerResource.getAnswerById(answer.getId()).test().awaitTerminalEvent().getOnNextEvents())
-           .extracting(Answer::getVotes)
-           .containsExactly(expectedVotes);
+        assertThat(call.apply(auth, answer.getId()))
+            .isEmpty();
+        assertThat(answerResource.getAnswerById(answer.getId()))
+            .hasExactlyOne()
+            .extracting(Answer::getVotes)
+            .isEqualTo(expectedVotes);
     }
 
     private void voteAndAssertFailure(BiFunction<Auth, Long, Observable<Void>> call, Auth auth, Answer answer) {
@@ -226,13 +235,13 @@ public class UserAnswerResourceTest {
     }
 
     private void assertNoVote(Auth auth, Answer answer) {
-        voteDao.findVote(auth.getUserId(), answer.getId()).test().awaitTerminalEvent()
-            .assertNoValues();
+        assertThat(voteDao.findVote(auth.getUserId(), answer.getId()))
+            .isEmpty();
     }
 
     private Answer createQuestionAndAnswer(Auth auth) {
         Question question = createQuestion(auth);
-        Answer answer = new Answer();
+        Answer   answer   = new Answer();
         answer.setAnswer("answer");
         return answerResource.answerQuestion(auth, answer, question.getId()).toBlocking().singleOrDefault(null);
     }
@@ -262,7 +271,7 @@ public class UserAnswerResourceTest {
 
     private Auth newAuth() {
         final String generatedEmail = UUID.randomUUID().toString() + "@fortnox.se";
-        User user = new User();
+        User         user           = new User();
         user.setEmail(generatedEmail);
         user.setName("Test Subject");
         userResource.createUser(null, user).toBlocking().single();
