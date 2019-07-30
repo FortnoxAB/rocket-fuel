@@ -224,7 +224,7 @@ public class QuestionResourceTest {
     public void shouldReturnErrorIfQueryFails() {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
-        when(questionDao.getQuestions(anyString(), null)).thenReturn(error(new WebException()));
+        when(questionDao.getQuestions(anyString(), any())).thenReturn(error(new WebException()));
         QuestionResource questionResource = new QuestionResourceImpl(questionDao);
 
         // when searching

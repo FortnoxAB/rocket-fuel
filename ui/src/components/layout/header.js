@@ -5,7 +5,6 @@ import { UserContext } from '../../usercontext';
 import Logo from '../utils/logo';
 import Coins from '../utils/coins';
 import MenuBar from './menubar';
-import InputField from '../forms/inputfield';
 import Dropdown from '../utils/dropdown';
 import Button from '../forms/button';
 import * as User from '../../models/user';
@@ -20,18 +19,6 @@ class Header extends React.Component {
             isCreateDropdownOpen: false
         }
     }
-
-    handleChange(node) {
-        const value = node.target.value;
-        this.setState({
-            quickSearch: value
-        });
-    }
-
-    getUser() {
-        return <span>{this.context.state.user.name}</span>
-    }
-
 
     navigate(url) {
         this.props.history.push(url);
@@ -74,25 +61,7 @@ class Header extends React.Component {
         });
     }
 
-    navigateToSearch(item) {
-        this.navigate(item.url);
-    }
-
     render() {
-        const items = [
-            {
-                value: 'Item',
-                url: '/questions'
-            },
-            {
-                value: 'Item2',
-                url: '/questions'
-            },
-            {
-                value: 'Item3',
-                url: '/questions'
-            }
-        ];
         return (
             <div>
                 <div className="header">
@@ -118,7 +87,6 @@ class Header extends React.Component {
                         </div>
                         <div className="user item">
                             <Button text onClick={this.toggleDropdown.bind(this)}>
-                                {/*this.getUser()*/}
                                 <img className="profile-picture" src={this.context.state.user.picture} alt="user" />
                             </Button>
                             <Dropdown

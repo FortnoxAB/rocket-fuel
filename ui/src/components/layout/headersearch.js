@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types';
 import { t } from 'ttag';
 import { withRouter } from 'react-router-dom';
 import InputField from '../forms/inputfield';
@@ -18,6 +17,7 @@ class HeaderSearch extends React.Component {
             searchResult: []
         };
     }
+
     handleChange(node) {
         clearTimeout(this.searchTimer);
         const value = node.target.value;
@@ -44,6 +44,7 @@ class HeaderSearch extends React.Component {
         this.setState({
             loadingSearch: true
         });
+
         this.searchTimer = setTimeout(() => {
             Question.searchQuestions(searchQuery, MAX_RESULTS).then((questions) => {
                 this.setState({
@@ -52,7 +53,6 @@ class HeaderSearch extends React.Component {
                 });
             });
         }, 700);
-
     }
 
     navigate(url) {
@@ -87,9 +87,11 @@ class HeaderSearch extends React.Component {
                 </div>
             );
         }
+
         if (this.state.searchResult.length === 0) {
             return null;
         }
+
         return (
             <ul className="field-auto-complete">
                 {this.state.searchResult.map(
@@ -124,13 +126,5 @@ class HeaderSearch extends React.Component {
         );
     }
 }
-
-HeaderSearch.defaultProps = {
-
-};
-
-HeaderSearch.propTypes = {
-
-};
 
 export default withRouter(HeaderSearch);

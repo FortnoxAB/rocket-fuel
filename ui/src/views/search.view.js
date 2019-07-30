@@ -82,10 +82,12 @@ class SearchView extends React.Component {
             return <div className="padded-vertical"><Loader /></div>;
         }
 
-        if (this.state.searchStr.trim() === "") {
-            return <div className="padded-bottom-large">
-                {t`What are you waiting for? Type something!`}
-            </div>;
+        if (this.state.searchStr.trim() === '') {
+            return (
+                <div className="padded-bottom-large text-center">
+                    {t`Search for a question`}
+                </div>
+            );
         }
 
         if (this.state.searchResult.length === 0 && this.state.searched) {
