@@ -56,7 +56,7 @@ class HomeView extends React.Component {
             );
         }
         return (
-            <div className="row spacing">
+            <div className="row flex-grow spacing">
                 <div className="col-2">
                     <div className="headline">{t`Latest questions`}</div>
                     {this.getLatestQuestions()}

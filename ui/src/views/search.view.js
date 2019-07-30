@@ -10,24 +10,34 @@ class SearchView extends React.Component {
     constructor(props) {
         super(props);
 
+        let initSearchStr = '';
+
+        if (props.match.params.query) {
+            initSearchStr = props.match.params.query;
+        }
+
         this.state = {
             questions: [],
-            searchStr: '',
+            searchStr: initSearchStr,
             loadingSearch: false,
             searchResult: [],
             searched: false
         };
+
+        if (initSearchStr.length > 0) {
+            this.search();
+        }
     }
 
     handleChange(node) {
+        clearTimeout(this.searchTimer);
         const value = node.target.value;
-        const name = node.target.name;
 
         const searchQuery = value.trim().toLowerCase();
         const oldSearchQuery = this.state.searchStr.trim().toLowerCase();
 
         this.setState({
-            searchStr:value
+            searchStr: value
         });
 
         if(oldSearchQuery === searchQuery) {
@@ -39,23 +49,26 @@ class SearchView extends React.Component {
                 loadingSearch: false,
                 searched: false
             });
-        } else {
-            this.setState({
-                searched: false,
-                loadingSearch: true
-            });
-            clearTimeout(this.searchTimer);
-            this.searchTimer = setTimeout(() => {
-                Question.searchQuestions(searchQuery).then((questions) => {
-                    console.log(questions);
-                    this.setState({
-                        searchResult: questions,
-                        loadingSearch: false,
-                        searched: true
-                    });
-                });
-            }, 700);
+            return;
         }
+
+        this.setState({
+            searched: false,
+            loadingSearch: true
+        });
+        this.searchTimer = setTimeout(() => {
+            this.search();
+        }, 700);
+    }
+
+    search() {
+        Question.searchQuestions(this.state.searchStr).then((questions) => {
+            this.setState({
+                searchResult: questions,
+                loadingSearch: false,
+                searched: true
+            });
+        });
     }
 
     renderQuestionRows() {
@@ -106,7 +119,7 @@ class SearchView extends React.Component {
                         name="searchStr"
                         value={this.state.searchStr}
                         autocomplete="off"
-                        rounded
+                        large
                         icon="fa-search"
                     />
                 </div>

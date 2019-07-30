@@ -64,6 +64,6 @@ public interface QuestionResource {
      * Acts like a universal search. It will return questions that can be related to the search term.
      */
     @GET
-    Observable<List<Question>> getQuestionsBySearchQuery(@QueryParam("search") String searchQuery);
+    Observable<List<Question>> getQuestionsBySearchQuery(@QueryParam("search") String searchQuery, @QueryParam("limit") Integer limit);
 
 }

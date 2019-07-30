@@ -216,7 +216,7 @@ class Post extends React.Component {
         return (
             <div className="button-group">
                 <Button color="secondary" text small onClick={this.editPost.bind(this)}>
-                    <i className="fa fa-pencil" /> {t`Edit`}
+                    <i className="fa fa-pen" /> {t`Edit`}
                 </Button>
                 <Button color="secondary" text small onClick={this.openDeleteDialog.bind(this)}>
                     <i className="fa fa-trash" /> {t`Delete`}

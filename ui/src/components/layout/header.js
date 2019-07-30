@@ -9,6 +9,7 @@ import InputField from '../forms/inputfield';
 import Dropdown from '../utils/dropdown';
 import Button from '../forms/button';
 import * as User from '../../models/user';
+import HeaderSearch from './headersearch';
 
 class Header extends React.Component {
     constructor(props) {
@@ -73,7 +74,25 @@ class Header extends React.Component {
         });
     }
 
+    navigateToSearch(item) {
+        this.navigate(item.url);
+    }
+
     render() {
+        const items = [
+            {
+                value: 'Item',
+                url: '/questions'
+            },
+            {
+                value: 'Item2',
+                url: '/questions'
+            },
+            {
+                value: 'Item3',
+                url: '/questions'
+            }
+        ];
         return (
             <div>
                 <div className="header">
@@ -82,20 +101,11 @@ class Header extends React.Component {
                               size="small" color="light" />
                         <MenuBar />
                     </div>
-                    <div className="flex-grow">
-                        {/*<InputField
-                        type="text"
-                        rounded
-                        icon="fa-search"
-                        label={t`Quick search`}
-                        value={this.state.quickSearch}
-                        onChange={this.handleChange.bind(this)}
-                    />*/}
-                    </div>
+                    <HeaderSearch />
                     <div>
                         <div className="item">
-                        <Button border small onClick={this.navigate.bind(this, '/create/question')}>
-                            <i className="fa fa-pen" /> {t`New question`}
+                        <Button text onClick={this.navigate.bind(this, '/create/question')}>
+                            <i className="fa fa-plus" />
                         </Button>
                             {/*<Dropdown
                                 isOpen={this.state.isCreateDropdownOpen}
@@ -107,8 +117,8 @@ class Header extends React.Component {
                             </Dropdown>*/}
                         </div>
                         <div className="user item">
-                            <Button color="primary" text onClick={this.toggleDropdown.bind(this)}>
-                                {this.getUser()}
+                            <Button text onClick={this.toggleDropdown.bind(this)}>
+                                {/*this.getUser()*/}
                                 <img className="profile-picture" src={this.context.state.user.picture} alt="user" />
                             </Button>
                             <Dropdown

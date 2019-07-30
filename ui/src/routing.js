@@ -115,7 +115,7 @@ class Routing extends React.Component {
                            render={() => <HomeView />} />
                     <Route path="/questions"
                            render={() => <QuestionsView />} />
-                    <Route path="/question/:id"
+                    <Route exact path="/question/:id"
                            render={() => <QuestionView />} />
                     <Route path="/bloglist/:id?"
                            render={() => <BlogListView />} />
@@ -123,7 +123,7 @@ class Routing extends React.Component {
                            render={() => <UsersView />} />
                     <Route path="/create/:type/:id?"
                            render={() => <CreateQuestionView />} />
-                    <Route path="/search"
+                    <Route path="/search/:query?"
                            render={() => <SearchView />} />
                     <Route path="/faq"
                            render={() => <FaqView />} />

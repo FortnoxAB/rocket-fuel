@@ -1,13 +1,14 @@
 $input-background-color: rgba($background-color-light, .8);
 $input-placeholder-color: rgba(contrast($background-color), .6);
 
-.input-wrap {
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-    position: relative;
-    flex-direction: column;
-    @include main-font('medium');
+.input {
+    .input-wrap {
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        position: relative;
+        flex-direction: column;
+    }
 
     &.error {
         input, textarea {
@@ -33,7 +34,7 @@ $input-placeholder-color: rgba(contrast($background-color), .6);
         transition: .2s;
         position: absolute;
         display: block;
-        top: 15px;
+        top: 11px;
         left: 15px;
     }
 
@@ -59,7 +60,7 @@ $input-placeholder-color: rgba(contrast($background-color), .6);
 
     input, textarea {
         vertical-align: middle;
-        padding: 15px;
+        padding: 10px;
         transition: .2s;
         width: 100%;
         background-color: $input-background-color;
@@ -81,33 +82,60 @@ $input-placeholder-color: rgba(contrast($background-color), .6);
             color: $primary-color;
             background: $background-color-light;
             padding: 5px;
-            transform: scale(0.7) translate(0, calc((-200%) + 1em));
+            transform: scale(0.7) translate(0, -120%);
+        }
+    }
+
+    &.lg {
+
+        input, textarea, .label, .fa {
+            font-size: 1.5em;
+        }
+
+        &.has-icon {
+            input, textarea {
+                padding-left: 50px
+            }
+
+            .label {
+                left: 50px;
+            }
+
+            .fa {
+                left: 20px;
+            }
+        }
+    }
+}
+
+
+.field-auto-complete {
+    position: absolute;
+    width: 100%;
+    top: 100%;
+    margin-top: 4px;
+    border-radius: $roundness;
+    @include material-shadow(2);
+    background-color: $background-color-light;
+
+    li {
+        padding: 10px;
+        cursor: pointer;
+
+        &:not(:first-child) {
+            border-top: 1px solid $border-color;
+        }
+
+        &:hover {
+            background-color: contrast($background-color-light, $gray-dark-even-more, $gray-light-even-more);
+        }
+
+        &.more {
+            background-color: contrast($background-color-light, $gray-dark-even-more, $gray-light-even-more);
         }
     }
 }
 
 .markdown-text {
     padding-bottom: 8px;
-}
-
-.lg {
-    font-size: 1.6em;
-
-    &.has-icon {
-        input, textarea {
-            padding-left: 50px
-        }
-
-        .label {
-            left: 50px;
-        }
-
-        &.active .label {
-            font-size: .5em;
-        }
-
-        .fa {
-            left: 20px;
-        }
-    }
 }

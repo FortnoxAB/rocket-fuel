@@ -28,7 +28,7 @@ class InputField extends React.Component {
     }
 
     getClassName() {
-        let className = `input-wrap ${this.props.className}`;
+        let className = `input ${this.props.className}`;
         if (this.props.errorMessage) {
             className = `${className} error`;
         }
@@ -41,33 +41,10 @@ class InputField extends React.Component {
         if (this.state.active) {
             className = `${className} active`;
         }
-        return className;
-    }
-
-    printDropDown() {
-        if (this.props.autoCompleteItems.length === 0) {
-            return null;
+        if (this.props.large) {
+            className = `${className} lg`;
         }
-        return (
-            <ul className="field-auto-complete">
-                {this.props.autoCompleteItems.filter(
-                    (item) => {
-                        return item[this.props.autoCompleteKey].toLowerCase().includes(this.props.value.toLowerCase())
-                    }).map(
-                    (item, index) => {
-                        return (
-                            <li key={index} onClick={this.onClickAutocompleteItem.bind(this, item)}>
-                                {item[this.props.autoCompleteKey]}
-                            </li>
-                        );
-                    })
-                }
-            </ul>
-        );
-    }
-
-    onClickAutocompleteItem(item) {
-        this.props.onClickAutocompleteItem(item);
+        return className;
     }
 
     onFocus() {
@@ -159,14 +136,13 @@ class InputField extends React.Component {
 
     render() {
         return (
-            <div>
+            <div className={this.getClassName()}>
                 {this.renderMarkdown()}
-                <div className={this.getClassName()} ref={node => this.node = node}>
+                <div className="input-wrap">
                     {this.getLabel()}
                     {this.getIcon()}
                     {this.getInputType()}
                     {this.printErrorMessage()}
-                    {this.printDropDown()}
                 </div>
             </div>
         );
@@ -190,16 +166,13 @@ InputField.defaultProps = {
     disabled: false,
     errorMessage: null,
     className: '',
-    autoCompleteItems: [],
-    autoCompleteKey: '',
-    onClickAutocompleteItem: () => {
-    },
     endButton: null,
     rounded: false,
     icon: '',
     validate: () => {
     },
-    markdown: false
+    markdown: false,
+    large: false
 };
 
 InputField.propTypes = {
@@ -215,14 +188,12 @@ InputField.propTypes = {
     disabled: PropTypes.bool,
     errorMessage: PropTypes.string,
     className: PropTypes.string,
-    autoCompleteItems: PropTypes.array,
-    autoCompleteKey: PropTypes.string,
-    onClickAutocompleteItem: PropTypes.func,
     endButton: PropTypes.string,
     rounded: PropTypes.bool,
     icon: PropTypes.string,
     validate: PropTypes.func,
-    markdown: PropTypes.bool
+    markdown: PropTypes.bool,
+    large: PropTypes.bool
 };
 
 export default InputField;

@@ -6,12 +6,18 @@
 }
 
 .main {
+    flex-grow: 1;
     display: flex;
     justify-content: center;
 
     > .content {
+        display: flex;
         width: 90vw;
         padding: 35px;
+
+        > * {
+            flex-grow: 1;
+        }
     }
 }
 
@@ -79,4 +85,8 @@
 
 .hidden-blocking {
     opacity: 0;
+}
+
+.relative {
+    position: relative;
 }

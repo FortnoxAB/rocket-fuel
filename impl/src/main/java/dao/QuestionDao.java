@@ -192,6 +192,8 @@ public interface QuestionDao {
             "answer.answer  ILIKE ('%' || :search || '%') " +
         "ORDER BY  " +
             "question.votes desc, " +
-            "question.created_at desc")
-    Observable<Question> getQuestions(String search);
+            "question.created_at desc " +
+        "LIMIT " +
+            ":limit")
+    Observable<Question> getQuestions(String search, Integer limit);
 }
