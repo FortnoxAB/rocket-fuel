@@ -4,7 +4,7 @@ import rx.Observable;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 
-public interface VoteDao {
+public interface AnswerVoteDao {
 
     @Query(
         "SELECT " +
@@ -17,7 +17,7 @@ public interface VoteDao {
             "answer_vote.user_id = :userId AND " +
             "answer_vote.answer_id = :answerId"
     )
-    Observable<Vote> findVote(long userId, long answerId);
+    Observable<AnswerVote> findVote(long userId, long answerId);
 
     @Update(
         "INSERT INTO " +
@@ -26,19 +26,17 @@ public interface VoteDao {
             "user_id, " +
             "answer_id, " +
             "value, " +
-            "created_at, " +
-            "modified_at" +
+            "created_at" +
         ")" +
         "VALUES" +
         "(" +
             ":vote.userId, " +
             ":vote.answerId, " +
             ":vote.value, " +
-            "NOW(), " +
             "NOW()" +
         ")"
     )
-    Observable<Integer> createVote(Vote vote);
+    Observable<Integer> createVote(AnswerVote vote);
 
     @Update(
         "DELETE FROM " +

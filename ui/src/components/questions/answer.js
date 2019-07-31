@@ -23,7 +23,6 @@ class Answer extends React.Component {
                 onEdit={this.props.onEditAnswer.bind(this)}
                 enableAccept={this.props.enableAccept}
                 onAnswer={this.props.onAnswer.bind(this)}
-                enableVote={true}
                 onUpVote={this.props.onUpVote.bind(this)}
                 onDownVote={this.props.onDownVote.bind(this)}
                 allowUpVote={this.isVoteAllowed(1)}

@@ -179,11 +179,6 @@ class Post extends React.Component {
     }
 
     renderVotes() {
-
-        if(!this.props.enableVote) {
-            return null;
-        }
-
         return (
             <>
                 {this.renderUpVote()}
@@ -206,7 +201,7 @@ class Post extends React.Component {
     renderVote(isVoteAllowed, onVote, faClass) {
         return (
             <div className={`vote${isVoteAllowed ? '' : '-disabled'}`}>
-                <i onClick={() => `${isVoteAllowed ? onVote(this.props.answerId) : ''}`} className={'fa ' + faClass}/>
+                <i onClick={() => `${isVoteAllowed ? onVote(this.props.answerId || this.props.questionId) : ''}`} className={'fa ' + faClass}/>
             </div>
         )
     }
@@ -319,7 +314,6 @@ Post.defaultProps = {
     onDelete: () => {},
     onEdit: () => {},
     enableAccept: false,
-    enableVote: false,
     onUpVote: () => {},
     onDownVote: () => {},
     allowUpVote: false,

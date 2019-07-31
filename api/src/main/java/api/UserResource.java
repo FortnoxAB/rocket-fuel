@@ -12,7 +12,7 @@
  import javax.ws.rs.PathParam;
  import javax.ws.rs.QueryParam;
 
-@Path("/api/user")
+@Path("/api/users")
 public interface UserResource {
 
     /**

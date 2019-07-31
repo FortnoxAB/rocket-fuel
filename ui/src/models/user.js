@@ -2,7 +2,7 @@ import ApiFetch from '../components/utils/apifetch';
 
 export function getUser(id) {
     const options = {
-        url: `/api/user/id/${id}`
+        url: `/api/users/id/${id}`
     };
 
     return ApiFetch(options);
@@ -10,7 +10,7 @@ export function getUser(id) {
 
 export function signIn(token) {
     const options = {
-        url: '/api/user/authenticate/',
+        url: '/api/users/authenticate/',
         method: 'POST',
         headers: {
             authorizationToken: token
@@ -22,7 +22,7 @@ export function signIn(token) {
 
 export function signOut() {
     const options = {
-        url: '/api/user/authenticate/',
+        url: '/api/users/authenticate/',
         method: 'DELETE'
     };
 
