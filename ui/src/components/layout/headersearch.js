@@ -35,7 +35,6 @@ class HeaderSearch extends React.Component {
     }
 
     handleChange(node) {
-        clearTimeout(this.searchTimer);
         const value = node.target.value;
         const searchQuery = value.trim().toLowerCase();
         const oldSearchQuery = this.state.searchStr.trim().toLowerCase();
@@ -47,6 +46,7 @@ class HeaderSearch extends React.Component {
         if(oldSearchQuery === searchQuery) {
             return;
         }
+        clearTimeout(this.searchTimer);
 
         if(searchQuery === '') {
             this.setState({
