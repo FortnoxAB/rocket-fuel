@@ -5,7 +5,7 @@
     <groupId>se.fortnox</groupId>
     <artifactId>rocket-fuel</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.15-SNAPSHOT</version>
+    <version>0.1.15</version>
     <modules>
         <module>api</module>
         <module>impl</module>
@@ -34,7 +34,7 @@
         <connection>scm:git:git@github.com:FortnoxAB/rocket-fuel.git</connection>
         <developerConnection>scm:git:git@github.com:FortnoxAB/rocket-fuel.git</developerConnection>
         <url>https://github.com/FortnoxAB/rocket-fuel/tree/master</url>
-      <tag>HEAD</tag>
+      <tag>rocket-fuel-0.1.15</tag>
   </scm>
 
     <licenses>
