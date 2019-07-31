@@ -5,7 +5,6 @@ import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
 import api.User;
-import api.UserAnswerResource;
 import api.auth.Auth;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
@@ -38,25 +37,25 @@ public class ReactionMessageHandler implements SlackMessageHandler {
     static final String CHANNEL          = "channel";
     static final String THREAD           = "ts";
 
-    private static final ImmutableList      HANDLED_TYPES   = ImmutableList.of(REACTION_ADDED, REACTION_REMOVED);
-    private static final ImmutableList      POSITIVE_EMOJIS = ImmutableList.of("+1");
-    private static final ImmutableList      NEGATIVE_EMOJIS = ImmutableList.of("-1");
-    private final        QuestionResource   questionResource;
-    private final        AnswerResource     answerResource;
-    private final        UserAnswerResource userAnswerResource;
-    private final        SlackResource      slackResource;
+    private static final ImmutableList        HANDLED_TYPES   = ImmutableList.of(REACTION_ADDED, REACTION_REMOVED);
+    private static final ImmutableList        POSITIVE_EMOJIS = ImmutableList.of("+1");
+    private static final ImmutableList        NEGATIVE_EMOJIS = ImmutableList.of("-1");
+    private final        QuestionResource     questionResource;
+    private final        AnswerResource       answerResource;
+    private final        SlackResource        slackResource;
+    private final        QuestionResource userQuestionResource;
 
     @Inject
     public ReactionMessageHandler(SlackResource slackResource,
         QuestionResource questionResource,
         AnswerResource answerResource,
-        UserAnswerResource userAnswerResource
+        QuestionResource userQuestionResource
     ) {
 
         this.slackResource = slackResource;
         this.questionResource = questionResource;
         this.answerResource = answerResource;
-        this.userAnswerResource = userAnswerResource;
+        this.userQuestionResource = userQuestionResource;
     }
 
     @Override
@@ -95,16 +94,17 @@ public class ReactionMessageHandler implements SlackMessageHandler {
                         return error(throwable);
                     })
                     .cast(Question.class)
-                    .flatMap(voteOnQuestion(upVote, threadId)))
+                    .flatMap(voteOnQuestion(upVote, user)))
             );
     }
 
-    private Func1<Question, Observable<Void>> voteOnQuestion(boolean upVote, String threadId) {
+    private Func1<Question, Observable<Void>> voteOnQuestion(boolean upVote, User user) {
+        Auth auth = new Auth(user.getId());
         return question -> {
             if (upVote) {
-                return questionResource.upVoteQuestion(threadId);
+                return userQuestionResource.upVoteQuestion(auth, question.getId());
             }
-            return questionResource.downVoteQuestion(threadId);
+            return userQuestionResource.downVoteQuestion(auth, question.getId());
         };
     }
 
@@ -112,9 +112,9 @@ public class ReactionMessageHandler implements SlackMessageHandler {
         Auth auth = new Auth(user.getId());
         return answer -> {
             if (upVote) {
-                return userAnswerResource.upVoteAnswer(auth, answer.getId());
+                return answerResource.upVoteAnswer(auth, answer.getId());
             }
-            return userAnswerResource.downVoteAnswer(auth, answer.getId());
+            return answerResource.downVoteAnswer(auth, answer.getId());
         };
     }
 

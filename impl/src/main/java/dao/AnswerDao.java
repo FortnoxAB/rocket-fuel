@@ -10,7 +10,7 @@ public interface AnswerDao {
 
     @Update(
         "UPDATE answer " +
-        "SET accepted=true " +
+        "SET accepted_at=NOW() " +
         "WHERE id=:answerId"
     )
     Observable<Integer> markAsAccepted(long answerId);
@@ -21,7 +21,7 @@ public interface AnswerDao {
             "answer.user_id, " +
             "answer.answer, " +
             "answer.created_at, " +
-            "answer.accepted, " +
+            "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
             "answer.question_id, " +
@@ -29,9 +29,9 @@ public interface AnswerDao {
             "(SELECT COALESCE(SUM(answer_vote.value), 0) FROM answer_vote WHERE answer_vote.answer_id = answer.id) AS votes " +
         "FROM answer " +
             "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
-        "WHERE user_id=:userId AND question_id=:questionId"
+        "WHERE question_id=:questionId"
     )
-    Observable<Answer> getAnswers(long userId, long questionId);
+    Observable<Answer> getAnswers(long questionId);
 
     @Query(
         "SELECT " +
@@ -39,7 +39,7 @@ public interface AnswerDao {
             "answer.user_id, " +
             "answer.answer, " +
             "answer.created_at, " +
-            "answer.accepted, " +
+            "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
             "answer.question_id, " +
@@ -53,7 +53,7 @@ public interface AnswerDao {
         "FROM answer " +
             "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
         "WHERE question_id=:questionId " +
-        "ORDER BY answer.accepted desc, \"votes\" desc, answer.created_at desc"
+        "ORDER BY answer.accepted_at desc, \"votes\" desc, answer.created_at desc"
     )
     Observable<Answer> getAnswersWithUserVotes(long userId, long questionId);
 
@@ -64,7 +64,7 @@ public interface AnswerDao {
             "answer.user_id, " +
             "answer.answer, " +
             "answer.created_at, " +
-            "answer.accepted, " +
+            "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
             "answer.question_id, " +
@@ -81,7 +81,6 @@ public interface AnswerDao {
             "(" +
                 "answer, " +
                 "created_at, " +
-                "accepted, " +
                 "question_id, " +
                 "user_id, " +
                 "slack_id" +
@@ -89,7 +88,6 @@ public interface AnswerDao {
             "VALUES(" +
                 ":answer.answer, " +
                 "NOW(), " +
-                "false, " +
                 ":questionId, " +
                 ":userId, " +
                 ":answer.slackId" +
@@ -100,28 +98,11 @@ public interface AnswerDao {
     @Update(
         "UPDATE answer SET " +
             "answer=:answer.answer, " +
-            "accepted=:answer.accepted " +
+            "accepted_at=:answer.acceptedAt " +
         "WHERE " +
             "answer.id=:answerId " +
             "AND answer.user_id=:userId")
     Observable<Void> updateAnswer(long userId, long answerId, Answer answer);
-
-    static final String S = "SELECT " +
-        "answer.id, " +
-        "answer.user_id, " +
-        "answer.answer, " +
-        "answer.created_at, " +
-        "answer.accepted, " +
-        "\"user\".picture, " +
-        "answer.slack_id, " +
-        "answer.question_id, " +
-        "\"user\".name AS created_by, " +
-        "question.user_id AS \"question.user_id\", " +
-        "(SELECT COALESCE(SUM(answer_vote.value), 0) FROM answer_vote WHERE answer_vote.answer_id = answer.id) AS votes " +
-        "FROM answer " +
-        "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
-        "INNER JOIN question on question.id = answer.question_id " +
-        "WHERE answer.id=:id";
 
     @Query(
         "SELECT " +
@@ -129,7 +110,7 @@ public interface AnswerDao {
             "answer.user_id, " +
             "answer.answer, " +
             "answer.created_at, " +
-            "answer.accepted, " +
+            "answer.accepted_at, " +
             "\"user\".picture, " +
             "answer.slack_id, " +
             "answer.question_id, " +
