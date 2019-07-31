@@ -22,7 +22,7 @@ $gray-dark-more: #424242;
 $gray-dark-even-more: #212121;
 
 
-$border-color: contrast($background-color-light, $gray-dark-more, $gray-light-more);
+$border-color: contrast($background-color-light, $gray-dark, $gray-light-more);
 
 $notification-error: #EF5350;
 $notification-success: #4CAF50;

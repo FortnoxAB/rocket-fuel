@@ -1,4 +1,4 @@
-$input-background-color: rgba($background-color-light, .8);
+$input-background-color: $background-color;
 $input-placeholder-color: rgba(contrast($background-color), .6);
 
 .input {

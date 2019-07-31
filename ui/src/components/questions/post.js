@@ -71,6 +71,9 @@ class Post extends React.Component {
     }
 
     renderAnswered() {
+        if (!this.props.answered) {
+            return null;
+        }
         return (
             <Certificate active={this.props.answered} />
         );
@@ -216,10 +219,10 @@ class Post extends React.Component {
         return (
             <div className="button-group">
                 <Button color="secondary" text small onClick={this.editPost.bind(this)}>
-                    <i className="fa fa-pen" /> {t`Edit`}
+                    {t`Edit`}
                 </Button>
                 <Button color="secondary" text small onClick={this.openDeleteDialog.bind(this)}>
-                    <i className="fa fa-trash" /> {t`Delete`}
+                    {t`Delete`}
                 </Button>
             </div>
         );
@@ -269,7 +272,7 @@ class Post extends React.Component {
                     {this.renderVotes()}
                     {this.renderAccepted()}
                     {this.renderAnswered()}
-                    {this.renderAwarded()}
+                    {/*this.renderAwarded()*/}
                 </div>
                 <div className="flex-grow">
                     <div className="post-body">

@@ -209,7 +209,7 @@ class CreateQuestionView extends React.Component {
 
         return (
             <div>
-                <h1>{this.renderTitle()}</h1>
+                <div className="headline">{this.renderTitle()}</div>
                 <div className="form">
                     <InputField
                         className="padded-bottom"

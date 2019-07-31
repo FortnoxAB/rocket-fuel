@@ -16,6 +16,22 @@ class HeaderSearch extends React.Component {
             loadingSearch: false,
             searchResult: []
         };
+
+        this.onClick = this.onClickCtx.bind(this);
+    }
+
+    componentDidMount() {
+        window.addEventListener('click', this.onClick);
+    }
+
+    onClickCtx(e) {
+        if (!this.node.contains(e.target)) {
+            this.hideSearchResults();
+        }
+    }
+
+    componentWillUnmount() {
+        removeEventListener('click', this.onClick);
     }
 
     handleChange(node) {
@@ -57,7 +73,7 @@ class HeaderSearch extends React.Component {
 
     navigate(url) {
         this.setState({
-           searchStr: '',
+            searchStr: '',
             searchResult: [],
         });
         this.props.history.push(url);
@@ -110,16 +126,15 @@ class HeaderSearch extends React.Component {
 
     render() {
         return (
-            <div className="relative quick-search">
+            <div className="relative quick-search" ref={(node) => {this.node = node}}>
                 <InputField
                     type="text"
                     icon="fa-search"
-                    label={t`Quick search`}
+                    label={t`Quicksearch`}
                     small
                     value={this.state.searchStr}
                     onChange={this.handleChange.bind(this)}
                     className="flex-grow"
-                    onBlur={this.hideSearchResults.bind(this)}
                 />
                 {this.renderDropDown()}
             </div>

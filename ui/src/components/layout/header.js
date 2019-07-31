@@ -6,6 +6,7 @@ import Logo from '../utils/logo';
 import Coins from '../utils/coins';
 import MenuBar from './menubar';
 import Dropdown from '../utils/dropdown';
+import Tooltip from '../utils/tooltip';
 import Button from '../forms/button';
 import * as User from '../../models/user';
 import HeaderSearch from './headersearch';
@@ -73,9 +74,11 @@ class Header extends React.Component {
                     <HeaderSearch />
                     <div>
                         <div className="item">
-                        <Button text onClick={this.navigate.bind(this, '/create/question')}>
-                            <i className="fa fa-plus" />
-                        </Button>
+                        <Tooltip content={t`New question`}>
+                            <Button text onClick={this.navigate.bind(this, '/create/question')}>
+                                <i className="fa fa-plus" />
+                            </Button>
+                        </Tooltip>
                             {/*<Dropdown
                                 isOpen={this.state.isCreateDropdownOpen}
                                 close={this.closeCreateDropdown.bind(this)}
@@ -86,9 +89,11 @@ class Header extends React.Component {
                             </Dropdown>*/}
                         </div>
                         <div className="user item">
-                            <Button text onClick={this.toggleDropdown.bind(this)}>
-                                <img className="profile-picture" src={this.context.state.user.picture} alt="user" />
-                            </Button>
+                            <Tooltip content={this.context.state.user.name}>
+                                <Button text onClick={this.toggleDropdown.bind(this)}>
+                                    <img className="profile-picture" src={this.context.state.user.picture} alt="user" />
+                                </Button>
+                            </Tooltip>
                             <Dropdown
                                 isOpen={this.state.isDropdownOpen}
                                 close={this.closeUserDropdown.bind(this)}
