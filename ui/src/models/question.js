@@ -24,9 +24,9 @@ export function getQuestionById(id) {
     return ApiFetch(options);
 }
 
-export function searchQuestions(param) {
+export function searchQuestions(param, limit = 50) {
     const options = {
-        url: `/api/questions?search=${param}`
+        url: `/api/questions?search=${param}&limit=${limit}`
     };
 
     return ApiFetch(options);

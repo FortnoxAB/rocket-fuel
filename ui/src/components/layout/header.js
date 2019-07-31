@@ -5,10 +5,11 @@ import { UserContext } from '../../usercontext';
 import Logo from '../utils/logo';
 import Coins from '../utils/coins';
 import MenuBar from './menubar';
-import InputField from '../forms/inputfield';
 import Dropdown from '../utils/dropdown';
+import Tooltip from '../utils/tooltip';
 import Button from '../forms/button';
 import * as User from '../../models/user';
+import HeaderSearch from './headersearch';
 
 class Header extends React.Component {
     constructor(props) {
@@ -19,18 +20,6 @@ class Header extends React.Component {
             isCreateDropdownOpen: false
         }
     }
-
-    handleChange(node) {
-        const value = node.target.value;
-        this.setState({
-            quickSearch: value
-        });
-    }
-
-    getUser() {
-        return <span>{this.context.state.user.name}</span>
-    }
-
 
     navigate(url) {
         this.props.history.push(url);
@@ -82,21 +71,14 @@ class Header extends React.Component {
                               size="small" color="light" />
                         <MenuBar />
                     </div>
-                    <div className="flex-grow">
-                        {/*<InputField
-                        type="text"
-                        rounded
-                        icon="fa-search"
-                        label={t`Quick search`}
-                        value={this.state.quickSearch}
-                        onChange={this.handleChange.bind(this)}
-                    />*/}
-                    </div>
+                    <HeaderSearch />
                     <div>
                         <div className="item">
-                        <Button border small onClick={this.navigate.bind(this, '/create/question')}>
-                            <i className="fa fa-pen" /> {t`New question`}
-                        </Button>
+                        <Tooltip content={t`New question`}>
+                            <Button text onClick={this.navigate.bind(this, '/create/question')}>
+                                <i className="fa fa-plus" />
+                            </Button>
+                        </Tooltip>
                             {/*<Dropdown
                                 isOpen={this.state.isCreateDropdownOpen}
                                 close={this.closeCreateDropdown.bind(this)}
@@ -107,10 +89,11 @@ class Header extends React.Component {
                             </Dropdown>*/}
                         </div>
                         <div className="user item">
-                            <Button color="primary" text onClick={this.toggleDropdown.bind(this)}>
-                                {this.getUser()}
-                                <img className="profile-picture" src={this.context.state.user.picture} alt="user" />
-                            </Button>
+                            <Tooltip content={this.context.state.user.name}>
+                                <Button text onClick={this.toggleDropdown.bind(this)}>
+                                    <img className="profile-picture" src={this.context.state.user.picture} alt="user" />
+                                </Button>
+                            </Tooltip>
                             <Dropdown
                                 isOpen={this.state.isDropdownOpen}
                                 close={this.closeUserDropdown.bind(this)}

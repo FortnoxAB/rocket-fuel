@@ -41,11 +41,17 @@ class QuestionRow extends React.Component {
 
     printCertificate() {
         const hasAccepted = this.props.question.answerAccepted;
+        if (!hasAccepted) {
+            return null;
+        }
         return <Certificate active={hasAccepted} />;
     }
 
     printTrophy() {
         const hasEnoughVotes = this.props.question.votes > 20;
+        if (!hasEnoughVotes) {
+            return null;
+        }
         return <Trophy active={hasEnoughVotes} />;
     }
 

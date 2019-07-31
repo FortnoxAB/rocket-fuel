@@ -1,11 +1,16 @@
-function ApiFetch(options = {}) {
+import * as User from '../../models/user';
+
+const RETRIES = 2;
+
+function ApiFetch(options = {}, tryCount = 0) {
     const defaultOptions = {
         url: '',
         headers: {},
         method: 'GET',
         body: null
     };
-    const headers        = {
+
+    const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': 'true'
     };
@@ -25,8 +30,16 @@ function ApiFetch(options = {}) {
         delete fetchOptions.body;
     }
 
-    return fetch(`${options.url}`, fetchOptions)
+    return fetch(options.url, fetchOptions)
         .then((response) => {
+            if (!response.ok && response.status === 401) {
+                console.log('401');
+                if (tryCount < RETRIES) {
+                    return AuthWithGoogle().then(() => {
+                        return ApiFetch(options, tryCount+1);
+                    });
+                }
+            }
             if (!response.ok) {
                 throw response;
             }
@@ -40,6 +53,16 @@ function ApiFetch(options = {}) {
         }).catch((e) => {
             throw e;
         });
+}
+
+function AuthWithGoogle() {
+    let token = null;
+    const GoogleAuth = gapi.auth2.getAuthInstance();
+    if (GoogleAuth.isSignedIn.get()) {
+        const GoogleUser = GoogleAuth.currentUser.get();
+        token = GoogleUser.getAuthResponse().id_token;
+    }
+    return User.signIn(token);
 }
 
 export default ApiFetch;

@@ -93,11 +93,14 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<List<Question>> getQuestionsBySearchQuery(String searchQuery) {
+    public Observable<List<Question>> getQuestionsBySearchQuery(String searchQuery, Integer limit) {
+        if (limit == null) {
+            limit = 50;
+        }
         if (isNullOrEmpty(searchQuery)) {
             return just(emptyList());
         }
-        return questionDao.getQuestions(searchQuery)
+        return questionDao.getQuestions(searchQuery, limit)
             .onErrorResumeNext(e -> {
                 LOG.error("failed to search for questions with search query: [" + searchQuery + "]");
                 return error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS ,e));

@@ -35,12 +35,18 @@ class QuestionView extends React.Component {
         });
     }
 
-    componentDidMount() {
-        const questionId = this.props.match.params.id;
-        this.loadQuestionAndAnswers(questionId);
+    componentDidUpdate(prevProps) {
+        if (prevProps.match.params.id !== this.props.match.params.id) {
+            this.loadQuestionAndAnswers();
+        }
     }
 
-    loadQuestionAndAnswers(questionId) {
+    componentDidMount() {
+        this.loadQuestionAndAnswers();
+    }
+
+    loadQuestionAndAnswers() {
+        const questionId = this.props.match.params.id;
         Promise.all([
             QuestionApi.getQuestionById(questionId),
             AnswerApi.getAnswersByQuestionId(questionId)

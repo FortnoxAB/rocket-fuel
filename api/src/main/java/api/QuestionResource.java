@@ -54,7 +54,7 @@ public interface QuestionResource {
      */
     @GET
     @Path("questions")
-    Observable<List<Question>> getQuestionsBySearchQuery(@QueryParam("search") String searchQuery);
+    Observable<List<Question>> getQuestionsBySearchQuery(@QueryParam("search") String searchQuery, @QueryParam("limit") Integer limit);
 
 
     /**

@@ -127,7 +127,7 @@ public class QuestionResourceTest {
         Question question = createQuestionAndAnswer(mockAuth);
 
         // when searching with a query that matches the body of the answer
-        List<Question> questions = questionResource.getQuestionsBySearchQuery("body").toBlocking().single();
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("body", null).toBlocking().single();
 
         // then the question should be returned
         assertEquals(1, questions.size());
@@ -142,7 +142,7 @@ public class QuestionResourceTest {
         Question question = createQuestionAndAnswer(mockAuth);
 
         // when searching with a query that matches the body of the answer
-        List<Question> questions = questionResource.getQuestionsBySearchQuery("Answer body").toBlocking().single();
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("Answer body", null).toBlocking().single();
 
         // then the question should be returned that matches the answer (case insensitive )
         assertEquals(1, questions.size());
@@ -178,7 +178,7 @@ public class QuestionResourceTest {
         createQuestionAndAnswer(mockAuth);
 
         // when searching with non matching query
-        List<Question> questions = questionResource.getQuestionsBySearchQuery("no results for this query").toBlocking().single();
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("no results for this query", null).toBlocking().single();
 
         // then no questions should be returned
         assertThat(questions).isEmpty();
@@ -192,7 +192,7 @@ public class QuestionResourceTest {
         createQuestionAndAnswer(mockAuth);
 
         // when searching with non matching query
-        List<Question> questions = questionResource.getQuestionsBySearchQuery("").toBlocking().single();
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("", null).toBlocking().single();
 
         // then no questions should be returned
         assertThat(questions).isEmpty();
@@ -206,7 +206,7 @@ public class QuestionResourceTest {
         createQuestionAndAnswer(mockAuth);
 
         // when searching with no query
-        List<Question> questions = questionResource.getQuestionsBySearchQuery(null).toBlocking().single();
+        List<Question> questions = questionResource.getQuestionsBySearchQuery(null, null).toBlocking().single();
 
         // then no questions should be returned
         assertThat(questions).isEmpty();
@@ -224,7 +224,7 @@ public class QuestionResourceTest {
         Answer answerNotCreatedByOwner = createAnswer(secondUserAuth, questionId, "2");
 
         // when searching by the answer that is not created by the question owner
-        List<Question> searchResult = questionResource.getQuestionsBySearchQuery(answerNotCreatedByOwner.getAnswer()).toBlocking().single();
+        List<Question> searchResult = questionResource.getQuestionsBySearchQuery(answerNotCreatedByOwner.getAnswer(), null).toBlocking().single();
 
         // then the question should be returned
         assertThat(searchResult.size()).isEqualTo(1);
@@ -234,11 +234,11 @@ public class QuestionResourceTest {
     public void shouldReturnErrorIfQueryFails() {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
-        when(questionDao.getQuestions(anyString())).thenReturn(error(new WebException()));
+        when(questionDao.getQuestions(anyString(), any())).thenReturn(error(new WebException()));
         QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao);
 
         // when searching
-        Observable<List<Question>> questions = questionResource.getQuestionsBySearchQuery("explode");
+        Observable<List<Question>> questions = questionResource.getQuestionsBySearchQuery("explode", null);
 
         // we should get a exception back
         assertThatExceptionOfType(WebException.class)
