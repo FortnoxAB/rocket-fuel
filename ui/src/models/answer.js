@@ -3,7 +3,7 @@ import ApiFetch from '../components/utils/apifetch';
 export function answerQuestion(answer, questionId) {
 
     const options = {
-        url: `/api/answers/question/${questionId}`,
+        url: `/api/questions/${questionId}/answers`,
         method: 'POST',
         body: answer
     };
@@ -14,7 +14,7 @@ export function answerQuestion(answer, questionId) {
 
 export function getAnswersByQuestionId(id) {
     const options = {
-        url: `/api/answers/question/${id}`,
+        url: `/api/questions/${id}/answers`,
         method: 'GET'
     };
 
@@ -23,7 +23,7 @@ export function getAnswersByQuestionId(id) {
 
 export function acceptAnswer(id) {
     const options = {
-        url: `/api/answers/accept/${id}`,
+        url: `/api/answers/${id}/accept`,
         method: 'PATCH'
     };
 
@@ -32,7 +32,7 @@ export function acceptAnswer(id) {
 
 export function updateAnswer(answerId, body) {
     const options = {
-        url: `/api/users/me/answers/${answerId}`,
+        url: `/api/answers/${answerId}`,
         method: 'PUT',
         body: body
     };
@@ -42,7 +42,7 @@ export function updateAnswer(answerId, body) {
 
 export function deleteAnswer(answerId) {
     const options = {
-        url: `/api/users/me/answers/${answerId}`,
+        url: `/api/answers/${answerId}`,
         method: 'DELETE'
     };
 
@@ -51,7 +51,7 @@ export function deleteAnswer(answerId) {
 
 export function upVoteAnswer(answerId) {
     const options = {
-        url: `/api/users/me/answers/${answerId}/upvote`,
+        url: `/api/answers/${answerId}/upvote`,
         method: 'POST'
     };
 
@@ -60,7 +60,7 @@ export function upVoteAnswer(answerId) {
 
 export function downVoteAnswer(answerId) {
     const options = {
-        url: `/api/users/me/answers/${answerId}/downvote`,
+        url: `/api/answers/${answerId}/downvote`,
         method: 'POST'
     };
 

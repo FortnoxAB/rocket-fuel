@@ -85,6 +85,7 @@ public interface QuestionDao {
             "votes, " +
             "answer_accepted, " +
             "created_at, " +
+            "\"user\".name as created_by, " +
             "user_id, " +
             "slack_id, " +
             "\"user\".picture, " +

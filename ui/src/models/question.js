@@ -18,7 +18,7 @@ export function getLatestQuestion(limit = 10) {
 
 export function getQuestionById(id) {
     const options = {
-        url: `/api/users/me/questions/${id}`
+        url: `/api/questions/${id}`
     };
 
     return ApiFetch(options);
@@ -47,7 +47,7 @@ export function createQuestion(question, token) {
 
 export function deleteQuestion(questionId) {
     const options = {
-        url: `/api/users/me/questions/${questionId}`,
+        url: `/api/questions/${questionId}`,
         method: 'DELETE'
     };
 
@@ -56,7 +56,7 @@ export function deleteQuestion(questionId) {
 
 export function updateQuestion(questionId, body) {
     const options = {
-        url: `/api/users/me/questions/${questionId}`,
+        url: `/api/questions/${questionId}`,
         method: 'PUT',
         body: body
     };
@@ -66,7 +66,7 @@ export function updateQuestion(questionId, body) {
 
 export function upVoteQuestion(questionId) {
     const options = {
-        url: `/api/users/me/questions/${questionId}/upvote`,
+        url: `/api/questions/${questionId}/upvote`,
         method: 'POST'
     };
 
@@ -75,7 +75,7 @@ export function upVoteQuestion(questionId) {
 
 export function downVoteQuestion(questionId) {
     const options = {
-        url: `/api/users/me/questions/${questionId}/downvote`,
+        url: `/api/questions/${questionId}/downvote`,
         method: 'POST'
     };
 

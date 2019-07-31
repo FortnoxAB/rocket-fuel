@@ -5,8 +5,6 @@ import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
 import api.User;
-import api.UserAnswerResource;
-import api.UserQuestionResource;
 import api.auth.Auth;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
@@ -44,22 +42,19 @@ public class ReactionMessageHandler implements SlackMessageHandler {
     private static final ImmutableList        NEGATIVE_EMOJIS = ImmutableList.of("-1");
     private final        QuestionResource     questionResource;
     private final        AnswerResource       answerResource;
-    private final        UserAnswerResource   userAnswerResource;
     private final        SlackResource        slackResource;
-    private final        UserQuestionResource userQuestionResource;
+    private final        QuestionResource userQuestionResource;
 
     @Inject
     public ReactionMessageHandler(SlackResource slackResource,
         QuestionResource questionResource,
         AnswerResource answerResource,
-        UserAnswerResource userAnswerResource,
-        UserQuestionResource userQuestionResource
+        QuestionResource userQuestionResource
     ) {
 
         this.slackResource = slackResource;
         this.questionResource = questionResource;
         this.answerResource = answerResource;
-        this.userAnswerResource = userAnswerResource;
         this.userQuestionResource = userQuestionResource;
     }
 
@@ -117,9 +112,9 @@ public class ReactionMessageHandler implements SlackMessageHandler {
         Auth auth = new Auth(user.getId());
         return answer -> {
             if (upVote) {
-                return userAnswerResource.upVoteAnswer(auth, answer.getId());
+                return answerResource.upVoteAnswer(auth, answer.getId());
             }
-            return userAnswerResource.downVoteAnswer(auth, answer.getId());
+            return answerResource.downVoteAnswer(auth, answer.getId());
         };
     }
 

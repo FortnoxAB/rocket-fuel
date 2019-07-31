@@ -1,11 +1,12 @@
 package impl;
 
 import api.Answer;
+import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
 import api.User;
-import api.UserAnswerResource;
 import api.UserResource;
+import api.auth.Auth;
 import com.github.seratch.jslack.api.model.Message;
 import com.google.gson.JsonObject;
 import org.junit.After;
@@ -33,7 +34,7 @@ import static rx.Observable.just;
 
 public class ThreadMessageHandlerTest {
     private static QuestionResource     questionResource;
-    private static UserAnswerResource   userAnswerResource;
+    private static AnswerResource       answerResource;
     private static UserResource         userResource;
     private static TestSetup            testSetup;
     private static ThreadMessageHandler threadMessageHandler;
@@ -51,7 +52,7 @@ public class ThreadMessageHandlerTest {
         threadMessageHandler = testSetup.getInjector().getInstance(ThreadMessageHandler.class);
 
         slackResourceMock = testSetup.getInjector().getInstance(SlackResource.class);
-        userAnswerResource = testSetup.getInjector().getInstance(UserAnswerResource.class);
+        answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
     }
 
     @After
@@ -119,7 +120,7 @@ public class ThreadMessageHandlerTest {
         assertThat(whateverQuestion.getUserId()).isEqualTo(originalMessageUser.getId());
 
         //Make sure the answer is also created
-        List<Answer> answers = userAnswerResource.getAnswers(user.getId(), whateverQuestion.getId()).toBlocking().singleOrDefault(null);
+        List<Answer> answers = answerResource.getAnswers(new Auth(user.getId()), whateverQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(answers).isNotNull();
         assertThat(answers.get(0).getSlackId()).isNotNull();
 
@@ -134,7 +135,7 @@ public class ThreadMessageHandlerTest {
 
         threadMessageHandler.handleMessage(messageNo2).toBlocking().singleOrDefault(null);
 
-        answers = userAnswerResource.getAnswers(user.getId(), whateverQuestion.getId()).toBlocking().singleOrDefault(null);
+        answers = answerResource.getAnswers(new Auth(user.getId()), whateverQuestion.getId()).toBlocking().singleOrDefault(null);
         assertThat(answers).isNotNull();
         assertThat(answers).hasSize(2);
         assertThat(answers.get(1).getSlackId()).isNotNull();

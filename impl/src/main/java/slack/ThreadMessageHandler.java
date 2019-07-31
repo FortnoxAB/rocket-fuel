@@ -162,7 +162,7 @@ public class ThreadMessageHandler implements SlackMessageHandler {
                     answer.setUserId(user.getId());
                     answer.setSlackId(message.get("ts").getAsString());
 
-                    return answerResource.answerQuestion(as(user.getId()), answer, question.getId()).ignoreElements().cast(Void.class);
+                    return answerResource.createAnswer(as(user.getId()), answer, question.getId()).ignoreElements().cast(Void.class);
                 }
             ));
     }

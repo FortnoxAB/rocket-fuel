@@ -21,7 +21,6 @@ import rx.observers.AssertableSubscriber;
 import static impl.TestSetup.insertUser;
 import static java.lang.System.currentTimeMillis;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static rx.Observable.just;
 import static slack.ReactionMessageHandler.CHANNEL;
@@ -147,7 +146,7 @@ public class ReactionMessageHandlerTest {
         answer.setUserId(user.getId());
         answer.setSlackId(String.valueOf(currentTimeMillis + 1));
         answer.setSlackId(String.valueOf(currentTimeMillis + 1));
-        AssertableSubscriber<Answer> voidAssertableSubscriber = answerResource.answerQuestion(as(user), answer, questionBySlackThreadId.getId()).test().awaitTerminalEvent();
+        AssertableSubscriber<Answer> voidAssertableSubscriber = answerResource.createAnswer(as(user), answer, questionBySlackThreadId.getId()).test().awaitTerminalEvent();
         voidAssertableSubscriber.assertNoErrors();
         Answer storedAnswer = answerResource.getAnswers(as(user), questionBySlackThreadId.getId()).toBlocking().first().get(0);
         assertThat(storedAnswer.getVotes()).isEqualTo(0);

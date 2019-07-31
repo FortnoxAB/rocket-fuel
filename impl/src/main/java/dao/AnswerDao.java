@@ -29,9 +29,9 @@ public interface AnswerDao {
             "(SELECT COALESCE(SUM(answer_vote.value), 0) FROM answer_vote WHERE answer_vote.answer_id = answer.id) AS votes " +
         "FROM answer " +
             "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
-        "WHERE user_id=:userId AND question_id=:questionId"
+        "WHERE question_id=:questionId"
     )
-    Observable<Answer> getAnswers(long userId, long questionId);
+    Observable<Answer> getAnswers(long questionId);
 
     @Query(
         "SELECT " +
