@@ -1,3 +1,5 @@
+$button-default-height: 36px;
+
 $button-colors:(
     default: $gray,
     primary: $primary-color,
@@ -8,7 +10,7 @@ $button-colors:(
 
 .button {
     text-transform: uppercase;
-    height: 36px;
+    height: $button-default-height;
     transition: .1s;
     border: 0;
     padding: 0 15px;
@@ -21,16 +23,57 @@ $button-colors:(
     letter-spacing: .09em;
     text-decoration: none;
 
+    .button-content {
+        display: flex;
+        align-items: center;
+    }
+
+    img.profile-picture {
+        height: $button-default-height * .8;
+        width: auto;
+        border-radius: 50%;
+
+        &:first-child {
+            margin-right: 5px;
+        }
+
+        &:last-child {
+            margin-left: 5px;
+        }
+    }
+
+    &.icon {
+        text-transform: lowercase;
+        border-radius: 50%;
+        width: $button-default-height;
+        height: $button-default-height;
+        box-shadow: none;
+        letter-spacing: 0;
+    }
+
     &.rounded {
         border-radius: 25px;
     }
 
-    &.text, &.border {
+    &.circle {
+        padding: 0;
+        margin: 0;
+        width: $button-default-height * 1.2;
+        height: $button-default-height * 1.2;
+        border-radius: 50%;
+
+        &.small {
+            width: $button-default-height * .8;
+            height: $button-default-height * .8;
+        }
+    }
+
+    &.text, &.border, &.icon{
         background-color: transparent;
     }
 
     &.small {
-        height: 26px;
+        height: $button-default-height * .8;
         padding: 0 12px;
         font-size: $font-size*.85;
     }
@@ -73,7 +116,7 @@ $button-colors:(
             }
         }
 
-        &.text {
+        &.text, &.icon {
             box-shadow: none;
             color: $val;
         }
@@ -84,7 +127,7 @@ $button-colors:(
             border: 1px solid $val;
         }
 
-        &.text, &.border {
+        &.text, &.border, &.icon {
             &:hover {
                 background-color: rgba($val, .05);
             }

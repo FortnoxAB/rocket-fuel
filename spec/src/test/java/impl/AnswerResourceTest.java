@@ -40,7 +40,6 @@ import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.Assertions.within;
 import static org.junit.Assert.assertEquals;
@@ -57,6 +56,9 @@ import static org.mockito.Mockito.when;
 import static rx.Observable.error;
 import static rx.Observable.just;
 import static se.fortnox.reactivewizard.test.TestUtil.matches;
+import static util.ObservableAssertions.assertThat;
+import static util.ObservableAssertions.assertThatExceptionOfType;
+import static util.ObservableAssertions.assertThatList;
 
 public class AnswerResourceTest {
     private static final String           SLACK_USER_ID = "U0G9QF9C6";
@@ -86,7 +88,6 @@ public class AnswerResourceTest {
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         mockedSlackResource = testSetup.getInjector().getInstance(SlackResource.class);
         answerVoteDao = testSetup.getInjector().getInstance(AnswerVoteDao.class);
-
     }
 
     @After
@@ -166,8 +167,6 @@ public class AnswerResourceTest {
         Question returnedQuestion = questionResource.createQuestion(questioner, question).toBlocking().singleOrDefault(null);
         assertThat(returnedQuestion).isNotNull();
         assertThat(returnedQuestion.getId()).isGreaterThan(0);
-
-        ApplicationConfig applicationConfig = testSetup.getInjector().getInstance(ApplicationConfig.class);
 
         // and someone answers the question
         Answer answer         = newAnswer();
@@ -292,7 +291,10 @@ public class AnswerResourceTest {
 
         Answer answer = createAnswer();
 
-        answerResource.createAnswer(createdUserAuth, answer, question.getId()).toBlocking().singleOrDefault(null);
+        assertThat(answerResource.createAnswer(createdUserAuth, answer, question.getId()))
+            .hasExactlyOne()
+            .extracting(Answer::getId)
+            .isNotNull();
 
         Answer createdAnswer = getFirstAnswer(createdUserAuth, question);
         assertFalse(createdAnswer.isAccepted());
@@ -310,13 +312,13 @@ public class AnswerResourceTest {
         Answer answer = new Answer();
         answer.setAnswer("this is the body of the answer");
 
-        answerResource.createAnswer(createdUserAuth, answer, question.getId()).toBlocking().singleOrDefault(null);
-
+        assertThat(answerResource.createAnswer(createdUserAuth, answer, question.getId()))
+            .hasExactlyOne();
         Answer updatedAnswerInput = new Answer();
         updatedAnswerInput.setAnswer("this is an updated body of the answer");
 
-        answerResource.updateAnswer(createdUserAuth, answer.getId(), updatedAnswerInput).toBlocking().singleOrDefault(null);
-
+        assertThat(answerResource.updateAnswer(createdUserAuth, answer.getId(), updatedAnswerInput))
+            .isEmpty();
         Answer updatedAnswer = getFirstAnswer(createdUserAuth, question);
 
         assertFalse(updatedAnswer.isAccepted());
@@ -331,19 +333,23 @@ public class AnswerResourceTest {
         Question question = createQuestion(auth);
 
         Answer answer = createAnswer();
-        Answer answer2 = createAnswer("title2","answer2");
+        Answer answer2 = createAnswer("answer2");
 
-        answerResource.createAnswer(auth, answer, question.getId()).toBlocking().singleOrDefault(null);
-        answerResource.createAnswer(auth, answer2, question.getId()).toBlocking().singleOrDefault(null);
+        assertThat(answerResource.createAnswer(auth, answer, question.getId()))
+            .hasExactlyOne();
+        assertThat(answerResource.createAnswer(auth, answer2, question.getId()))
+            .hasExactlyOne();
 
         Answer createdAnswer = getFirstAnswer(auth, question);
 
         // when we delete a answer
-        answerResource.deleteAnswer(auth,  createdAnswer.getId()).toBlocking().singleOrDefault(null);
+        assertThat(answerResource.deleteAnswer(auth, createdAnswer.getId()))
+            .isEmpty();
 
         // then only the answer we want to delete should be deleted
-        List<Answer> remainingAnswers = answerResource.getAnswers(auth, question.getId()).toBlocking().single();
-        assertThat(remainingAnswers.size()).isEqualTo(1);
+        assertThatList(answerResource.getAnswers(auth, question.getId()))
+            .hasExactlyOne()
+            .hasSize(1);
     }
 
     @Test
@@ -351,7 +357,7 @@ public class AnswerResourceTest {
         Auth auth = newUser();
         long nonExistingAnswerId = 12;
         assertThatExceptionOfType(WebException.class)
-            .isThrownBy(() -> answerResource.deleteAnswer(auth,  nonExistingAnswerId).toBlocking().singleOrDefault(null))
+            .isThrownBy(() -> answerResource.deleteAnswer(auth,  nonExistingAnswerId))
             .satisfies(e -> {
                 assertEquals(NOT_FOUND, e.getStatus());
                 assertEquals(ANSWER_NOT_FOUND, e.getError());
@@ -371,8 +377,10 @@ public class AnswerResourceTest {
         Question questionForUserTwo = createQuestion(authUserTwo);
 
         Answer answerForUserTwo = createAnswer();
-        answerResource.createAnswer(authUserOne, answer, question.getId()).toBlocking().singleOrDefault(null);
-        answerResource.createAnswer(authUserTwo, answerForUserTwo, questionForUserTwo.getId()).toBlocking().singleOrDefault(null);
+        assertThat(answerResource.createAnswer(authUserOne, answer, question.getId()))
+            .hasExactlyOne();
+        assertThat(answerResource.createAnswer(authUserTwo, answerForUserTwo, questionForUserTwo.getId()))
+            .hasExactlyOne();
 
         Answer createdAnswer = getFirstAnswer(authUserOne, question);
         assertFalse(createdAnswer.isAccepted());
@@ -418,12 +426,12 @@ public class AnswerResourceTest {
     }
 
     private void voteAndAssertSuccess(BiFunction<Auth, Long, Observable<Void>> call, Auth auth, Answer answer, int expectedVotes) {
-        call.apply(auth, answer.getId()).test()
-            .awaitTerminalEvent()
-            .assertNoErrors();
-        assertThat(answerResource.getAnswerById(answer.getId()).test().awaitTerminalEvent().getOnNextEvents())
+        assertThat(call.apply(auth, answer.getId()))
+            .isEmpty();
+        assertThat(answerResource.getAnswerById(answer.getId()))
+            .hasExactlyOne()
             .extracting(Answer::getVotes)
-            .containsExactly(expectedVotes);
+            .isEqualTo(expectedVotes);
     }
 
     private void voteAndAssertFailure(BiFunction<Auth, Long, Observable<Void>> call, Auth auth, Answer answer) {
@@ -437,8 +445,8 @@ public class AnswerResourceTest {
     }
 
     private void assertNoVote(Auth auth, Answer answer) {
-        answerVoteDao.findVote(auth.getUserId(), answer.getId()).test().awaitTerminalEvent()
-            .assertNoValues();
+        assertThat(answerVoteDao.findVote(auth.getUserId(), answer.getId()))
+            .isEmpty();
     }
 
     private Answer createQuestionAndAnswer(Auth auth) {
@@ -473,10 +481,10 @@ public class AnswerResourceTest {
 
 
     private static Answer createAnswer() {
-        return createAnswer("this is an answer title", "this is the body of the answer");
+        return createAnswer( "this is the body of the answer");
     }
 
-    private static Answer createAnswer(String title, String answerBody) {
+    private static Answer createAnswer( String answerBody) {
         Answer answer = new Answer();
         answer.setAnswer(answerBody);
         return answer;

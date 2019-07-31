@@ -11,7 +11,7 @@
     overflow: hidden;
 
     .star-map {
-        background-image: url('../images/404/bg-01.jpg');
+        background-image: url('../../images/404/bg-01.jpg');
         background-size: cover;
         background-position: center;
         width: 100vw;
@@ -23,7 +23,7 @@
     }
 
     .astronaut {
-        background-image: url('../images/404/atronaut.png');
+        background-image: url('../../images/404/atronaut.png');
         background-size: cover;
         z-index: 4;
         position: absolute;
@@ -33,7 +33,7 @@
     }
 
     .falling-1 {
-        background-image: url('../images/404/falling-01.png');
+        background-image: url('../../images/404/falling-01.png');
         background-size: contain;
         background-repeat: no-repeat;
         background-position: right;
@@ -47,7 +47,7 @@
     }
 
     .falling-2 {
-        background-image: url('../images/404/falling-02.png');
+        background-image: url('../../images/404/falling-02.png');
         background-size: contain;
         background-repeat: no-repeat;
         background-position: right;
@@ -61,7 +61,7 @@
     }
 
     .tube {
-        background-image: url('../images/404/tube.png');
+        background-image: url('../../images/404/tube.png');
         background-size: contain;
         background-repeat: no-repeat;
         background-position: left;

@@ -49,10 +49,6 @@ class HomeView extends React.Component {
         });
     }
 
-    getDisplayName() {
-        return this.context.state.user.name;
-    }
-
     render() {
         if (!this.state.loaded) {
             return (
@@ -60,20 +56,14 @@ class HomeView extends React.Component {
             );
         }
         return (
-            <div>
-                <div className="user-space padded-bottom">
-                    <img src={this.context.state.user.picture} alt={this.getDisplayName()} />
-                    <h2>{this.getDisplayName()}</h2>
+            <div className="row spacing">
+                <div className="col-2">
+                    <div className="headline">{t`Latest questions`}</div>
+                    {this.getLatestQuestions()}
                 </div>
-                <div className="row spacing">
-                    <div className="col-2">
-                        <div className="headline">{t`Latest questions`}</div>
-                        {this.getLatestQuestions()}
-                    </div>
-                    <div className="col-2">
-                        <div className="headline">{t`Your recent questions`}</div>
-                        {this.getUserQuestions()}
-                    </div>
+                <div className="col-2">
+                    <div className="headline">{t`Your recent questions`}</div>
+                    {this.getUserQuestions()}
                 </div>
             </div>
         )
