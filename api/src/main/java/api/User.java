@@ -1,12 +1,17 @@
  package api;
 
-public class User {
+ import com.fasterxml.jackson.annotation.JsonIgnore;
+
+ public class User {
 
     private Long id;
 
     private String email;
 
     private String name;
+
+    @JsonIgnore
+    private Integer coins;
 
     private String picture;
 
@@ -34,6 +39,14 @@ public class User {
         this.name = name;
     }
 
+    public Integer getCoins() {
+        return coins;
+    }
+
+    public void setCoins(Integer coins) {
+        this.coins = coins;
+    }
+
     public void setPicture(String picture) {
         this.picture = picture;
     }
@@ -41,4 +54,5 @@ public class User {
     public String getPicture() {
         return picture;
     }
+
 }

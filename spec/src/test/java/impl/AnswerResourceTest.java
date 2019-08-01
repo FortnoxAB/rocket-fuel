@@ -28,6 +28,7 @@ import slack.SlackResource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static impl.AnswerResourceImpl.ANSWER_NOT_FOUND;
 import static impl.AnswerResourceImpl.ERROR_ANSWER_NOT_CREATED;
@@ -423,6 +424,46 @@ public class AnswerResourceTest {
 
         voteAndAssertFailure(answerResource::downVoteAnswer, auth, answer);
         voteAndAssertFailure(answerResource::upVoteAnswer, auth, answer);
+    }
+
+    @Test
+    public void shouldOrderAnswersByAcceptedAndVotesAndByCreated() {
+        // given two users
+        Auth auth = newUser();
+        Auth otherUser = newUser();
+
+        // and a questions
+        Question question = createQuestion(auth);
+
+        // and a answer
+        Answer justAnAnswer = new Answer();
+        justAnAnswer.setAnswer("Just An Answer");
+        answerResource.createAnswer(auth, justAnAnswer, question.getId()).toBlocking().singleOrDefault(null);
+
+        // and a answer that is accepted
+        Answer answerThatIsAccepted = new Answer();
+        answerThatIsAccepted.setAnswer("Accepted Answer");
+
+        Long acceptedId = answerResource.createAnswer(auth, answerThatIsAccepted, question.getId()).toBlocking().singleOrDefault(null).getId();
+        answerResource.markAsAcceptedAnswer(auth, acceptedId).toBlocking().singleOrDefault(null);
+
+        // and a answer that has a vote
+        Answer answerWithVote = new Answer();
+        answerWithVote.setAnswer("Answer With Vote");
+        Long upvotedId = answerResource.createAnswer(auth, answerWithVote, question.getId()).toBlocking().singleOrDefault(null).getId();
+        answerResource.upVoteAnswer(otherUser, upvotedId).toBlocking().singleOrDefault(null);
+
+        // when we ask for the answers
+        List<String> answers = answerResource.getAnswers(auth, question.getId())
+            .toBlocking()
+            .single()
+            .stream()
+            .map(Answer::getAnswer)
+            .collect(Collectors.toList());
+
+        // then we shall get the answers ordered properly
+        assertThat(answers).containsSequence("Accepted Answer", "Answer With Vote", "Just An Answer");
+
     }
 
     private void voteAndAssertSuccess(BiFunction<Auth, Long, Observable<Void>> call, Auth auth, Answer answer, int expectedVotes) {

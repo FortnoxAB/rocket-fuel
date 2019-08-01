@@ -53,7 +53,7 @@ public interface AnswerDao {
         "FROM answer " +
             "INNER JOIN \"user\" on \"user\".id = answer.user_id " +
         "WHERE question_id=:questionId " +
-        "ORDER BY answer.accepted_at desc, \"votes\" desc, answer.created_at desc"
+        "ORDER BY answer.accepted_at desc NULLS LAST, \"votes\" desc, answer.created_at desc"
     )
     Observable<Answer> getAnswersWithUserVotes(long userId, long questionId);
 
