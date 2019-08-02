@@ -10,6 +10,7 @@ import api.auth.Auth;
 import dao.QuestionDao;
 import dao.QuestionVoteDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.log4j.Appender;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
@@ -20,7 +21,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.jaxrs.WebException;
+import se.fortnox.reactivewizard.test.LoggingMockUtil;
+import slack.SlackConfig;
+import slack.SlackResource;
 
+import java.nio.channels.ClosedChannelException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -40,19 +45,25 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static rx.Observable.empty;
 import static rx.Observable.error;
+import static se.fortnox.reactivewizard.test.TestUtil.matches;
 
 public class QuestionResourceTest {
     private static QuestionResource questionResource;
     private static AnswerResource   answerResource;
     private static UserResource     userResource;
     private static QuestionVoteDao  questionVoteDao;
+    private static SlackResource    slackResource;
+    private static QuestionDao questionDao;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
 
     private static TestSetup testSetup;
+    private static Appender appender;
 
     @BeforeClass
     public static void before() {
@@ -61,22 +72,28 @@ public class QuestionResourceTest {
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
         questionVoteDao = testSetup.getInjector().getInstance(QuestionVoteDao.class);
+        questionDao = testSetup.getInjector().getInstance(QuestionDao.class);
+        slackResource = mock(SlackResource.class);
+        when(slackResource.postMessageToSlack(anyString(), anyString())).thenReturn(empty());
     }
 
     @After
     public void afterEach() throws Exception {
         testSetup.clearDatabase();
+        LoggingMockUtil.destroyMockedAppender(appender, QuestionResourceImpl.class);
+
     }
 
     @Before
     public void beforeEach() throws Exception {
         testSetup.setupDatabase();
+        appender = LoggingMockUtil.createMockedLogAppender(QuestionResourceImpl.class);
     }
 
     @Test
     public void shouldThrowErrorWhenServerIsDown() {
         QuestionDao          questionDao      = mock(QuestionDao.class);
-        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao);
+        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig());
         when(questionDao.getLatestQuestions(any())).thenReturn(error(new SQLException()));
 
         try {
@@ -235,7 +252,7 @@ public class QuestionResourceTest {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
         when(questionDao.getQuestions(anyString(), any())).thenReturn(error(new WebException()));
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig());
 
         // when searching
         Observable<List<Question>> questions = questionResource.getQuestionsBySearchQuery("explode", null);
@@ -401,6 +418,25 @@ public class QuestionResourceTest {
                 assertEquals(NOT_FOUND, e.getStatus());
                 assertEquals(QUESTION_NOT_FOUND, e.getError());
             });
+    }
+
+    @Test
+    public void shouldLogThatWeCouldNotSendSlackNotificationWhenQuestionIsCreated() {
+        // given bad slack config
+        Auth auth = new Auth();
+        Question question = TestSetup.getQuestion("title", "body");
+        when(slackResource.postMessageToSlack(anyString(), anyString())).thenReturn(error(new SQLException("poff")));
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig());
+
+        // when we try to add the question to rocket fuel
+        questionResource.createQuestion(auth, question).toBlocking().single();
+
+        // it shall log that we could notify by slack that the question was added
+        verify(appender).doAppend(matches(log -> {
+            assertThat(log.getLevel().toString()).isEqualTo("ERROR");
+            assertThat(log.getMessage().toString()).contains("failed to notify by slack that question has been added");
+        }));
+
     }
 
     @Test
