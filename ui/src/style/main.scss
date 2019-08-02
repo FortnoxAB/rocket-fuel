@@ -2,6 +2,7 @@
 @import 'utilities/functions';
 @import 'utilities/mixins';
 @import 'utilities/variables';
+@import 'utilities/_animations';
 
 // Vendors
 @import 'vendors/node_module';
@@ -16,6 +17,7 @@
 @import 'layout/header';
 @import 'layout/menu';
 @import 'layout/grid';
+@import 'layout/markdown';
 
 // Components
 @import 'components/buttons';

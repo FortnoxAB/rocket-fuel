@@ -55,7 +55,7 @@ $picture-size: 40px;
     }
 
     .post-body {
-        word-break: break-all;
+        word-break: break-word;
         display: flex;
         flex-grow: 1;
         flex-direction: column;
@@ -65,7 +65,7 @@ $picture-size: 40px;
     .post-footer {
         color: contrast($background-color);
         align-items: center;
-        line-height: 2em;
+        line-height: 1.5em;
         font-size: .8em;
         padding: 0 20px 20px 20px;
 
@@ -80,13 +80,9 @@ $picture-size: 40px;
 }
 
 .answer {
-    border: none;
-
     &.accepted {
-        // border: 1px solid rgba($notification-success, 20%);
         @include material-shadow(2);
         background-color: rgba(0, 0, 0, .05);
-        transform: scale(1.05);
     }
 }
 .answer-form {

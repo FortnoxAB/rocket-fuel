@@ -10,6 +10,27 @@ class Tooltip extends React.Component {
         };
     }
 
+    componentDidUpdate() {
+        if (this.node) {
+            this.checkPosition();
+        }
+    }
+
+    checkPosition() {
+        const bounding = this.node.getBoundingClientRect();
+        const width = this.node.offsetWidth;
+        const outsideWindowRight = (bounding.right + width/2) > window.innerWidth;
+        const outsideWindowLeft = (bounding.left - width/2) < 0;
+
+        if (outsideWindowRight) {
+            this.node.style.right = 0;
+        }
+
+        if (outsideWindowLeft) {
+            this.node.style.left = 0;
+        }
+    }
+
     showTooltip() {
         this.setState({
             visible: true
@@ -28,7 +49,10 @@ class Tooltip extends React.Component {
         }
 
         return (
-            <span className="tooltip">
+            <span
+                className="tooltip"
+                ref={(node) => {this.node = node}}
+            >
                 {this.props.content}
             </span>
         );

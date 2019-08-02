@@ -68,7 +68,8 @@ class Header extends React.Component {
                 <div className="header">
                     <div className="flex">
                         <Logo onClick={this.navigate.bind(this, '/')} className="pointer"
-                              size="small" color="light" />
+                              size="small" color="light"
+                        />
                         <MenuBar />
                     </div>
                     <HeaderSearch />
