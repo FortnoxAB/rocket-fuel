@@ -19,6 +19,8 @@
     border-radius: $roundness;
     padding: 25px;
     @include material-shadow(4);
+    animation-name: pop;
+    animation-duration: .1s;
 
     > .title {
         @include main-font('bold', 1.1em);

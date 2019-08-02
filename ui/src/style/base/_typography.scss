@@ -61,16 +61,20 @@ h3 {
     padding: 0 0 10px 0;
 }
 
-.text{
+.text {
     &-center {
         text-align: center;
+    }
+
+    &-faded {
+        color: rgba(contrast($background-color, $text-color-light, $text-color-dark), .6);
     }
 
     &-light {
         color: $text-color-light;
 
         &-faded {
-            color: rgba($text-color-light, .8);
+            color: rgba($text-color-light, .6);
         }
     }
 
@@ -78,7 +82,13 @@ h3 {
         color: $text-color-dark;
 
         &-faded {
-            color: rgba($text-color-dark, .8);
+            color: rgba($text-color-dark, .6);
         }
+    }
+}
+
+.text-size {
+    &-large {
+        font-size: 1.5em;
     }
 }

@@ -282,8 +282,8 @@ class Post extends React.Component {
                                 <img src={this.props.picture} alt={this.props.userName}/>
                             </div>
                             <div>
-                                <div><i className="fa fa-user" /> {this.props.userName}</div>
-                                <div><i className="fa fa-clock-o" /> {this.getTime()}</div>
+                                <div>{this.props.userName}</div>
+                                <div>{this.getTime()}</div>
                             </div>
                         </div>
                         {this.renderButtons()}

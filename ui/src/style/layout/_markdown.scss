@@ -1,0 +1,20 @@
+.markdown {
+    line-height: 1.5;
+
+    code {
+        border-radius: 4px;
+        padding: 1px 4px;
+        border: 1px solid $border-color;
+        background-color: rgba($border-color, .2);
+
+        &[class^="language-"] {
+            margin: 10px 0;
+            display: block;
+        }
+    }
+
+    ul, ol {
+        list-style: inherit;
+        margin-left: 20px;
+    }
+}

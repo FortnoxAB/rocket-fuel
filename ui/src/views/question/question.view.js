@@ -91,7 +91,7 @@ class QuestionView extends React.Component {
     renderAnswers() {
         if (this.state.answers.length <= 0) {
             return (
-                <div className="padded-bottom-large text-center">
+                <div className="padded-bottom-large text-center text-faded">
                     {t`No answers, be the first one to answer this question.`}
                 </div>
             );
