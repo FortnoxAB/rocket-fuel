@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.functions.Func1;
 import se.fortnox.reactivewizard.jaxrs.WebException;
+import slack.SlackConfig;
+import slack.SlackResource;
 
 import java.util.List;
 
@@ -23,9 +25,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.util.Collections.emptyList;
+import static rx.Observable.empty;
 import static rx.Observable.error;
 import static rx.Observable.just;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
+import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
 @Singleton
 public class QuestionResourceImpl implements QuestionResource {
@@ -43,11 +47,15 @@ public class QuestionResourceImpl implements QuestionResource {
 
     private final QuestionDao     questionDao;
     private final QuestionVoteDao questionVoteDao;
+    private final SlackResource   slackResource;
+    private SlackConfig slackConfig;
 
     @Inject
-    public QuestionResourceImpl(QuestionDao questionDao, QuestionVoteDao questionVoteDao) {
+    public QuestionResourceImpl(QuestionDao questionDao, QuestionVoteDao questionVoteDao, SlackResource slackResource, SlackConfig slackConfig) {
         this.questionDao = questionDao;
         this.questionVoteDao = questionVoteDao;
+        this.slackResource = slackResource;
+        this.slackConfig = slackConfig;
     }
 
     @Override
@@ -89,7 +97,14 @@ public class QuestionResourceImpl implements QuestionResource {
                 question.setId(longGeneratedKey.getKey());
                 return question;
             })
-          .onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
+            .flatMap(savedQuestion -> {
+                Observable<Void> postMessageToSlack = slackResource.postMessageToSlack(slackConfig.getFeedChannel(), "new Question added")
+                    .onErrorResumeNext(e -> {
+                        LOG.error("failed to notify by slack that question has been added", e);
+                        return empty();
+                    });
+                return first(postMessageToSlack).thenReturn(savedQuestion);
+            }).onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
     }
 
     @Override

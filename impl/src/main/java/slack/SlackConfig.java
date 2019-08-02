@@ -4,8 +4,13 @@ import se.fortnox.reactivewizard.config.Config;
 
 import javax.validation.constraints.NotNull;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 @Config("slack")
 public class SlackConfig {
+
+    private static final String DEFAULT_FEED_CHANNEL = "rocket-fuel";
+
     /**
      * To use when making ordinary api-requests
      */
@@ -21,6 +26,8 @@ public class SlackConfig {
     /**
      * Defines if the slack integration should be enabled
      */
+    private String feedChannel;
+
     @NotNull
     private boolean enabled = false;
 
@@ -46,5 +53,17 @@ public class SlackConfig {
 
     public void setBotUserToken(String botUserToken) {
         this.botUserToken = botUserToken;
+    }
+
+    public String getFeedChannel() {
+        if(isNullOrEmpty(feedChannel)) {
+            return DEFAULT_FEED_CHANNEL;
+        } else {
+            return feedChannel;
+        }
+    }
+
+    public void setFeedChannel(String feedChannel) {
+        this.feedChannel = feedChannel;
     }
 }

@@ -19,6 +19,8 @@ public interface SlackResource {
 
     Observable<Void> postMessageToSlackAsBotUser(String channel, List<LayoutBlock> message);
 
+    Observable<Void> postMessageToSlack(String channel, String message);
+
     Observable<Message> getMessageFromSlack(String channel, String mainMessageId);
 
     Observable<User> getUser(Message mainMessage);

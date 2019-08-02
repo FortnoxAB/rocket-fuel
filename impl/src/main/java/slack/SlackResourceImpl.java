@@ -138,6 +138,21 @@ public class SlackResourceImpl implements SlackResource {
     }
 
     @Override
+    public Observable<Void> postMessageToSlack(String channel, String message) {
+        return callSlack(() -> {
+            final ChatPostMessageRequest chatPostMessageRequest = ChatPostMessageRequest
+                .builder()
+                .channel(channel)
+                .text(message)
+                .token(slackConfig.getApiToken())
+                .build();
+
+            return slack.methods().chatPostMessage(chatPostMessageRequest);
+        }).flatMap(SlackResourceImpl::handleChatPostMessageResponse);
+    }
+
+
+    @Override
     public Observable<Message> getMessageFromSlack(String channel, String messageId) {
         return callSlack(() -> {
             final ChannelsRepliesRequest getMessageFromSlack = ChannelsRepliesRequest
