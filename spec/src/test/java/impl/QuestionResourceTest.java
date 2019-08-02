@@ -25,7 +25,6 @@ import se.fortnox.reactivewizard.test.LoggingMockUtil;
 import slack.SlackConfig;
 import slack.SlackResource;
 
-import java.nio.channels.ClosedChannelException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -44,6 +43,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -425,7 +425,7 @@ public class QuestionResourceTest {
         // given bad slack config
         Auth auth = new Auth();
         Question question = TestSetup.getQuestion("title", "body");
-        when(slackResource.postMessageToSlack(anyString(), anyString())).thenReturn(error(new SQLException("poff")));
+        when(slackResource.postMessageToSlack(eq("rocket-fuel"), anyString())).thenReturn(error(new SQLException("poff")));
         QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig());
 
         // when we try to add the question to rocket fuel

@@ -9,7 +9,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 @Config("slack")
 public class SlackConfig {
 
-    private static final String DEFAULT_FEED_CHANNEL = "rocket-fuel-news";
+    private static final String DEFAULT_FEED_CHANNEL = "rocket-fuel";
 
     /**
      * To use when making ordinary api-requests

@@ -97,13 +97,13 @@ public class QuestionResourceImpl implements QuestionResource {
                 question.setId(longGeneratedKey.getKey());
                 return question;
             })
-            .flatMap(question1 -> {
-                Observable<Void> postToSlack = slackResource.postMessageToSlack(slackConfig.getFeedChannel(), "new Question added")
+            .flatMap(savedQuestion -> {
+                Observable<Void> postMessageToSlack = slackResource.postMessageToSlack(slackConfig.getFeedChannel(), "new Question added")
                     .onErrorResumeNext(e -> {
                         LOG.error("failed to notify by slack that question has been added", e);
                         return empty();
                     });
-                return first(postToSlack).thenReturn(question1);
+                return first(postMessageToSlack).thenReturn(savedQuestion);
             }).onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
     }
 
