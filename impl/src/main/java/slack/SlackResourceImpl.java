@@ -2,7 +2,6 @@ package slack;
 
 import api.User;
 import api.UserResource;
-import api.auth.Auth;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.request.channels.ChannelsRepliesRequest;
 import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
@@ -138,12 +137,12 @@ public class SlackResourceImpl implements SlackResource {
     }
 
     @Override
-    public Observable<Void> postMessageToSlack(String channel, String message) {
+    public Observable<Void> postMessageToSlack(String channel, List<LayoutBlock> message) {
         return callSlack(() -> {
             final ChatPostMessageRequest chatPostMessageRequest = ChatPostMessageRequest
                 .builder()
                 .channel(channel)
-                .text(message)
+                .blocks(message)
                 .token(slackConfig.getApiToken())
                 .build();
 
