@@ -3,6 +3,9 @@ package impl;
 import api.Question;
 import api.QuestionResource;
 import api.auth.Auth;
+import com.github.seratch.jslack.api.model.block.LayoutBlock;
+import com.github.seratch.jslack.api.model.block.SectionBlock;
+import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.QuestionDao;
@@ -24,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static rx.Observable.empty;
 import static rx.Observable.error;
@@ -48,14 +52,17 @@ public class QuestionResourceImpl implements QuestionResource {
     private final QuestionDao     questionDao;
     private final QuestionVoteDao questionVoteDao;
     private final SlackResource   slackResource;
-    private SlackConfig slackConfig;
+    private final SlackConfig slackConfig;
+    private final ApplicationConfig applicationConfig;
 
     @Inject
-    public QuestionResourceImpl(QuestionDao questionDao, QuestionVoteDao questionVoteDao, SlackResource slackResource, SlackConfig slackConfig) {
+    public QuestionResourceImpl(QuestionDao questionDao, QuestionVoteDao questionVoteDao,
+        SlackResource slackResource, SlackConfig slackConfig, ApplicationConfig applicationConfig) {
         this.questionDao = questionDao;
         this.questionVoteDao = questionVoteDao;
         this.slackResource = slackResource;
         this.slackConfig = slackConfig;
+        this.applicationConfig = applicationConfig;
     }
 
     @Override
@@ -98,13 +105,32 @@ public class QuestionResourceImpl implements QuestionResource {
                 return question;
             })
             .flatMap(savedQuestion -> {
-                Observable<Void> postMessageToSlack = slackResource.postMessageToSlack(slackConfig.getFeedChannel(), "new Question added")
+                Observable<Void> postMessageToSlack = slackResource.postMessageToSlack(slackConfig.getFeedChannel(), notificationMessage(question))
                     .onErrorResumeNext(e -> {
                         LOG.error("failed to notify by slack that question has been added", e);
                         return empty();
                     });
                 return first(postMessageToSlack).thenReturn(savedQuestion);
             }).onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
+    }
+
+    private List<LayoutBlock> notificationMessage(Question question) {
+        return asList(SectionBlock.builder()
+                .text(markdownText("A new question: *%s* was submitted.", question.getTitle()))
+                .build(),
+            SectionBlock.builder()
+                .text(markdownText("Head over to %s to view the question.", questionUrl(question.getId())))
+                .build());
+    }
+
+    private String questionUrl(long questionId) {
+        return "<" + applicationConfig.getBaseUrl() + "/question/" + questionId +  "|rocket-fuel>";
+    }
+
+    private static MarkdownTextObject markdownText(String string, String... args) {
+        return MarkdownTextObject.builder()
+            .text(String.format(string, args))
+            .build();
     }
 
     @Override

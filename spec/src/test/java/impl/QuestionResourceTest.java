@@ -7,6 +7,8 @@ import api.QuestionResource;
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
+import com.github.seratch.jslack.api.model.block.SectionBlock;
+import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import dao.QuestionDao;
 import dao.QuestionVoteDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -17,6 +19,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import rx.observers.AssertableSubscriber;
@@ -45,6 +48,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static rx.Observable.empty;
@@ -64,6 +68,7 @@ public class QuestionResourceTest {
 
     private static TestSetup testSetup;
     private static Appender appender;
+    private static ApplicationConfig applicationConfig;
 
     @BeforeClass
     public static void before() {
@@ -74,7 +79,9 @@ public class QuestionResourceTest {
         questionVoteDao = testSetup.getInjector().getInstance(QuestionVoteDao.class);
         questionDao = testSetup.getInjector().getInstance(QuestionDao.class);
         slackResource = mock(SlackResource.class);
-        when(slackResource.postMessageToSlack(anyString(), anyString())).thenReturn(empty());
+        applicationConfig = new ApplicationConfig();
+        applicationConfig.setBaseUrl("deployed.fuel.com");
+        when(slackResource.postMessageToSlack(anyString(), any())).thenReturn(empty());
     }
 
     @After
@@ -93,7 +100,7 @@ public class QuestionResourceTest {
     @Test
     public void shouldThrowErrorWhenServerIsDown() {
         QuestionDao          questionDao      = mock(QuestionDao.class);
-        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig());
+        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
         when(questionDao.getLatestQuestions(any())).thenReturn(error(new SQLException()));
 
         try {
@@ -252,7 +259,7 @@ public class QuestionResourceTest {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
         when(questionDao.getQuestions(anyString(), any())).thenReturn(error(new WebException()));
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig());
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
 
         // when searching
         Observable<List<Question>> questions = questionResource.getQuestionsBySearchQuery("explode", null);
@@ -425,8 +432,8 @@ public class QuestionResourceTest {
         // given bad slack config
         Auth auth = new Auth();
         Question question = TestSetup.getQuestion("title", "body");
-        when(slackResource.postMessageToSlack(eq("rocket-fuel"), anyString())).thenReturn(error(new SQLException("poff")));
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig());
+        when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(error(new SQLException("poff")));
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
 
         // when we try to add the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();
@@ -436,6 +443,29 @@ public class QuestionResourceTest {
             assertThat(log.getLevel().toString()).isEqualTo("ERROR");
             assertThat(log.getMessage().toString()).contains("failed to notify by slack that question has been added");
         }));
+    }
+
+    @Test
+    public void shouldSendCorrectMessageToSlack() {
+        // given that we have a question that we want to save
+        Auth auth = new Auth();
+        Question question = TestSetup.getQuestion("title of question?", "who does one do?");
+        when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(empty());
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+
+        // when we add the the question to rocket fuel
+        questionResource.createQuestion(auth, question).toBlocking().single();
+        ArgumentCaptor<List> mapArgumentCaptor = ArgumentCaptor.forClass(List.class);
+
+        // then a message shall be sent through slack that a new question has been submitted.
+        verify(slackResource, times(1)).postMessageToSlack(any(), mapArgumentCaptor.capture());
+        SectionBlock header  = (SectionBlock) mapArgumentCaptor.getValue().get(0);
+        SectionBlock content  = (SectionBlock) mapArgumentCaptor.getValue().get(1);
+
+        String headerText = ((MarkdownTextObject)header.getText()).getText();
+        String contentText = ((MarkdownTextObject)content.getText()).getText();
+        assertThat(headerText).isEqualTo("A new question: *title of question?* was submitted.");
+        assertThat(contentText).isEqualTo("Head over to <deployed.fuel.com/question/1|rocket-fuel> to view the question.");
 
     }
 
