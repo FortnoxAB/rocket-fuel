@@ -7,6 +7,7 @@ class Markdown extends React.Component {
         return (
             <div className="markdown">
                 <ReactMarkdown
+                    linkTarget="_blank"
                     source={this.props.text}
                     renderers={{ code: CodeBlock }}
                 />

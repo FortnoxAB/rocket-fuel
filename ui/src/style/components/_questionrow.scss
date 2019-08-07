@@ -21,6 +21,7 @@
         flex-grow: 1;
         cursor: pointer;
         overflow: hidden;
+        width: 0;
 
         > .body {
             display: flex;

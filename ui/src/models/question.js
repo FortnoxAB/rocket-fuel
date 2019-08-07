@@ -1,8 +1,8 @@
 import ApiFetch from '../components/utils/apifetch';
 
-export function getQuestionsFromUser(userId) {
+export function getQuestionsFromUser(userId, limit = 10) {
     const options = {
-        url: `/api/users/${userId}/questions`
+        url: `/api/users/${userId}/questions?limit=${limit}`
     };
 
     return ApiFetch(options);

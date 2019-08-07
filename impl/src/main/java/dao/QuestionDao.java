@@ -23,8 +23,12 @@ public interface QuestionDao {
         "FROM " +
             "question " +
         "INNER JOIN " +
-            "\"user\" on \"user\".id = question.user_id WHERE question.user_id=:userId")
-    Observable<Question> getQuestions(long userId);
+            "\"user\" on \"user\".id = question.user_id WHERE question.user_id=:userId " +
+        "ORDER BY " +
+            "question.created_at DESC " +
+        "LIMIT " +
+            ":limit")
+    Observable<Question> getQuestions(long userId, Integer limit);
 
     @Query(
         "SELECT " +

@@ -5,7 +5,7 @@ import InputField from '../forms/inputfield';
 import * as Question from '../../models/question';
 import Loader from '../utils/loader';
 
-const MAX_RESULTS = 3;
+const MAX_RESULTS = 5;
 
 class HeaderSearch extends React.Component {
     constructor(props) {
@@ -72,10 +72,7 @@ class HeaderSearch extends React.Component {
     }
 
     navigate(url) {
-        this.setState({
-            searchStr: '',
-            searchResult: [],
-        });
+        this.hideSearchResults();
         this.props.history.push(url);
     }
 

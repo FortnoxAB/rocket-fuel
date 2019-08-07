@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { withRouter } from 'react-router-dom';
 import Markdown from '../helpers/markdown';
 import moment from 'moment';
@@ -11,6 +12,7 @@ import Trophy from '../utils/trophy';
 import { t } from 'ttag';
 import Dialog from '../utils/dialog';
 import InputField from '../forms/inputfield';
+import Tooltip from '../utils/tooltip';
 
 class Post extends React.Component {
     constructor(props) {
@@ -52,10 +54,11 @@ class Post extends React.Component {
 
         if (!this.props.accepted) {
             return (
-                <div className="unaccepted">
-                    <i className="fa fa-check"
-                       onClick={() => this.props.onAnswer(this.props.answerId)} />
+                <Tooltip content={t`Mark as accepted answer`}>
+                <div className="unaccepted" onClick={() => this.props.onAnswer(this.props.answerId)}>
+                    <i className="fa fa-check" />
                 </div>
+                </Tooltip>
             );
         }
 
@@ -308,6 +311,7 @@ Post.defaultProps = {
     votes: 0,
     currentUserVote: 0,
     answered: false,
+    accepted: false,
     questionId: null,
     answerId: null,
     picture: null,

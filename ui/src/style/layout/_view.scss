@@ -115,3 +115,11 @@
 .relative {
     position: relative;
 }
+
+@media screen and (max-width: $break-small) {
+    .main > .content {
+        width: 95vw;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}

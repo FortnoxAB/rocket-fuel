@@ -24,6 +24,10 @@
         .col-#{$i} {
             width: 100%;
         }
+        .row.spacing .col-#{$i}:not(:first-child) {
+            padding-top: 15px;
+            padding-left: inherit;
+        }
     }
 
     .hide-on-tablet {
@@ -36,6 +40,10 @@
         @if($i % 2 != 0) {
             .col-#{$i} {
                 width: 100%;
+            }
+            .row .spacing .col-#{$i}:not(:first-child) {
+                padding-top: 15px;
+                padding-left: inherit;
             }
         }
         .col-#{$i} {

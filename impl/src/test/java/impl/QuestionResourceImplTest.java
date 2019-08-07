@@ -75,9 +75,9 @@ public class QuestionResourceImplTest {
 
     @Test
     public void shouldReturnInternalServerErrorWhenGetQuestionsFails() {
-        when(questionDao.getQuestions(123)).thenReturn(Observable.error(new SQLException("poff")));
+        when(questionDao.getQuestions(123, null)).thenReturn(Observable.error(new SQLException("poff")));
 
-        assertException(() -> questionResource.getQuestions(123).toBlocking().singleOrDefault(null),
+        assertException(() -> questionResource.getQuestions(123, null).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_GET_QUESTIONS_FROM_DATABASE);
     }
