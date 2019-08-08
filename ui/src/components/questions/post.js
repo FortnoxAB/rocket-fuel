@@ -31,7 +31,7 @@ class Post extends React.Component {
     }
 
     getClasses() {
-        let classes = `question-post ${this.props.className}`;
+        let classes = `post ${this.props.className}`;
         if (this.props.answered) {
             classes = `${classes} accepted`;
         }
@@ -68,6 +68,10 @@ class Post extends React.Component {
 
     getTime() {
         return moment(this.props.created).fromNow();
+    }
+
+    getTimeStamp() {
+        return moment(this.props.created).format('llll');
     }
 
     renderAnswered() {
@@ -260,33 +264,35 @@ class Post extends React.Component {
 
     render() {
         return (
-            <div id={this.getId()} className={this.getClasses()}>
-                {this.renderDeleteDialog()}
-                {this.renderEditDialog()}
-                <div className="post-sidebar">
-                    {this.renderVotes()}
-                    {this.renderAccepted()}
-                    {this.renderAnswered()}
-                    {/*this.renderAwarded()*/}
-                </div>
-                <div className="flex-grow">
-                    <div className="post-body">
-                        <h3>{this.props.title}</h3>
-                        <div className="padded-bottom">
-                            <Markdown text={this.props.body} />
-                        </div>
+            <div className={this.getClasses()}>
+                <div id={this.getId()} className="post-container">
+                    {this.renderDeleteDialog()}
+                    {this.renderEditDialog()}
+                    <div className="post-sidebar">
+                        {this.renderVotes()}
+                        {this.renderAccepted()}
+                        {this.renderAnswered()}
+                        {/*this.renderAwarded()*/}
                     </div>
-                    <div className="post-footer flex flex-between">
-                        <div className="center-vertical">
-                            <div className="picture">
-                                <img src={this.props.picture} alt={this.props.userName}/>
-                            </div>
-                            <div>
-                                <div>{this.props.userName}</div>
-                                <div>{this.getTime()}</div>
+                    <div className="flex-grow">
+                        <div className="post-body">
+                            <h3>{this.props.title}</h3>
+                            <div className="padded-bottom">
+                                <Markdown text={this.props.body} />
                             </div>
                         </div>
-                        {this.renderButtons()}
+                        <div className="post-footer flex flex-between">
+                            <div className="flex center-vertical">
+                                <div className="picture">
+                                    <img src={this.props.picture} alt={this.props.userName}/>
+                                </div>
+                                <div className="flex-column flex-start">
+                                    <div>{this.props.userName}</div>
+                                    <Tooltip content={this.getTimeStamp()}>{this.getTime()}</Tooltip>
+                                </div>
+                            </div>
+                            {this.renderButtons()}
+                        </div>
                     </div>
                 </div>
             </div>

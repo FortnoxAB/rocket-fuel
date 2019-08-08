@@ -91,7 +91,7 @@ class QuestionView extends React.Component {
     renderAnswers() {
         if (this.state.answers.length <= 0) {
             return (
-                <div className="padded-bottom-large text-center text-faded">
+                <div className="text-center text-faded">
                     {t`No answers, be the first one to answer this question.`}
                 </div>
             );
@@ -190,7 +190,7 @@ class QuestionView extends React.Component {
                     onUpVote={this.onUpVoteQuestion.bind(this)}
                     onDownVote={this.onDownVoteQuestion.bind(this)}
                 />
-                <h3>{t`Answers`}</h3>
+                <h3 className="answer-title">{t`Answers`}</h3>
                 {this.renderAnswers()}
                 {this.renderAnswerForm()}
                 {this.renderPreview()}
@@ -199,6 +199,6 @@ class QuestionView extends React.Component {
     }
 }
 
-const WrappedQuestionView                        = withRouter(QuestionView);
+const WrappedQuestionView = withRouter(QuestionView);
 WrappedQuestionView.WrappedComponent.contextType = UserContext;
 export default WrappedQuestionView;

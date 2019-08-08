@@ -130,8 +130,8 @@ class HeaderSearch extends React.Component {
                 <InputField
                     type="text"
                     icon="fa-search"
-                    label={t`Quicksearch`}
-                    small
+                    placeholder={t`Quicksearch`}
+                    size="small"
                     value={this.state.searchStr}
                     onChange={this.handleChange.bind(this)}
                     className="flex-grow"

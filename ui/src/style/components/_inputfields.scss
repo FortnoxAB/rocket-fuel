@@ -1,5 +1,5 @@
-$input-background-color: $background-color;
-$input-placeholder-color: rgba(contrast($background-color), .6);
+$input-background-color: $background-color-light;
+$input-placeholder-color: rgba(contrast($background-color-light), .6);
 
 .input {
     .input-wrap {
@@ -27,44 +27,28 @@ $input-placeholder-color: rgba(contrast($background-color), .6);
         color: $notification-error;
     }
 
-    .label {
+    .label, .placeholder {
         transform-origin: left;
         pointer-events: none;
         color: $input-placeholder-color;
         transition: .2s;
         position: absolute;
         display: block;
-        top: 11px;
+        top: 17px;
         left: 15px;
     }
 
-    &.rounded input {
-        border-radius: 45px;
+    .placeholder {
+        top: auto;
     }
 
-    &.has-icon {
-        input {
-            padding-left: 35px;
-        }
-
-        .label {
-            left: 35px;
-        }
-
-        .fa {
-            color: $input-placeholder-color;
-            position: absolute;
-            left: 15px;
-        }
-    }
-
-    input, textarea {
+    input, textarea, .select-field {
         vertical-align: middle;
-        padding: 10px;
+        padding: 15px;
         transition: .2s;
         width: 100%;
         background-color: $input-background-color;
-        border: 1px solid $border-color;
+        border: 2px solid $border-color;
         color: contrast($input-background-color);
         outline: none;
         resize: none;
@@ -76,29 +60,67 @@ $input-placeholder-color: rgba(contrast($background-color), .6);
         }
     }
 
-    &.active {
-        .label {
-            @include main-font();
-            color: $primary-color;
-            background: $background-color-light;
-            padding: 5px;
-            transform: scale(0.7) translate(0, -120%);
+    &.rounded input {
+        border-radius: 45px;
+    }
+
+    &.has-icon {
+        input, textarea {
+            padding-left: 2.5em;
+        }
+
+        .label, .placeholder {
+            left: 35px;
+        }
+
+        .fa {
+            color: $input-placeholder-color;
+            position: absolute;
+            left: 15px;
         }
     }
 
-    &.lg {
+    &.has-icon .label + i + input,
+    &.has-icon .label + i + textarea {
+        padding: 20px 15px 10px 2.5em;
+    }
 
+    .label + input,
+    .label + textarea {
+        padding: 20px 15px 10px 15px;
+    }
+
+    &.active {
+        .label {
+            color: $primary-color;
+            font-size: .75em;
+            top: .6em;
+        }
+        .placeholder {
+            display: none;
+        }
+    }
+
+    &.small {
+        input, textarea {
+            padding: 10px;
+        }
+
+        &.has-icon {
+            input, textarea {
+                padding-left: 2.5em;
+            }
+        }
+    }
+
+    &.large {
         input, textarea, .label, .fa {
             font-size: 1.5em;
         }
 
         &.has-icon {
             input, textarea {
-                padding-left: 50px
-            }
-
-            .label {
-                left: 50px;
+                padding-left: 2.5em
             }
 
             .fa {
@@ -109,7 +131,7 @@ $input-placeholder-color: rgba(contrast($background-color), .6);
 }
 
 
-.field-auto-complete {
+.field-auto-complete, .select-dropdown {
     position: absolute;
     width: 100%;
     top: 100%;
@@ -138,4 +160,10 @@ $input-placeholder-color: rgba(contrast($background-color), .6);
 
 .markdown-text {
     padding-bottom: 8px;
+}
+
+.select-field {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
 }

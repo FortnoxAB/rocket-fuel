@@ -10,14 +10,31 @@ import Tooltip from '../utils/tooltip';
 import Button from '../forms/button';
 import * as User from '../../models/user';
 import HeaderSearch from './headersearch';
+import Dialog from '../utils/dialog';
+import SelectField from '../forms/selectfield';
 
 class Header extends React.Component {
     constructor(props) {
         super(props);
+
+        this.themes = [
+            {
+                title: t`Light`,
+                value: 'light',
+                selected: false
+            },
+            {
+                title: t`Dark`,
+                value: 'dark',
+                selected: false
+            }
+        ];
+
         this.state = {
             quickSearch: '',
             isDropdownOpen: false,
-            isCreateDropdownOpen: false
+            isSettingsOpen: false,
+            themes: this.themes
         }
     }
 
@@ -40,21 +57,6 @@ class Header extends React.Component {
         });
     }
 
-    toggleCreateDropdown() {
-        this.setState({
-            isCreateDropdownOpen: !this.state.isCreateDropdownOpen
-        });
-    }
-
-    closeCreateDropdown() {
-        if (!this.state.isCreateDropdownOpen) {
-            return;
-        }
-        this.setState({
-            isCreateDropdownOpen: false
-        });
-    }
-
     logoutUser() {
         this.GoogleAuth = gapi.auth2.getAuthInstance();
         this.GoogleAuth.signOut().catch(() => {
@@ -62,9 +64,54 @@ class Header extends React.Component {
         });
     }
 
+    openSettings() {
+        this.setState({
+            isDropdownOpen: false,
+            isSettingsOpen: true
+        });
+    }
+
+    closeSettings() {
+        this.setState({
+            isSettingsOpen: false
+        });
+    }
+
+    onChangeTheme(newItem) {
+        const newThemesState = this.state.themes.map((item) => {
+            item.selected = false;
+            if (newItem.value === item.value) {
+                item.selected = true
+            }
+
+            return item;
+        });
+
+        this.context.setState({
+            theme: newItem.value
+        });
+
+        this.setState({
+            themes: newThemesState
+        });
+    }
+
+    renderDialog() {
+        return (
+            <Dialog isOpen={this.state.isSettingsOpen} title={t`Settings`}>
+                <h3>{t`Theme`}</h3>
+                <SelectField options={this.state.themes} onChange={this.onChangeTheme.bind(this)}/>
+                <div className="flex flex-end padded-top-large">
+                    <Button color="primary" text onClick={this.closeSettings.bind(this)}>{t`Close`}</Button>
+                </div>
+            </Dialog>
+        );
+    }
+
     render() {
         return (
             <div>
+                {this.renderDialog()}
                 <div className="header">
                     <div className="flex">
                         <Logo onClick={this.navigate.bind(this, '/')} className="pointer"
@@ -80,14 +127,6 @@ class Header extends React.Component {
                                 <i className="fa fa-plus" />
                             </Button>
                         </Tooltip>
-                            {/*<Dropdown
-                                isOpen={this.state.isCreateDropdownOpen}
-                                close={this.closeCreateDropdown.bind(this)}
-                            >
-                                <ul>
-                                    <li onClick={this.navigate.bind(this, '/create/question')}>New question</li>
-                                </ul>
-                            </Dropdown>*/}
                         </div>
                         <div className="user item">
                             <Tooltip content={this.context.state.user.name}>
@@ -100,6 +139,7 @@ class Header extends React.Component {
                                 close={this.closeUserDropdown.bind(this)}
                             >
                                 <ul>
+                                    <li onClick={this.openSettings.bind(this)}>{t`Settings`}</li>
                                     <li onClick={this.logoutUser.bind(this)}>{t`Logout`}</li>
                                 </ul>
                             </Dropdown>

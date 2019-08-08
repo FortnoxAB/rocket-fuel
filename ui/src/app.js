@@ -3,8 +3,6 @@ import { BrowserRouter as Router } from 'react-router-dom'
 import { UserProvider } from './usercontext';
 import Routing from './routing';
 
-import './style/main.scss';
-
 const App = () => {
     return (
         <UserProvider>

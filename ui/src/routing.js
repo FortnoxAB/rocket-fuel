@@ -20,14 +20,40 @@ class Routing extends React.Component {
         super(props);
 
         this.state = {
-            loaded: false
+            loaded: false,
+            currentTheme: 'no-theme'
         };
 
         this.GoogleAuth = null;
         this.GoogleUser = null;
     }
 
+    setTheme(theme) {
+        if (!theme) {
+            theme = 'light';
+        }
+        let styleElement = document.getElementById(theme);
+        let allStyles = [...document.getElementsByClassName('styles')];
+
+        allStyles.map((style) => {
+            style.disabled = true;
+        });
+        styleElement.disabled = false;
+
+        this.setState({
+            currentTheme: theme
+        });
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const contextTheme = this.context.state.theme;
+        if (contextTheme && prevState.currentTheme !== contextTheme) {
+            this.setTheme(contextTheme);
+        }
+    }
+
     componentWillMount() {
+        this.setTheme(this.context.state.theme);
         gapi.load('auth2', () => {
             gapi.auth2.init({
                 client_id: window.googleClientId

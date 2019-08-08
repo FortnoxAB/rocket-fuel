@@ -29,7 +29,9 @@ const computedPublicPath = '/build/';
 
 module.exports = {
     entry: {
-        rocketfuel: ['@babel/polyfill', './src/index.js']
+        rocketfuel: ['@babel/polyfill', './src/index.js'],
+        style_light: ['./src/style/light-theme.scss'],
+        style_dark: ['./src/style/dark-theme.scss']
     },
     output: {
         publicPath: computedPublicPath,
@@ -91,7 +93,7 @@ module.exports = {
     devtool: 'source-map', // TODO: Check production flag -> false
     plugins: [
         new MiniCssExtractPlugin({
-            filename: 'style.css'
+            filename: '[name].css'
         }),
         new CleanWebpackPlugin('build', {}),
         new CopyPlugin([

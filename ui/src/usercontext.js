@@ -5,7 +5,8 @@ export const UserContext = React.createContext(null);
 export class UserProvider extends React.Component {
     state = {
         user: null,
-        token: null
+        token: null,
+        theme: null
     };
 
     render() {

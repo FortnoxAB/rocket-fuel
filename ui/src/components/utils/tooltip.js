@@ -60,14 +60,14 @@ class Tooltip extends React.Component {
 
     render() {
         return (
-            <div
+            <span
                 className="tooltip-wrap"
                 onMouseEnter={this.showTooltip.bind(this)}
                 onMouseLeave={this.hideTooltip.bind(this)}
             >
                 {this.props.children}
                 {this.renderTooltipContent()}
-            </div>
+            </span>
         );
     }
 }

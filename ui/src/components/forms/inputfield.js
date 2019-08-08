@@ -28,23 +28,17 @@ class InputField extends React.Component {
     }
 
     getClassName() {
-        let className = `input ${this.props.className}`;
-        if (this.props.errorMessage) {
-            className = `${className} error`;
-        }
-        if (this.props.rounded) {
-            className = `${className} rounded`;
-        }
-        if (this.props.icon) {
-            className = `${className} has-icon`;
-        }
-        if (this.state.active) {
-            className = `${className} active`;
-        }
-        if (this.props.large) {
-            className = `${className} lg`;
-        }
-        return className;
+        return [
+            'input',
+            this.props.className,
+            this.props.errorMessage ? 'error' : '',
+            this.props.rounded ? 'rounded' : '',
+            this.props.icon ? 'has-icon' : '',
+            this.state.active ? 'active' : '',
+            this.props.size === 'large' ? 'large' : '',
+            this.props.size === 'small' ? 'small' : '',
+            this.props.className,
+        ].join(' ');
     }
 
     onFocus() {
@@ -111,6 +105,18 @@ class InputField extends React.Component {
         );
     }
 
+    getPlaceholder() {
+        if (!this.props.placeholder) {
+            return null;
+        }
+
+        return (
+            <div className="placeholder">
+                {this.props.placeholder}
+            </div>
+        );
+    }
+
     getIcon() {
         if (!this.props.icon) {
             return null;
@@ -139,6 +145,7 @@ class InputField extends React.Component {
             <div className={this.getClassName()}>
                 {this.renderMarkdown()}
                 <div className="input-wrap">
+                    {this.getPlaceholder()}
                     {this.getLabel()}
                     {this.getIcon()}
                     {this.getInputType()}
@@ -150,17 +157,13 @@ class InputField extends React.Component {
 }
 
 InputField.defaultProps = {
-    onBlur: () => {
-    },
-    onFocus: () => {
-    },
+    onBlur: () => {},
+    onFocus: () => {},
     type: 'text',
     label: '',
     value: '',
-    onChange: () => {
-    },
-    onKeyPress: () => {
-    },
+    onChange: () => {},
+    onKeyPress: () => {},
     name: '',
     autocomplete: 'on',
     disabled: false,
@@ -172,7 +175,8 @@ InputField.defaultProps = {
     validate: () => {
     },
     markdown: false,
-    large: false
+    size: '',
+    placeholder: ''
 };
 
 InputField.propTypes = {
@@ -193,7 +197,8 @@ InputField.propTypes = {
     icon: PropTypes.string,
     validate: PropTypes.func,
     markdown: PropTypes.bool,
-    large: PropTypes.bool
+    size: PropTypes.string,
+    placeholder: PropTypes.string
 };
 
 export default InputField;
