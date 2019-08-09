@@ -11,6 +11,7 @@ import Trophy from '../utils/trophy';
 import { t } from 'ttag';
 import Dialog from '../utils/dialog';
 import InputField from '../forms/inputfield';
+import Tooltip from '../utils/tooltip';
 
 class Post extends React.Component {
     constructor(props) {
