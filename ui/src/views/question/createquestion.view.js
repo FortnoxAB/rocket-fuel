@@ -213,10 +213,9 @@ class CreateQuestionView extends React.Component {
                 <div className="form">
                     <InputField
                         className="padded-bottom"
-                        placeholder={t`Title`}
                         onChange={this.handleChange.bind(this)}
                         name="title"
-                        label="Title"
+                        label={t`Title`}
                         type="text"
                         value={this.state.title}
                         errorMessage={this.state.error.title}
@@ -226,10 +225,9 @@ class CreateQuestionView extends React.Component {
                     <InputField
                         markdown
                         className="padded-bottom"
-                        placeholder={t`Question`}
                         onChange={this.handleChange.bind(this)}
                         name="question"
-                        label="Question"
+                        label={t`Question`}
                         type="textarea"
                         value={this.state.question}
                         errorMessage={this.state.error.question}
