@@ -144,6 +144,8 @@ $input-placeholder-color: rgba(contrast($background-color-light), .6);
     li {
         padding: 10px;
         cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &:not(:first-child) {
             border-top: 1px solid $border-color;
