@@ -168,8 +168,12 @@ class QuestionView extends React.Component {
         }
         return (
             <div className="padded-vertical">
-                <h3>{t`Preview`}</h3>
-                <Markdown text={this.state.answer} />
+                <div className="headline">{t`Preview`}</div>
+                <Post
+                    body={this.state.answer}
+                    userName={this.context.state.user.name}
+                    picture={this.context.state.user.picture}
+                />
             </div>
         );
     }

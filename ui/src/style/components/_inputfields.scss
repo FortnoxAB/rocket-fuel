@@ -36,6 +36,7 @@ $input-placeholder-color: rgba(contrast($background-color-light), .6);
         display: block;
         top: 17px;
         left: 15px;
+        background-color: $input-background-color;
     }
 
     .placeholder {

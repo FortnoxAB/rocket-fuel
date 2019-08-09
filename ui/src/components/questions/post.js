@@ -53,10 +53,11 @@ class Post extends React.Component {
 
         if (!this.props.accepted) {
             return (
-                <div className="unaccepted">
-                    <i className="fa fa-check"
-                       onClick={() => this.props.onAnswer(this.props.answerId)} />
-                </div>
+                <Tooltip content={t`Mark as accepted answer`}>
+                    <div className="unaccepted" onClick={() => this.props.onAnswer(this.props.answerId)}>
+                        <i className="fa fa-check" />
+                    </div>
+                </Tooltip>
             );
         }
 
