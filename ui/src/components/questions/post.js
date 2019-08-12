@@ -21,7 +21,8 @@ class Post extends React.Component {
             isDeleteDialogOpen: false,
             isEditDialogOpen: false,
             currentBody: '',
-            postingToServer: false
+            postingToServer: false,
+            editFormError: ''
         };
     }
 
@@ -147,8 +148,15 @@ class Post extends React.Component {
         if (!this.props.answerId) {
             return;
         }
+        if (this.state.answer.length <= 0) {
+            this.setState({
+                editFormError: t`You cannot leave an empty answer.`
+            });
+            return;
+        }
         this.setState({
-            postingToServer: true
+            postingToServer: true,
+            editFormError: ''
         });
         Answer.updateAnswer(this.props.answerId, {answer: this.state.answer})
             .then(() => {
@@ -246,14 +254,16 @@ class Post extends React.Component {
     renderEditDialog() {
         return (
             <Dialog isOpen={this.state.isEditDialogOpen} title={t`Edit answer`}>
-                <div className="padded-bottom-large">
+                <div className="padded-bottom">
                     <InputField
+                        errorMessage={this.state.editFormError}
                         type="textarea"
                         name="answer"
                         value={this.state.answer}
                         onChange={this.onChangeAnswer.bind(this)}
                         label={t`Answer`}
                         markdown
+
                     />
                 </div>
                 <div className="flex flex-end">

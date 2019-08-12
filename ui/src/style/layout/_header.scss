@@ -14,6 +14,12 @@
     .quick-search {
         flex-grow: 1;
         max-width: 600px;
+
+        .input .input-wrap {
+            align-self: center;
+            flex-grow: 1;
+            margin-bottom: 0;
+        }
     }
 
     .logo {
@@ -43,15 +49,6 @@
         .button {
             margin-right: 10px;
         }
-    }
-
-    .input-wrap {
-        align-self: center;
-        flex-grow: 1;
-    }
-
-    .search-bar {
-        flex-grow: 1;
     }
 
     .menu-bar {

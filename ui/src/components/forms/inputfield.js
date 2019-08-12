@@ -21,10 +21,11 @@ class InputField extends React.Component {
     }
 
     printErrorMessage() {
-        if (!this.props.errorMessage) {
-            return null;
-        }
-        return <div className="error-message">{this.props.errorMessage}</div>;
+        return (
+            <div className="error-message">
+                {this.props.errorMessage}
+            </div>
+        );
     }
 
     getClassName() {

@@ -141,15 +141,17 @@ class QuestionView extends React.Component {
     renderAnswerForm() {
         return (
             <div className="answer-form">
-                <InputField
-                    markdown
-                    label={t`Answer`}
-                    type="textarea"
-                    name="answer"
-                    value={this.state.answer}
-                    onChange={this.onChangeAnswer.bind(this)}
-                    errorMessage={this.state.answerError}
-                />
+                <div className="padded-bottom">
+                    <InputField
+                        markdown
+                        label={t`Answer`}
+                        type="textarea"
+                        name="answer"
+                        value={this.state.answer}
+                        onChange={this.onChangeAnswer.bind(this)}
+                        errorMessage={this.state.answerError}
+                    />
+                </div>
                 <Button
                     color="secondary"
                     onClick={this.saveAnswer.bind(this)}

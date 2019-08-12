@@ -1,8 +1,10 @@
-const path                 = require('path');
-const CopyPlugin           = require('copy-webpack-plugin');
-const HtmlWebpackPlugin    = require('html-webpack-plugin');
-const CleanWebpackPlugin   = require('clean-webpack-plugin');
+const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackExcludeAssetsPlugin = require('html-webpack-exclude-assets-plugin');
+
 const webpack = require('webpack');
 
 const reactConfig = {
@@ -103,11 +105,14 @@ module.exports = {
             'BUILDTIME': JSON.stringify(new Date().toISOString())
         }),
         new HtmlWebpackPlugin({
-            inject: false,
+            inject: true,
             hash: true,
+            favicon: './src/images/logo-icon.png',
             template: './src/index.html',
-            filename: 'index.html'
-        })
+            filename: 'index.html',
+            excludeAssets: [/-*style_.*(.js|.css)/]
+        }),
+        new HtmlWebpackExcludeAssetsPlugin()
     ],
     devServer: {
         port: 8083,
