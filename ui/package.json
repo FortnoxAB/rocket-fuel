@@ -35,6 +35,7 @@
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "2.0.0",
     "font-awesome": "4.7.0",
+    "html-webpack-exclude-assets-plugin": "0.0.7",
     "html-webpack-plugin": "^3.2.0",
     "json-loader": "^0.5.7",
     "less": "^3.9.0",

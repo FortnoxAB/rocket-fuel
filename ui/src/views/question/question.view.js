@@ -91,7 +91,7 @@ class QuestionView extends React.Component {
     renderAnswers() {
         if (this.state.answers.length <= 0) {
             return (
-                <div className="padded-bottom-large text-center text-faded">
+                <div className="text-center text-faded">
                     {t`No answers, be the first one to answer this question.`}
                 </div>
             );
@@ -141,15 +141,17 @@ class QuestionView extends React.Component {
     renderAnswerForm() {
         return (
             <div className="answer-form">
-                <InputField
-                    markdown
-                    label={t`Answer`}
-                    type="textarea"
-                    name="answer"
-                    value={this.state.answer}
-                    onChange={this.onChangeAnswer.bind(this)}
-                    errorMessage={this.state.answerError}
-                />
+                <div className="padded-bottom">
+                    <InputField
+                        markdown
+                        label={t`Answer`}
+                        type="textarea"
+                        name="answer"
+                        value={this.state.answer}
+                        onChange={this.onChangeAnswer.bind(this)}
+                        errorMessage={this.state.answerError}
+                    />
+                </div>
                 <Button
                     color="secondary"
                     onClick={this.saveAnswer.bind(this)}
@@ -168,8 +170,12 @@ class QuestionView extends React.Component {
         }
         return (
             <div className="padded-vertical">
-                <h3>{t`Preview`}</h3>
-                <Markdown text={this.state.answer} />
+                <div className="headline">{t`Preview`}</div>
+                <Post
+                    body={this.state.answer}
+                    userName={this.context.state.user.name}
+                    picture={this.context.state.user.picture}
+                />
             </div>
         );
     }
@@ -190,7 +196,7 @@ class QuestionView extends React.Component {
                     onUpVote={this.onUpVoteQuestion.bind(this)}
                     onDownVote={this.onDownVoteQuestion.bind(this)}
                 />
-                <h3>{t`Answers`}</h3>
+                <h3 className="answer-title">{t`Answers`}</h3>
                 {this.renderAnswers()}
                 {this.renderAnswerForm()}
                 {this.renderPreview()}
@@ -199,6 +205,6 @@ class QuestionView extends React.Component {
     }
 }
 
-const WrappedQuestionView                        = withRouter(QuestionView);
+const WrappedQuestionView = withRouter(QuestionView);
 WrappedQuestionView.WrappedComponent.contextType = UserContext;
 export default WrappedQuestionView;

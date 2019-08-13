@@ -5,9 +5,10 @@
     align-items: center;
 
     .tooltip {
-        font-size: .8em;
+        font-size: $font-size * .8;
         pointer-events: none;
         position: absolute;
+        margin-top: 10px;
         top: 100%;
         padding: 5px;
         border-radius: $roundness;

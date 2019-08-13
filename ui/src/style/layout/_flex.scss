@@ -1,6 +1,10 @@
 .flex {
     display: flex;
 
+    &-start {
+        align-items: flex-start;
+    }
+
     &-no-shrink {
         flex-shrink: 0;
     }

@@ -1,8 +1,10 @@
-const path                 = require('path');
-const CopyPlugin           = require('copy-webpack-plugin');
-const HtmlWebpackPlugin    = require('html-webpack-plugin');
-const CleanWebpackPlugin   = require('clean-webpack-plugin');
+const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackExcludeAssetsPlugin = require('html-webpack-exclude-assets-plugin');
+
 const webpack = require('webpack');
 
 const reactConfig = {
@@ -29,7 +31,9 @@ const computedPublicPath = '/build/';
 
 module.exports = {
     entry: {
-        rocketfuel: ['@babel/polyfill', './src/index.js']
+        rocketfuel: ['@babel/polyfill', './src/index.js'],
+        style_light: ['./src/style/light-theme.scss'],
+        style_dark: ['./src/style/dark-theme.scss']
     },
     output: {
         publicPath: computedPublicPath,
@@ -91,7 +95,7 @@ module.exports = {
     devtool: 'source-map', // TODO: Check production flag -> false
     plugins: [
         new MiniCssExtractPlugin({
-            filename: 'style.css'
+            filename: '[name].css'
         }),
         new CleanWebpackPlugin('build', {}),
         new CopyPlugin([
@@ -101,11 +105,14 @@ module.exports = {
             'BUILDTIME': JSON.stringify(new Date().toISOString())
         }),
         new HtmlWebpackPlugin({
-            inject: false,
+            inject: true,
             hash: true,
+            favicon: './src/images/logo-icon.png',
             template: './src/index.html',
-            filename: 'index.html'
-        })
+            filename: 'index.html',
+            excludeAssets: [/-*style_.*(.js|.css)/]
+        }),
+        new HtmlWebpackExcludeAssetsPlugin()
     ],
     devServer: {
         port: 8083,

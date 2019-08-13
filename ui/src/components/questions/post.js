@@ -11,6 +11,7 @@ import Trophy from '../utils/trophy';
 import { t } from 'ttag';
 import Dialog from '../utils/dialog';
 import InputField from '../forms/inputfield';
+import Tooltip from '../utils/tooltip';
 
 class Post extends React.Component {
     constructor(props) {
@@ -20,7 +21,8 @@ class Post extends React.Component {
             isDeleteDialogOpen: false,
             isEditDialogOpen: false,
             currentBody: '',
-            postingToServer: false
+            postingToServer: false,
+            editFormError: ''
         };
     }
 
@@ -31,7 +33,7 @@ class Post extends React.Component {
     }
 
     getClasses() {
-        let classes = `question-post ${this.props.className}`;
+        let classes = `post ${this.props.className}`;
         if (this.props.answered) {
             classes = `${classes} accepted`;
         }
@@ -52,10 +54,11 @@ class Post extends React.Component {
 
         if (!this.props.accepted) {
             return (
-                <div className="unaccepted">
-                    <i className="fa fa-check"
-                       onClick={() => this.props.onAnswer(this.props.answerId)} />
-                </div>
+                <Tooltip content={t`Mark as accepted answer`}>
+                    <div className="unaccepted" onClick={() => this.props.onAnswer(this.props.answerId)}>
+                        <i className="fa fa-check" />
+                    </div>
+                </Tooltip>
             );
         }
 
@@ -68,6 +71,10 @@ class Post extends React.Component {
 
     getTime() {
         return moment(this.props.created).fromNow();
+    }
+
+    getTimeStamp() {
+        return moment(this.props.created).format('llll');
     }
 
     renderAnswered() {
@@ -141,8 +148,15 @@ class Post extends React.Component {
         if (!this.props.answerId) {
             return;
         }
+        if (this.state.answer.length <= 0) {
+            this.setState({
+                editFormError: t`You cannot leave an empty answer.`
+            });
+            return;
+        }
         this.setState({
-            postingToServer: true
+            postingToServer: true,
+            editFormError: ''
         });
         Answer.updateAnswer(this.props.answerId, {answer: this.state.answer})
             .then(() => {
@@ -240,14 +254,16 @@ class Post extends React.Component {
     renderEditDialog() {
         return (
             <Dialog isOpen={this.state.isEditDialogOpen} title={t`Edit answer`}>
-                <div className="padded-bottom-large">
+                <div className="padded-bottom">
                     <InputField
+                        errorMessage={this.state.editFormError}
                         type="textarea"
                         name="answer"
                         value={this.state.answer}
                         onChange={this.onChangeAnswer.bind(this)}
                         label={t`Answer`}
                         markdown
+
                     />
                 </div>
                 <div className="flex flex-end">
@@ -260,33 +276,35 @@ class Post extends React.Component {
 
     render() {
         return (
-            <div id={this.getId()} className={this.getClasses()}>
-                {this.renderDeleteDialog()}
-                {this.renderEditDialog()}
-                <div className="post-sidebar">
-                    {this.renderVotes()}
-                    {this.renderAccepted()}
-                    {this.renderAnswered()}
-                    {/*this.renderAwarded()*/}
-                </div>
-                <div className="flex-grow">
-                    <div className="post-body">
-                        <h3>{this.props.title}</h3>
-                        <div className="padded-bottom">
-                            <Markdown text={this.props.body} />
-                        </div>
+            <div className={this.getClasses()}>
+                <div id={this.getId()} className="post-container">
+                    {this.renderDeleteDialog()}
+                    {this.renderEditDialog()}
+                    <div className="post-sidebar">
+                        {this.renderVotes()}
+                        {this.renderAccepted()}
+                        {this.renderAnswered()}
+                        {/*this.renderAwarded()*/}
                     </div>
-                    <div className="post-footer flex flex-between">
-                        <div className="center-vertical">
-                            <div className="picture">
-                                <img src={this.props.picture} alt={this.props.userName}/>
-                            </div>
-                            <div>
-                                <div>{this.props.userName}</div>
-                                <div>{this.getTime()}</div>
+                    <div className="flex-grow">
+                        <div className="post-body">
+                            <h3>{this.props.title}</h3>
+                            <div className="padded-bottom">
+                                <Markdown text={this.props.body} />
                             </div>
                         </div>
-                        {this.renderButtons()}
+                        <div className="post-footer flex flex-between">
+                            <div className="flex center-vertical">
+                                <div className="picture">
+                                    <img src={this.props.picture} alt={this.props.userName}/>
+                                </div>
+                                <div className="flex-column flex-start">
+                                    <div>{this.props.userName}</div>
+                                    <Tooltip content={this.getTimeStamp()}>{this.getTime()}</Tooltip>
+                                </div>
+                            </div>
+                            {this.renderButtons()}
+                        </div>
                     </div>
                 </div>
             </div>

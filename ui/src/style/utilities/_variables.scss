@@ -5,10 +5,8 @@ $alternative-color: #FF5722;
 $gradient-one: #ee0290;
 $gradient-two: #FF5722;
 
-$background-color: #FFF;
-// $background-color: #263238;
-
-$background-color-light:lighten($background-color, 5%);
+$background-color-light: lighten($background-color, 3%);
+$background-color-dark: darken($background-color, 3%);
 
 $text-color-dark: #424242;
 $text-color-light: #FAFAFA;
@@ -22,7 +20,7 @@ $gray-dark-more: #424242;
 $gray-dark-even-more: #212121;
 
 
-$border-color: contrast($background-color-light, $gray-dark, $gray-light-more);
+$border-color: contrast($background-color-light, $gray-dark-more, $gray-light-more);
 
 $notification-error: #EF5350;
 $notification-success: #4CAF50;
