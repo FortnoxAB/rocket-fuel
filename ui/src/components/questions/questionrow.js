@@ -1,16 +1,10 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import moment from 'moment';
 
 import Certificate from '../utils/certificate';
-import Coins from '../utils/coins';
 import Trophy from '../utils/trophy';
 import { UserContext } from '../../usercontext';
-import Dropdown from '../utils/dropdown';
-import { t } from 'ttag';
-import Dialog from '../utils/dialog';
-import Button from '../forms/button';
-import * as Question from '../../models/question';
+import Post from './post';
 
 class QuestionRow extends React.Component {
     constructor(props) {
@@ -26,10 +20,6 @@ class QuestionRow extends React.Component {
             user: this.context.state.user,
             isDropdownOpen: false
         });
-    }
-
-    getTime() {
-        return moment(this.props.question.createdAt).fromNow();
     }
 
     getState() {
@@ -95,7 +85,7 @@ class QuestionRow extends React.Component {
                             {this.props.question.title}
                         </div>
                         <div className="user">
-                            {this.props.question.createdBy}, {this.getTime()}
+                            {this.props.question.createdBy}, {Post.getTime(this.props.question.createdAt)}
                         </div>
                     </div>
                 </div>

@@ -40,7 +40,7 @@ public interface QuestionResource {
      */
     @GET
     @Path("questions/latest")
-    Observable<List<Question>> getLatestQuestion(@QueryParam("limit") Integer limit);
+    Observable<List<Question>> getLatestQuestions(@QueryParam("limit") Integer limit);
 
     /**
      * Adds a question and links it to the given userId.

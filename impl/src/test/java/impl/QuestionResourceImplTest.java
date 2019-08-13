@@ -60,7 +60,7 @@ public class QuestionResourceImplTest {
     public void shouldReturnInternalServerErrorWhenCreateQuestionFails() {
         // given db error
         Question question = new Question();
-        when(questionDao.addQuestion(123, question)).thenReturn(Observable.error(new SQLException("poff")));
+        when(questionDao.addQuestion(123, question, null)).thenReturn(Observable.error(new SQLException("poff")));
         Auth auth = new Auth();
         auth.setUserId(123);
 

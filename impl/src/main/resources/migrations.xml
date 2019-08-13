@@ -202,4 +202,8 @@
         <dropColumn tableName="answer" columnName="accepted"/>
     </changeSet>
 
+    <changeSet id="remove_votes_from_question" author="rickard.blomkvist">
+        <dropColumn tableName="question" columnName="votes"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -6,7 +6,6 @@ import Loader from '../../components/utils/loader';
 import Markdown from '../../components/helpers/markdown';
 import InputField from '../../components/forms/inputfield';
 import Button from '../../components/forms/button';
-import Post from '../../components/questions/post';
 import Answer from '../../components/questions/answer';
 import * as QuestionApi from '../../models/question';
 import * as AnswerApi from '../../models/answer';

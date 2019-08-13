@@ -6,6 +6,8 @@ import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 
+import java.time.LocalDateTime;
+
 public interface QuestionDao {
 
     @Query(
@@ -15,7 +17,6 @@ public interface QuestionDao {
             "answer_accepted, " +
             "question.title, " +
             "question.bounty, " +
-            "question.votes, " +
             "question.created_at, " +
             "question,user_id, " +
             "question.slack_id, \"user\".picture, \"user\".name as created_by, " +
@@ -33,29 +34,38 @@ public interface QuestionDao {
             "answer_accepted, " +
             "question.title, " +
             "question.bounty, " +
-            "question.votes, " +
             "question.created_at, " +
             "question,user_id, " +
             "question.slack_id, " +
             "\"user\".picture, \"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes," +
+            "(SELECT accepted_at FROM answer WHERE question_id = question.id AND accepted_at IS NOT NULL) AS accepted_at " +
         "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
         "ORDER BY " +
-            "question.created_at DESC " +
+            "accepted_at DESC NULLS LAST, " +
+            "votes DESC NULLS LAST, " +
+            "question.created_at DESC, " +
+            "question.title " +
         "LIMIT " +
             ":limit")
     Observable<Question> getLatestQuestions(Integer limit);
 
+    /**
+     * Add new question
+     * @param userId
+     * @param question
+     * @param createdAt For testing purposes. Only used if non-null.
+     * @return
+     */
     @Update(
         "INSERT INTO " +
             "question (" +
             "question, " +
             "title, " +
             "bounty, " +
-            "votes, " +
             "created_at, " +
             "user_id, " +
             "slack_id) " +
@@ -64,12 +74,11 @@ public interface QuestionDao {
             ":question.question, " +
             ":question.title, " +
             ":question.bounty, " +
-            "0, " +
-            "NOW(), " +
+            "COALESCE(:createdAt, NOW()), " +
             ":userId, " +
             ":question.slackId" +
             ")")
-    Observable<GeneratedKey<Long>> addQuestion(long userId, Question question);
+    Observable<GeneratedKey<Long>> addQuestion(long userId, Question question, LocalDateTime createdAt);
 
     @Update("UPDATE question " +
             "SET question=:question.question, title=:question.title " +
@@ -82,7 +91,6 @@ public interface QuestionDao {
             "question, " +
             "title, " +
             "bounty, " +
-            "votes, " +
             "answer_accepted, " +
             "created_at, " +
             "\"user\".name as created_by, " +
@@ -107,7 +115,6 @@ public interface QuestionDao {
             "question, " +
             "title, " +
             "bounty, " +
-            "votes, " +
             "answer_accepted, " +
             "created_at, " +
             "user_id, " +
@@ -137,7 +144,6 @@ public interface QuestionDao {
         "SELECT " +
             "id, question, " +
             "title, bounty, " +
-            "votes, " +
             "answer_accepted, " +
             "created_at, user_id, " +
             "slack_id, " +
@@ -161,7 +167,6 @@ public interface QuestionDao {
             "answer_accepted, " +
             "question.title, " +
             "question.bounty, " +
-            "question.votes, " +
             "question.created_at, " +
             "question, " +
             "question.user_id, " +
@@ -180,7 +185,7 @@ public interface QuestionDao {
         "OR " +
             "answer.answer  ILIKE ('%' || :search || '%') " +
         "ORDER BY  " +
-            "question.votes desc, " +
+            "votes desc, " +
             "question.created_at desc " +
         "LIMIT " +
             ":limit")

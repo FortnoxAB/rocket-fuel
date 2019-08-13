@@ -22,6 +22,7 @@ import slack.SlackResource;
 
 import java.util.List;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -87,19 +88,18 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<List<Question>> getLatestQuestion(Integer limit) {
-        if (limit == null) {
-            limit = 10;
-        }
+    public Observable<List<Question>> getLatestQuestions(Integer limit) {
+        limit = firstNonNull(limit, 10);
+
         return this.questionDao.getLatestQuestions(limit).toList().onErrorResumeNext(e ->
-            error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.get.latest.questions", e))
+            error(new WebException(INTERNAL_SERVER_ERROR, "failed.to.get.latest.questions", e))
         );
     }
 
     @Override
     public Observable<Question> createQuestion(Auth auth, Question question) {
         return this.questionDao
-          .addQuestion(auth.getUserId(), question)
+          .addQuestion(auth.getUserId(), question, null)
             .map(longGeneratedKey -> {
                 question.setId(longGeneratedKey.getKey());
                 return question;
@@ -111,7 +111,7 @@ public class QuestionResourceImpl implements QuestionResource {
                         return empty();
                     });
                 return first(postMessageToSlack).thenReturn(savedQuestion);
-            }).onErrorResumeNext(throwable -> error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
+            }).onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
     }
 
     private List<LayoutBlock> notificationMessage(Question question) {
@@ -144,7 +144,7 @@ public class QuestionResourceImpl implements QuestionResource {
         return questionDao.getQuestions(searchQuery, limit)
             .onErrorResumeNext(e -> {
                 LOG.error("failed to search for questions with search query: [" + searchQuery + "]");
-                return error(new WebException(HttpResponseStatus.INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS ,e));
+                return error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS ,e));
             }).toList();
     }
 
