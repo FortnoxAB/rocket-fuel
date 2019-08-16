@@ -83,8 +83,6 @@ $picture-size: 40px;
 
     &.answer {
         &.accepted .post-container {
-            // @include material-shadow(2);
-            // background-color: rgba(0, 0, 0, .05);
             background-color: rgba($notification-info, .18);
         }
     }

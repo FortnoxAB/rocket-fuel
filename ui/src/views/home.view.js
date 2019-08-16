@@ -21,8 +21,8 @@ class HomeView extends React.Component {
 
     fetchQuestions() {
         const user = this.context.state.user;
-        const userQuestions = Question.getQuestionsFromUser(user.id);
-        const latestQuestions = Question.getLatestQuestion();
+        const userQuestions = Question.getQuestionsFromUser(user.id, 5);
+        const latestQuestions = Question.getLatestQuestion(5);
 
         Promise.all([userQuestions, latestQuestions]).then((response) => {
             this.setState({
@@ -56,14 +56,26 @@ class HomeView extends React.Component {
             );
         }
         return (
-            <div className="row flex-grow spacing">
-                <div className="col-2">
-                    <div className="headline">{t`Latest questions`}</div>
-                    {this.getLatestQuestions()}
+            <div>
+                <div className="row flex-grow spacing">
+                    <div className="col-2">
+                        <div className="headline">{t`Latest questions`}</div>
+                        {this.getLatestQuestions()}
+                    </div>
+                    <div className="col-2">
+                        <div className="headline">{t`Your recent questions`}</div>
+                        {this.getUserQuestions()}
+                    </div>
                 </div>
-                <div className="col-2">
-                    <div className="headline">{t`Your recent questions`}</div>
-                    {this.getUserQuestions()}
+                <div className="row flex-grow spacing">
+                    <div className="col-2">
+                        <div className="headline">{t`Latest questions`}</div>
+                        {this.getLatestQuestions()}
+                    </div>
+                    <div className="col-2">
+                        <div className="headline">{t`Your recent questions`}</div>
+                        {this.getUserQuestions()}
+                    </div>
                 </div>
             </div>
         )

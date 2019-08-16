@@ -31,9 +31,6 @@ class QuestionRow extends React.Component {
 
     printCertificate() {
         const hasAccepted = this.props.question.answerAccepted;
-        if (!hasAccepted) {
-            return null;
-        }
         return <Certificate active={hasAccepted} />;
     }
 
@@ -42,15 +39,15 @@ class QuestionRow extends React.Component {
         if (!hasEnoughVotes) {
             return null;
         }
-        return <Trophy active={hasEnoughVotes} />;
+        return <Trophy active />;
     }
 
     getClasses() {
-        let classes = 'question-row flex';
-        if (this.props.small) {
-            classes = `${classes} small`;
-        }
-        return classes;
+        return [
+            'question-row flex',
+            this.props.small ? 'small' : '',
+            this.props.question.answerAccepted ? 'accepted' : '',
+        ].join(' ');
     }
 
     renderTags() {
@@ -85,7 +82,7 @@ class QuestionRow extends React.Component {
                             {this.props.question.title}
                         </div>
                         <div className="user">
-                            {this.props.question.createdBy}, {Post.getTime(this.props.question.createdAt)}
+                            {Post.getTime(this.props.question.createdAt)}
                         </div>
                     </div>
                 </div>
