@@ -172,9 +172,12 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<List<Question>> getQuestions(long userId) {
+    public Observable<List<Question>> getQuestions(long userId, Integer limit) {
+        if (limit == null) {
+            limit = 10;
+        }
         return this.questionDao
-            .getQuestions(userId).toList()
+            .getQuestions(userId, limit).toList()
             .onErrorResumeNext(throwable ->
                 error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTIONS_FROM_DATABASE, throwable)));
     }

@@ -92,7 +92,7 @@ public interface QuestionResource {
      */
     @Path("users/{userId}/questions")
     @GET
-    Observable<List<Question>> getQuestions(@PathParam("userId") long userId);
+    Observable<List<Question>> getQuestions(@PathParam("userId") long userId, @QueryParam("limit") Integer limit);
 
     /**
      * Updates the question with the given questionId

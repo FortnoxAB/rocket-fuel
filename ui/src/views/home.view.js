@@ -24,11 +24,11 @@ class HomeView extends React.Component {
 
     fetchQuestions() {
         const user = this.context.state.user;
-        const userQuestions = Question.getQuestionsFromUser(user.id);
-        const latestQuestions = Question.getLatestQuestions();
-        const popularQuestions = Question.getPopularQuestions();
-        const popularUnansweredQuestions = Question.getPopularUnansweredQuestions();
-        const recentlyAcceptedQuestions = Question.getRecentlyAcceptedQuestions();
+        const userQuestions              = Question.getQuestionsFromUser(user.id,5);
+        const latestQuestions            = Question.getLatestQuestions(5);
+        const popularQuestions           = Question.getPopularQuestions(5);
+        const popularUnansweredQuestions = Question.getPopularUnansweredQuestions(5);
+        const recentlyAcceptedQuestions  = Question.getRecentlyAcceptedQuestions(5);
 
         Promise.all([userQuestions, latestQuestions, popularQuestions, popularUnansweredQuestions, recentlyAcceptedQuestions]).then((response) => {
             this.setState({
@@ -83,26 +83,32 @@ class HomeView extends React.Component {
             );
         }
         return (
-            <div className="row flex-grow spacing">
-                <div className="col-2">
-                    <div className="headline">{t`Latest questions`}</div>
-                    {this.getLatestQuestions()}
+            <div>
+                <div className="row flex-grow spacing">
+                    <div className="col-2">
+                        <div className="headline">{t`Latest questions`}</div>
+                        {this.getLatestQuestions()}
+                    </div>
+                    <div className="col-2">
+                        <div className="headline">{t`Popular questions`}</div>
+                        {this.getPopularQuestions()}
+                    </div>
                 </div>
-                <div className="col-2">
-                    <div className="headline">{t`Popular questions`}</div>
-                    {this.getPopularQuestions()}
+                <div className="row flex-grow spacing">
+                    <div className="col-2">
+                        <div className="headline">{t`Popular unanswered questions`}</div>
+                        {this.getPopularUnansweredQuestions()}
+                    </div>
+                    <div className="col-2">
+                        <div className="headline">{t`Recently accepted questions`}</div>
+                        {this.getRecentlyAcceptedQuestions()}
+                    </div>
                 </div>
-                <div className="col-2">
-                    <div className="headline">{t`Popular unanswered questions`}</div>
-                    {this.getPopularUnansweredQuestions()}
-                </div>
-                <div className="col-2">
-                    <div className="headline">{t`Recently accepted questions`}</div>
-                    {this.getRecentlyAcceptedQuestions()}
-                </div>
-                <div className="col-1">
-                    <div className="headline">{t`Your recent questions`}</div>
-                    {this.getUserQuestions()}
+                <div className="row flex-grow spacing">
+                    <div className="col-1">
+                        <div className="headline">{t`Your recent questions`}</div>
+                        {this.getUserQuestions()}
+                    </div>
                 </div>
             </div>
         )

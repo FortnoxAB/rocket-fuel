@@ -9,6 +9,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackConfig;
@@ -30,7 +31,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static rx.Observable.empty;
@@ -79,9 +83,9 @@ public class QuestionResourceImplTest {
 
     @Test
     public void shouldReturnInternalServerErrorWhenGetQuestionsFails() {
-        when(questionDao.getQuestions(123)).thenReturn(error(new SQLException("poff")));
+        when(questionDao.getQuestions(123,  1)).thenReturn(error(new SQLException("poff")));
 
-        assertException(() -> questionResource.getQuestions(123).toBlocking().singleOrDefault(null),
+        assertException(() -> questionResource.getQuestions(123, 1).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_GET_QUESTIONS_FROM_DATABASE);
     }

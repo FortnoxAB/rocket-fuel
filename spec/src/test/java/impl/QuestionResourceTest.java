@@ -306,7 +306,7 @@ public class QuestionResourceTest {
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
         // then the question should be returned when asking for the users questions
-        List<Question> questions = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question insertedQuestion = questions.get(0);
@@ -325,7 +325,7 @@ public class QuestionResourceTest {
         Auth     mockAuth = newAuth();
         mockAuth.setUserId(mockAuth.getUserId());
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
-        List<Question> questions = questionResource.getQuestions(mockAuth.getUserId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(mockAuth.getUserId(), null).toBlocking().single();
         assertEquals(1, questions.size());
 
         // then the question should be returned when asking for the specific question
@@ -349,12 +349,12 @@ public class QuestionResourceTest {
         mockAuth.setUserId(createdUser.getId());
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
-        Question storedQuestion = questionResource.getQuestions(createdUser.getId()).toBlocking().single().get(0);
+        Question storedQuestion = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single().get(0);
         storedQuestion.setBounty(400);
         storedQuestion.setTitle("new title");
         storedQuestion.setQuestion("new question body");
         questionResource.updateQuestion(mockAuth, storedQuestion.getId(), storedQuestion).toBlocking().singleOrDefault(null);
-        List<Question> questions = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question updatedQuestion = questions.get(0);
@@ -382,7 +382,7 @@ public class QuestionResourceTest {
         questionResource.createQuestion(authOtherUser, questionForOtherUser).toBlocking().singleOrDefault(null);
 
         // then only questions for our user should be returned
-        List<Question> questions = questionResource.getQuestions(ourUser.getId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(ourUser.getId(), null).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question insertedQuestion = questions.get(0);
@@ -407,20 +407,20 @@ public class QuestionResourceTest {
         questionResource.createQuestion(mockAuth, questionToInsert2).toBlocking().singleOrDefault(null);
 
         // and the questions has answers
-        List<Question> questions = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
 
         Answer answer = new Answer();
         answer.setAnswer("just a answer");
         answerResource.createAnswer(mockAuth, answer, questions.get(0).getId()).toBlocking().singleOrDefault(null);
         answerResource.createAnswer(mockAuth, answer, questions.get(1).getId()).toBlocking().singleOrDefault(null);
 
-        List<Question> questionsSaved = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> questionsSaved = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
 
         // when we deletes a question
         questionResource.deleteQuestion(mockAuth, questionsSaved.get(0).getId()).toBlocking().singleOrDefault(null);
 
         // only the question we want to delete should be removed
-        List<Question> remaningQuestions = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> remaningQuestions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
         assertThat(remaningQuestions.size()).isEqualTo(1);
         assertThat(remaningQuestions.get(0).getTitle()).isEqualTo("my question title2");
 

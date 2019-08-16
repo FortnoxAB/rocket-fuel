@@ -3,8 +3,12 @@
     flex-flow: wrap;
 
     &.spacing {
-        > [class^="col-"]:not(:first-child) {
-            padding-left: 15px;
+        > [class^="col-"] {
+            padding-bottom: 25px;
+
+            &:not(:first-child) {
+                padding-left: 25px;
+            }
         }
     }
 }
@@ -19,31 +23,50 @@
     }
 }
 
-@media screen and (max-width: $break-small) {
-    @for $i from 1 through 12 {
-        .col-#{$i} {
-            width: 100%;
-        }
-    }
-
-    .hide-on-tablet {
-        display: inherit;
-    }
-}
-
-@media screen and (min-width: $break-large) {
+@media screen and (max-width: $break-large) {
     @for $i from 1 through 12 {
         @if($i % 2 != 0) {
             .col-#{$i} {
                 width: 100%;
             }
+            .row.spacing {
+                .col-#{$i} {
+                    padding-left: 0;
+                }
+            }
         }
+
         .col-#{$i} {
             width: 50%;
         }
     }
 
-    .hide-on-phone, .hide-on-tablet {
+    .row.spacing {
+        [class^="col-"]:nth-child(odd) {
+            padding-left: 0;
+        }
+    }
+
+    .hide-on-tablet {
+        display: none;
+    }
+}
+
+
+@media screen and (max-width: $break-small) {
+    @for $i from 1 through 12 {
+        .col-#{$i} {
+            width: 100%;
+        }
+
+        .content .row.spacing {
+            .col-#{$i} {
+                padding-left: 0;
+            }
+        }
+    }
+
+    .hide-on-tablet, .hide-on-phone {
         display: none;
     }
 }
