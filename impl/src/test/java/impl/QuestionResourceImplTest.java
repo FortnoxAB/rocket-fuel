@@ -17,8 +17,12 @@ import slack.SlackResource;
 import java.sql.SQLException;
 
 import static impl.QuestionResourceImpl.FAILED_TO_DELETE_QUESTION;
+import static impl.QuestionResourceImpl.FAILED_TO_GET_LATEST_QUESTIONS;
+import static impl.QuestionResourceImpl.FAILED_TO_GET_POPULAR_QUESTIONS;
+import static impl.QuestionResourceImpl.FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS;
 import static impl.QuestionResourceImpl.FAILED_TO_GET_QUESTIONS_FROM_DATABASE;
 import static impl.QuestionResourceImpl.FAILED_TO_GET_QUESTION_FROM_DATABASE;
+import static impl.QuestionResourceImpl.FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS;
 import static impl.QuestionResourceImpl.FAILED_TO_UPDATE_QUESTION_TO_DATABASE;
 import static impl.QuestionResourceImpl.NOT_OWNER_OF_QUESTION;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -60,7 +64,7 @@ public class QuestionResourceImplTest {
     public void shouldReturnInternalServerErrorWhenCreateQuestionFails() {
         // given db error
         Question question = new Question();
-        when(questionDao.addQuestion(123, question, null)).thenReturn(Observable.error(new SQLException("poff")));
+        when(questionDao.addQuestion(123, question, null)).thenReturn(error(new SQLException("poff")));
         Auth auth = new Auth();
         auth.setUserId(123);
 
@@ -75,7 +79,7 @@ public class QuestionResourceImplTest {
 
     @Test
     public void shouldReturnInternalServerErrorWhenGetQuestionsFails() {
-        when(questionDao.getQuestions(123)).thenReturn(Observable.error(new SQLException("poff")));
+        when(questionDao.getQuestions(123)).thenReturn(error(new SQLException("poff")));
 
         assertException(() -> questionResource.getQuestions(123).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
@@ -85,7 +89,7 @@ public class QuestionResourceImplTest {
     @Test
     public void shouldReturnInternalServerErrorWhenUpdateQuestionFails() {
         when(questionDao.getQuestion(123)).thenReturn(just(question));
-        when(questionDao.updateQuestion(123, 123, question)).thenReturn(Observable.error(new SQLException("poff")));
+        when(questionDao.updateQuestion(123, 123, question)).thenReturn(error(new SQLException("poff")));
 
         assertException(() -> questionResource.updateQuestion(auth, 123, question).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
@@ -106,7 +110,7 @@ public class QuestionResourceImplTest {
 
     @Test
     public void shouldThrowInternalServerErrorIfQuestionCannotBeFetchedAfterUpdate() {
-        when(questionDao.getQuestion(123)).thenReturn(Observable.error(new SQLException("poff")));
+        when(questionDao.getQuestion(123)).thenReturn(error(new SQLException("poff")));
 
         assertException(() -> questionResource.updateQuestion(auth, 123, question).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
@@ -124,9 +128,45 @@ public class QuestionResourceImplTest {
     }
 
     @Test
+    public void shouldThrowInternalServerErrorIfLastestQuestionsCannotBeFetched() {
+        when(questionDao.getLatestQuestions(any())).thenReturn(error(new SQLException("poff")));
+
+        assertException(() -> questionResource.getLatestQuestions(1).toBlocking().singleOrDefault(null),
+            INTERNAL_SERVER_ERROR,
+            FAILED_TO_GET_LATEST_QUESTIONS);
+    }
+
+    @Test
+    public void shouldThrowInternalServerErrorIfPopularQuestionsCannotBeFetched() {
+        when(questionDao.getPopularQuestions(any())).thenReturn(error(new SQLException("poff")));
+
+        assertException(() -> questionResource.getPopularQuestions(1).toBlocking().singleOrDefault(null),
+            INTERNAL_SERVER_ERROR,
+            FAILED_TO_GET_POPULAR_QUESTIONS);
+    }
+
+    @Test
+    public void shouldThrowInternalServerErrorIfPopularUnansweredQuestionsCannotBeFetched() {
+        when(questionDao.getPopularUnansweredQuestions(any())).thenReturn(error(new SQLException("poff")));
+
+        assertException(() -> questionResource.getPopularUnansweredQuestions(1).toBlocking().singleOrDefault(null),
+            INTERNAL_SERVER_ERROR,
+            FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS);
+    }
+
+    @Test
+    public void shouldThrowInternalServerErrorIfRecentlyAcceptedQuestionsCannotBeFetched() {
+        when(questionDao.getRecentlyAcceptedQuestions(any())).thenReturn(error(new SQLException("poff")));
+
+        assertException(() -> questionResource.getRecentlyAcceptedQuestions(1).toBlocking().singleOrDefault(null),
+            INTERNAL_SERVER_ERROR,
+            FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS);
+    }
+
+    @Test
     public void shouldThrowInternalIfQuestionToDeleteCannotBeDeleted() {
 
-        when(questionDao.deleteQuestion(123, 123)).thenReturn(Observable.error(new SQLException("poff")));
+        when(questionDao.deleteQuestion(123, 123)).thenReturn(error(new SQLException("poff")));
         when(questionDao.getQuestion(123)).thenReturn(just(question));
 
         assertException(() -> questionResource.deleteQuestion(auth, 123).toBlocking().singleOrDefault(null),

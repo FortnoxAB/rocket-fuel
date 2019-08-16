@@ -1,6 +1,11 @@
  package api;
 
+ import com.fasterxml.jackson.annotation.JsonIgnore;
+ import com.fasterxml.jackson.annotation.JsonProperty;
+
  import java.time.LocalDateTime;
+
+ import static java.time.ZoneId.systemDefault;
 
  /**
   * A class that defines the shared attributes between a {@link Answer}

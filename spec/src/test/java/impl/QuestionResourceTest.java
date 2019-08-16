@@ -30,13 +30,12 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
 import slack.SlackConfig;
 import slack.SlackResource;
-import util.ObservableAssertions;
-import util.ObservableListAssert;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static impl.QuestionResourceImpl.FAILED_TO_SEARCH_FOR_QUESTIONS;
 import static impl.QuestionResourceImpl.INVALID_VOTE;
@@ -69,6 +68,11 @@ import static util.ObservableAssertions.assertThat;
 import static util.ObservableAssertions.assertThatList;
 
 public class QuestionResourceTest {
+
+    public static final LocalDateTime CURRENT     = now();
+    public static final LocalDateTime ONE_DAY_AGO = CURRENT.minusDays(1);
+    public static final LocalDateTime A_MONTH_AGO = CURRENT.minusMonths(1);
+
     private static QuestionResource questionResource;
     private static AnswerResource   answerResource;
     private static UserResource     userResource;
@@ -535,32 +539,86 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldSortLatestQuestions() {
-
-        LocalDateTime later = now();
-        LocalDateTime earlier = later.minusMinutes(1);
-
         List<Long> inExpectedOrder = asList(
-            createQuestion("B", later, later, 100),
-            createQuestion("A", later, later, 10),
-            createQuestion("B", later, later, 10),
-            createQuestion("A", later, later, 9),
-            createQuestion("B", later, later, 9),
-            createQuestion("A", earlier, later, 9),
-            createQuestion("A", earlier, later, 3),
-            createQuestion("A", later, later, 2),
-            createQuestion("A", later, later, 0),
-            createQuestion("A", earlier, earlier, 9),
-            createQuestion("A", later, null, 90),
-            createQuestion("A", later, null, 8)
+            createQuestionWithoutVotes(CURRENT),
+            createQuestionWithUnacceptedAnswer(CURRENT.minusMinutes(1), 3),
+            createQuestionWithoutVotes(ONE_DAY_AGO),
+            createQuestionWithoutAnswer(ONE_DAY_AGO.minusMinutes(1), 3),
+            createQuestionWithoutVotes(A_MONTH_AGO)
+        );
+        assertOrder(questionResource::getLatestQuestions, inExpectedOrder);
+    }
+
+    @Test
+    public void shouldSortPopularQuestions() {
+        List<Long> inExpectedOrder = asList(
+            createQuestionWithUnacceptedAnswer(CURRENT, 3),
+            createQuestionWithoutAnswer(CURRENT.minusMinutes(1), 3),
+            createQuestionWithUnacceptedAnswer(ONE_DAY_AGO, 3),
+            createQuestionWithUnacceptedAnswer(A_MONTH_AGO, 3),
+            createQuestionWithUnacceptedAnswer(CURRENT, 2),
+            createQuestionWithUnacceptedAnswer(CURRENT, 1),
+            createQuestionWithUnacceptedAnswer(CURRENT, 0)
+        );
+        assertOrder(questionResource::getPopularQuestions, inExpectedOrder);
+    }
+
+    @Test
+    public void shouldSortPopularUnansweredQuestions() {
+        List<Long> inExpectedOrder = asList(
+            createQuestionWithoutAnswer(CURRENT, 3),
+            createQuestionWithoutAnswer(ONE_DAY_AGO, 3),
+            createQuestionWithoutAnswer(A_MONTH_AGO, 3),
+            createQuestionWithoutAnswer(CURRENT, 2),
+            createQuestionWithoutAnswer(CURRENT, 1)
         );
 
-        assertThatList(questionResource.getLatestQuestions(inExpectedOrder.size()))
+        // red herrings
+        createQuestionWithUnacceptedAnswer(CURRENT, 3);
+        createQuestionWithAcceptedAnswer(CURRENT);
+
+        assertOrder(questionResource::getPopularUnansweredQuestions, inExpectedOrder);
+    }
+
+    @Test
+    public void shouldSortRecentlyAcceptedQuestions() {
+        List<Long> inExpectedOrder = asList(
+            createQuestionWithAcceptedAnswer(CURRENT),
+            createQuestionWithAcceptedAnswer(ONE_DAY_AGO),
+            createQuestionWithAcceptedAnswer(A_MONTH_AGO)
+        );
+
+        // red herrings
+        createQuestionWithUnacceptedAnswer(CURRENT, 3);
+        createQuestionWithoutAnswer(CURRENT, 3);
+
+        assertOrder(questionResource::getRecentlyAcceptedQuestions, inExpectedOrder);
+    }
+
+    private static void assertOrder(Function<Integer, Observable<List<Question>>> method, List<Long> inExpectedOrder) {
+        assertThatList(method.apply(inExpectedOrder.size()))
             .hasExactlyOne()
             .extracting(Question::getId)
             .containsExactlyElementsOf(inExpectedOrder);
     }
 
-    private Long createQuestion(String title, LocalDateTime created, LocalDateTime accepted, int votes) {
+    private Long createQuestionWithoutVotes(LocalDateTime created) {
+        return createQuestion("a", created, null, 0, true);
+    }
+
+    private Long createQuestionWithUnacceptedAnswer(LocalDateTime created, int votes) {
+        return createQuestion("a", created, null, votes, true);
+    }
+
+    private Long createQuestionWithoutAnswer(LocalDateTime created, int votes) {
+        return createQuestion("a", created, null, votes, false);
+    }
+
+    private Long createQuestionWithAcceptedAnswer(LocalDateTime accepted) {
+        return createQuestion("a", now(), accepted, 0, true);
+    }
+
+    private Long createQuestion(String title, LocalDateTime created, LocalDateTime accepted, int votes, boolean createUnAcceptedAnswer) {
 
         Auth mockAuth = new MockAuth(insertUser(userResource).getId());
 
@@ -576,8 +634,10 @@ public class QuestionResourceTest {
             .hasExactlyOne()
             .satisfies(q -> assertThat(q.getVotes()).isEqualTo(votes));
 
-       assertThat(answerResource.createAnswer(mockAuth, getAnswer(RandomString.make()), question.getId()))
-           .hasExactlyOne();
+        if(createUnAcceptedAnswer) {
+            assertThat(answerResource.createAnswer(mockAuth, getAnswer(RandomString.make()), question.getId()))
+                .hasExactlyOne();
+        }
 
         if (nonNull(accepted)) {
             Answer acceptedAnswer = answerResource.createAnswer(mockAuth, getAnswer(RandomString.make()), question.getId()).toBlocking().firstOrDefault(null);

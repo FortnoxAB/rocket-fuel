@@ -18,7 +18,7 @@ public interface QuestionDao {
             "question.title, " +
             "question.bounty, " +
             "question.created_at, " +
-            "question,user_id, " +
+            "question.user_id, " +
             "question.slack_id, \"user\".picture, \"user\".name as created_by, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
         "FROM " +
@@ -35,23 +35,99 @@ public interface QuestionDao {
             "question.title, " +
             "question.bounty, " +
             "question.created_at, " +
-            "question,user_id, " +
+            "question.user_id, " +
             "question.slack_id, " +
-            "\"user\".picture, \"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes," +
-            "(SELECT accepted_at FROM answer WHERE question_id = question.id AND accepted_at IS NOT NULL) AS accepted_at " +
+            "\"user\".picture, " +
+            "\"user\".name as created_by, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
         "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
         "ORDER BY " +
-            "accepted_at DESC NULLS LAST, " +
-            "votes DESC NULLS LAST, " +
-            "question.created_at DESC, " +
-            "question.title " +
+            "question.created_at DESC " +
         "LIMIT " +
             ":limit")
     Observable<Question> getLatestQuestions(Integer limit);
+
+    @Query(
+        "SELECT " +
+            "question.id, " +
+            "question.question, " +
+            "answer_accepted, " +
+            "question.title, " +
+            "question.bounty, " +
+            "question.created_at, " +
+            "question.user_id, " +
+            "question.slack_id, " +
+            "\"user\".picture, " +
+            "\"user\".name as created_by, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
+        "FROM " +
+            "question " +
+        "INNER JOIN " +
+            "\"user\" on \"user\".id = question.user_id " +
+        "ORDER BY " +
+            "votes DESC NULLS LAST, " +
+            "question.created_at DESC " +
+        "LIMIT " +
+            ":limit")
+    Observable<Question> getPopularQuestions(Integer limit);
+
+    @Query(
+        "SELECT " +
+            "question.id, " +
+            "question.question, " +
+            "answer_accepted, " +
+            "question.title, " +
+            "question.bounty, " +
+            "question.created_at, " +
+            "question.user_id, " +
+            "question.slack_id, " +
+            "\"user\".picture, " +
+            "\"user\".name as created_by, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
+        "FROM " +
+            "question " +
+        "INNER JOIN " +
+            "\"user\" on \"user\".id = question.user_id " +
+        "LEFT JOIN " +
+            "answer on answer.question_id = question.id " +
+        "WHERE " +
+            "answer IS NULL " +
+        "ORDER BY " +
+            "votes DESC NULLS LAST, " +
+            "question.created_at DESC " +
+        "LIMIT " +
+            ":limit")
+    Observable<Question> getPopularUnansweredQuestions(Integer limit);
+
+    @Query(
+        "SELECT " +
+            "question.id, " +
+            "question.question, " +
+            "answer_accepted, " +
+            "question.title, " +
+            "question.bounty, " +
+            "question.created_at, " +
+            "question.user_id, " +
+            "question.slack_id, " +
+            "\"user\".picture, " +
+            "\"user\".name as created_by, " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
+        "FROM " +
+            "question " +
+        "INNER JOIN " +
+            "\"user\" on \"user\".id = question.user_id " +
+        "LEFT JOIN " +
+            "answer on answer.question_id = question.id " +
+        "WHERE " +
+            "answer.accepted_at IS NOT NULL " +
+        "ORDER BY " +
+            "answer.accepted_at DESC NULLS LAST " +
+        "LIMIT " +
+            ":limit")
+    Observable<Question> getRecentlyAcceptedQuestions(Integer limit);
 
     /**
      * Add new question

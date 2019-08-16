@@ -69,26 +69,12 @@ class Post extends React.Component {
         );
     }
 
-    static getTime(localDateTime) {
-        return Post.toMoment(localDateTime)
-            .fromNow();
+    static getTime(time) {
+        return moment(time).fromNow();
     }
 
-    static getTimeStamp(localDateTime) {
-        return Post.toMoment(localDateTime)
-            .format('llll');
-    }
-
-    static toMoment(localDateTime) {
-        return moment({
-            y: localDateTime.year,
-            M: localDateTime.monthValue - 1,
-            d: localDateTime.dayOfMonth,
-            h: localDateTime.hour,
-            m: localDateTime.minute,
-            s: localDateTime.second,
-            ms: localDateTime.nano / 10e6
-        })
+    static getTimeStamp(time) {
+        return moment(time).format('llll');
     }
 
     renderAnswered() {

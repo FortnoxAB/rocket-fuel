@@ -33,7 +33,7 @@ public interface QuestionResource {
     Observable<Question> getQuestion(Auth auth, @PathParam("questionId") long questionId);
 
     /**
-     * Return a list of latest questions with a limit
+     * Return a list of latest questions
      *
      * @param limit
      * @return questions
@@ -41,6 +41,36 @@ public interface QuestionResource {
     @GET
     @Path("questions/latest")
     Observable<List<Question>> getLatestQuestions(@QueryParam("limit") Integer limit);
+
+    /**
+     * Return a list of the highest voted questions
+     *
+     * @param limit
+     * @return questions
+     */
+    @GET
+    @Path("questions/popular")
+    Observable<List<Question>> getPopularQuestions(@QueryParam("limit") Integer limit);
+
+    /**
+     * Return a list of the highest voted questions without any answers
+     *
+     * @param limit
+     * @return questions
+     */
+    @GET
+    @Path("questions/popularunanswered")
+    Observable<List<Question>> getPopularUnansweredQuestions(@QueryParam("limit") Integer limit);
+
+    /**
+     * Return a list of the questions that had an answer accepted the most recently
+     *
+     * @param limit
+     * @return questions
+     */
+    @GET
+    @Path("questions/recentlyaccepted")
+    Observable<List<Question>> getRecentlyAcceptedQuestions(@QueryParam("limit") Integer limit);
 
     /**
      * Adds a question and links it to the given userId.

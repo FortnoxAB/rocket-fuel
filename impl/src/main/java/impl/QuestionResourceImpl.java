@@ -11,7 +11,6 @@ import com.google.inject.Singleton;
 import dao.QuestionDao;
 import dao.QuestionVote;
 import dao.QuestionVoteDao;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -39,26 +38,30 @@ import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 @Singleton
 public class QuestionResourceImpl implements QuestionResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(QuestionResourceImpl.class);
-    public static final String FAILED_TO_SEARCH_FOR_QUESTIONS = "failed.to.search.for.questions";
-    public static final String QUESTION_NOT_FOUND                    = "question.not.found";
-    public static final String FAILED_TO_GET_QUESTIONS_FROM_DATABASE = "failed.to.get.questions.from.database";
-    public static final String FAILED_TO_GET_QUESTION_FROM_DATABASE  = "failed.to.get.question.from.database";
-    public static final String FAILED_TO_UPDATE_QUESTION_TO_DATABASE = "failed.to.update.question.to.database";
-    public static final String NOT_OWNER_OF_QUESTION                 = "not.owner.of.question";
-    public static final String FAILED_TO_DELETE_QUESTION             = "failed.to.delete.question";
-    public static final        String INVALID_VOTE                          = "invalid.vote";
+    private static final Logger LOG                                        = LoggerFactory.getLogger(QuestionResourceImpl.class);
+    public static final  String FAILED_TO_SEARCH_FOR_QUESTIONS             = "failed.to.search.for.questions";
+    public static final  String QUESTION_NOT_FOUND                         = "question.not.found";
+    public static final  String FAILED_TO_GET_QUESTIONS_FROM_DATABASE      = "failed.to.get.questions.from.database";
+    public static final  String FAILED_TO_GET_QUESTION_FROM_DATABASE       = "failed.to.get.question.from.database";
+    public static final  String FAILED_TO_UPDATE_QUESTION_TO_DATABASE      = "failed.to.update.question.to.database";
+    public static final  String NOT_OWNER_OF_QUESTION                      = "not.owner.of.question";
+    public static final  String FAILED_TO_DELETE_QUESTION                  = "failed.to.delete.question";
+    public static final  String INVALID_VOTE                               = "invalid.vote";
+    public static final  String FAILED_TO_GET_LATEST_QUESTIONS             = "failed.to.get.latest.questions";
+    public static final  String FAILED_TO_GET_POPULAR_QUESTIONS            = "failed.to.get.popular.questions";
+    public static final  String FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS = "failed.to.get.popular.unanswered.questions";
+    public static final  String FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS  = "failed.to.get.recently.accepted.questions";
 
-
-    private final QuestionDao     questionDao;
-    private final QuestionVoteDao questionVoteDao;
-    private final SlackResource   slackResource;
-    private final SlackConfig slackConfig;
+    private final QuestionDao       questionDao;
+    private final QuestionVoteDao   questionVoteDao;
+    private final SlackResource     slackResource;
+    private final SlackConfig       slackConfig;
     private final ApplicationConfig applicationConfig;
 
     @Inject
     public QuestionResourceImpl(QuestionDao questionDao, QuestionVoteDao questionVoteDao,
-        SlackResource slackResource, SlackConfig slackConfig, ApplicationConfig applicationConfig) {
+        SlackResource slackResource, SlackConfig slackConfig, ApplicationConfig applicationConfig
+    ) {
         this.questionDao = questionDao;
         this.questionVoteDao = questionVoteDao;
         this.slackResource = slackResource;
@@ -69,14 +72,14 @@ public class QuestionResourceImpl implements QuestionResource {
     @Override
     public Observable<Question> getQuestionBySlackThreadId(String slackThreadId) {
         return this.questionDao.getQuestionBySlackThreadId(slackThreadId).switchIfEmpty(
-            exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not.found")));
+            exception(() -> new WebException(NOT_FOUND, "not.found")));
     }
 
-	@Override
-	public Observable<Question> getQuestionById(long questionId) {
-      return this.questionDao.getQuestion(questionId).switchIfEmpty(
-        exception(() -> new WebException(HttpResponseStatus.NOT_FOUND, "not.found")));
-	}
+    @Override
+    public Observable<Question> getQuestionById(long questionId) {
+        return this.questionDao.getQuestion(questionId).switchIfEmpty(
+            exception(() -> new WebException(NOT_FOUND, "not.found")));
+    }
 
     @Override
     public Observable<Question> getQuestion(Auth auth, long questionId) {
@@ -89,17 +92,40 @@ public class QuestionResourceImpl implements QuestionResource {
 
     @Override
     public Observable<List<Question>> getLatestQuestions(Integer limit) {
-        limit = firstNonNull(limit, 10);
+        return this.questionDao.getLatestQuestions(firstNonNull(limit, 10)).toList()
+            .onErrorResumeNext(e ->
+                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_LATEST_QUESTIONS, e))
+            );
+    }
 
-        return this.questionDao.getLatestQuestions(limit).toList().onErrorResumeNext(e ->
-            error(new WebException(INTERNAL_SERVER_ERROR, "failed.to.get.latest.questions", e))
-        );
+    @Override
+    public Observable<List<Question>> getPopularQuestions(Integer limit) {
+        return this.questionDao.getPopularQuestions(firstNonNull(limit, 10)).toList()
+            .onErrorResumeNext(e ->
+                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_POPULAR_QUESTIONS, e))
+            );
+    }
+
+    @Override
+    public Observable<List<Question>> getPopularUnansweredQuestions(Integer limit) {
+        return this.questionDao.getPopularUnansweredQuestions(firstNonNull(limit, 10)).toList()
+            .onErrorResumeNext(e ->
+                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS, e))
+            );
+    }
+
+    @Override
+    public Observable<List<Question>> getRecentlyAcceptedQuestions(Integer limit) {
+        return this.questionDao.getRecentlyAcceptedQuestions(firstNonNull(limit, 10)).toList()
+            .onErrorResumeNext(e ->
+                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS, e))
+            );
     }
 
     @Override
     public Observable<Question> createQuestion(Auth auth, Question question) {
         return this.questionDao
-          .addQuestion(auth.getUserId(), question, null)
+            .addQuestion(auth.getUserId(), question, null)
             .map(longGeneratedKey -> {
                 question.setId(longGeneratedKey.getKey());
                 return question;
@@ -124,7 +150,7 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     private String questionUrl(long questionId) {
-        return "<" + applicationConfig.getBaseUrl() + "/question/" + questionId +  "|rocket-fuel>";
+        return "<" + applicationConfig.getBaseUrl() + "/question/" + questionId + "|rocket-fuel>";
     }
 
     private static MarkdownTextObject markdownText(String string, String... args) {
@@ -135,16 +161,13 @@ public class QuestionResourceImpl implements QuestionResource {
 
     @Override
     public Observable<List<Question>> getQuestionsBySearchQuery(String searchQuery, Integer limit) {
-        if (limit == null) {
-            limit = 50;
-        }
         if (isNullOrEmpty(searchQuery)) {
             return just(emptyList());
         }
-        return questionDao.getQuestions(searchQuery, limit)
+        return questionDao.getQuestions(searchQuery, firstNonNull(limit, 50))
             .onErrorResumeNext(e -> {
                 LOG.error("failed to search for questions with search query: [" + searchQuery + "]");
-                return error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS ,e));
+                return error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS, e));
             }).toList();
     }
 
@@ -226,6 +249,4 @@ public class QuestionResourceImpl implements QuestionResource {
             return error(new WebException(BAD_REQUEST, INVALID_VOTE));
         };
     }
-
-
 }
