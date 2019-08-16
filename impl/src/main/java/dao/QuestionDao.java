@@ -131,13 +131,6 @@ public interface QuestionDao {
             ":limit")
     Observable<Question> getRecentlyAcceptedQuestions(Integer limit);
 
-    /**
-     * Add new question
-     * @param userId
-     * @param question
-     * @param createdAt For testing purposes. Only used if non-null.
-     * @return
-     */
     @Update(
         "INSERT INTO " +
             "question (" +
@@ -152,11 +145,16 @@ public interface QuestionDao {
             ":question.question, " +
             ":question.title, " +
             ":question.bounty, " +
-            "COALESCE(:createdAt, NOW()), " +
+            "NOW(), " +
             ":userId, " +
             ":question.slackId" +
             ")")
-    Observable<GeneratedKey<Long>> addQuestion(long userId, Question question, LocalDateTime createdAt);
+    Observable<GeneratedKey<Long>> addQuestion(long userId, Question question);
+
+    @Update("UPDATE question " +
+        "SET created_at=:createdAt " +
+        "WHERE question.id=:question.id")
+    Observable<Integer> setCreatedAt(Question question, LocalDateTime createdAt);
 
     @Update("UPDATE question " +
             "SET question=:question.question, title=:question.title " +

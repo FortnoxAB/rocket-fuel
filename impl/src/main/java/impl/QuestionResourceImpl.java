@@ -125,7 +125,7 @@ public class QuestionResourceImpl implements QuestionResource {
     @Override
     public Observable<Question> createQuestion(Auth auth, Question question) {
         return this.questionDao
-            .addQuestion(auth.getUserId(), question, null)
+            .addQuestion(auth.getUserId(), question)
             .map(longGeneratedKey -> {
                 question.setId(longGeneratedKey.getKey());
                 return question;

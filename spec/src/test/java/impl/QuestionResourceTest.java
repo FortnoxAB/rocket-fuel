@@ -622,10 +622,11 @@ public class QuestionResourceTest {
 
         Auth mockAuth = new MockAuth(insertUser(userResource).getId());
 
-        Question question = questionDao.addQuestion(mockAuth.getUserId(), getQuestion(title, RandomString.make()), created)
+        Question question = questionDao.addQuestion(mockAuth.getUserId(), getQuestion(title, RandomString.make()))
               .map(GeneratedKey::getKey)
               .flatMap(questionDao::getQuestion)
               .toBlocking().single();
+        questionDao.setCreatedAt(question, created).toBlocking().single();
 
         range(0, votes)
             .forEach(i -> assertThat(questionResource.upVoteQuestion(newAuth(), question.getId())).isEmpty());

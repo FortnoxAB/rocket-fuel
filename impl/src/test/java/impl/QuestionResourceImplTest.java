@@ -9,8 +9,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
-import rx.Observable;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackConfig;
 import slack.SlackResource;
@@ -31,8 +29,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -68,7 +64,7 @@ public class QuestionResourceImplTest {
     public void shouldReturnInternalServerErrorWhenCreateQuestionFails() {
         // given db error
         Question question = new Question();
-        when(questionDao.addQuestion(123, question, null)).thenReturn(error(new SQLException("poff")));
+        when(questionDao.addQuestion(123, question)).thenReturn(error(new SQLException("poff")));
         Auth auth = new Auth();
         auth.setUserId(123);
 
