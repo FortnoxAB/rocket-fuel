@@ -3,7 +3,6 @@ import { t } from 'ttag';
 import { withRouter } from 'react-router-dom';
 import FillPage from '../../components/helpers/fillpage';
 import Loader from '../../components/utils/loader';
-import Markdown from '../../components/helpers/markdown';
 import InputField from '../../components/forms/inputfield';
 import Button from '../../components/forms/button';
 import Answer from '../../components/questions/answer';
@@ -11,6 +10,7 @@ import * as QuestionApi from '../../models/question';
 import * as AnswerApi from '../../models/answer';
 import { UserContext } from '../../usercontext';
 import Question from '../../components/questions/question';
+import Post from '../../components/questions/post';
 
 
 class QuestionView extends React.Component {
