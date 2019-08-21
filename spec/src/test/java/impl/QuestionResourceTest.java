@@ -25,6 +25,7 @@ import org.mockito.ArgumentCaptor;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import rx.observers.AssertableSubscriber;
+import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
@@ -88,6 +89,8 @@ public class QuestionResourceTest {
     private static Appender          appender;
     private static ApplicationConfig applicationConfig;
 
+    private CollectionOptions options;
+
     @BeforeClass
     public static void before() {
         testSetup = new TestSetup(postgreSQLContainer);
@@ -101,6 +104,11 @@ public class QuestionResourceTest {
         applicationConfig = new ApplicationConfig();
         applicationConfig.setBaseUrl("deployed.fuel.com");
         when(slackResource.postMessageToSlack(anyString(), any())).thenReturn(empty());
+    }
+
+    @Before
+    public void setupOptions() {
+        options = new CollectionOptions();
     }
 
     @After
@@ -153,14 +161,32 @@ public class QuestionResourceTest {
         test.awaitTerminalEvent();
 
         test.assertError(WebException.class);
-        assertThat(((WebException)test.getOnErrorEvents().get(0)).getError()).isEqualTo("not.found");
+        assertThat(((WebException)test.getOnErrorEvents().get(0)).getError()).isEqualTo(QUESTION_NOT_FOUND);
     }
 
     @Test
-    public void shouldListLatest10QuestionsAsDefault() {
-        generateQuestions(20);
-        List<Question> questions = questionResource.getLatestQuestions(null).toBlocking().single();
-        assertEquals(10, questions.size());
+    public void shouldList10LatestQuestionsAsDefault() {
+        assertLimit(questionResource::getLatestQuestions, 10, 50);
+    }
+
+    @Test
+    public void shouldList10PopularQuestionsAsDefault() {
+        assertLimit(questionResource::getPopularQuestions, 10, 50);
+    }
+
+    @Test
+    public void shouldList10PopularUnsansweredQuestionsAsDefault() {
+        assertLimit(questionResource::getPopularUnansweredQuestions, 10, 50);
+    }
+
+    @Test
+    public void shouldList10RecentlyAcceptedQuestionsAsDefault() {
+        range(1, 15)
+            .forEach(i -> createQuestionWithAcceptedAnswer(CURRENT));
+
+        assertThatList(questionResource.getRecentlyAcceptedQuestions(options))
+            .hasExactlyOne()
+            .hasSize(11);
     }
 
     @Test
@@ -529,10 +555,11 @@ public class QuestionResourceTest {
     public void shouldListLatest5Questions() {
         int limit               = 5;
         int questionsToGenerate = 10;
+        options.setLimit(limit);
 
         generateQuestions(questionsToGenerate);
 
-        assertThatList(questionResource.getLatestQuestions(limit))
+        assertThatList(questionResource.getLatestQuestions(options))
             .hasExactlyOne()
             .hasSize(limit);
     }
@@ -595,8 +622,8 @@ public class QuestionResourceTest {
         assertOrder(questionResource::getRecentlyAcceptedQuestions, inExpectedOrder);
     }
 
-    private static void assertOrder(Function<Integer, Observable<List<Question>>> method, List<Long> inExpectedOrder) {
-        assertThatList(method.apply(inExpectedOrder.size()))
+    private void assertOrder(Function<CollectionOptions, Observable<List<Question>>> method, List<Long> inExpectedOrder) {
+        assertThatList(method.apply(options))
             .hasExactlyOne()
             .extracting(Question::getId)
             .containsExactlyElementsOf(inExpectedOrder);
@@ -692,4 +719,18 @@ public class QuestionResourceTest {
         }
     }
 
+    private void assertLimit(Function<CollectionOptions, Observable<List<Question>>> method, int defaultLimit, int maxLimit) {
+        generateQuestions(maxLimit + 5);
+
+        assertThatList(method.apply(options))
+            .hasExactlyOne()
+            .describedAs("default limit")
+            .hasSize(defaultLimit + 1);  // because CollectionOptionsQueryPart adds one to see if there are more
+
+        options.setLimit(maxLimit + 5);
+        assertThatList(method.apply(options))
+            .hasExactlyOne()
+            .describedAs("max limit")
+            .hasSize(maxLimit + 1); // because CollectionOptionsQueryPart adds one to see if there are more
+    }
 }

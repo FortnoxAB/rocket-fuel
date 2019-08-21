@@ -15,13 +15,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.functions.Func1;
+import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackConfig;
 import slack.SlackResource;
 
 import java.util.List;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -38,7 +38,7 @@ import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 @Singleton
 public class QuestionResourceImpl implements QuestionResource {
 
-    private static final Logger LOG                                        = LoggerFactory.getLogger(QuestionResourceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QuestionResourceImpl.class);
     public static final  String FAILED_TO_SEARCH_FOR_QUESTIONS             = "failed.to.search.for.questions";
     public static final  String QUESTION_NOT_FOUND                         = "question.not.found";
     public static final  String FAILED_TO_GET_QUESTIONS_FROM_DATABASE      = "failed.to.get.questions.from.database";
@@ -51,6 +51,7 @@ public class QuestionResourceImpl implements QuestionResource {
     public static final  String FAILED_TO_GET_POPULAR_QUESTIONS            = "failed.to.get.popular.questions";
     public static final  String FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS = "failed.to.get.popular.unanswered.questions";
     public static final  String FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS  = "failed.to.get.recently.accepted.questions";
+    public static final String FAILED_TO_ADD_QUESTION_TO_DATABASE = "failed.to.add.question.to.database";
 
     private final QuestionDao       questionDao;
     private final QuestionVoteDao   questionVoteDao;
@@ -72,13 +73,13 @@ public class QuestionResourceImpl implements QuestionResource {
     @Override
     public Observable<Question> getQuestionBySlackThreadId(String slackThreadId) {
         return this.questionDao.getQuestionBySlackThreadId(slackThreadId).switchIfEmpty(
-            exception(() -> new WebException(NOT_FOUND, "not.found")));
+            exception(() -> new WebException(NOT_FOUND, QUESTION_NOT_FOUND)));
     }
 
     @Override
     public Observable<Question> getQuestionById(long questionId) {
         return this.questionDao.getQuestion(questionId).switchIfEmpty(
-            exception(() -> new WebException(NOT_FOUND, "not.found")));
+            exception(() -> new WebException(NOT_FOUND, QUESTION_NOT_FOUND)));
     }
 
     @Override
@@ -91,39 +92,23 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<List<Question>> getLatestQuestions(Integer limit) {
-        limit = firstNonNull(limit, 10);
-        return this.questionDao.getLatestQuestions(limit).toList()
-            .onErrorResumeNext(e ->
-                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_LATEST_QUESTIONS, e))
-            );
+    public Observable<List<Question>> getLatestQuestions(CollectionOptions options) {
+        return handleError(questionDao.getLatestQuestions(options), FAILED_TO_GET_LATEST_QUESTIONS);
     }
 
     @Override
-    public Observable<List<Question>> getPopularQuestions(Integer limit) {
-        limit = firstNonNull(limit, 10);
-        return this.questionDao.getPopularQuestions(limit).toList()
-            .onErrorResumeNext(e ->
-                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_POPULAR_QUESTIONS, e))
-            );
+    public Observable<List<Question>> getPopularQuestions(CollectionOptions options) {
+        return handleError(questionDao.getPopularQuestions(options), FAILED_TO_GET_POPULAR_QUESTIONS);
     }
 
     @Override
-    public Observable<List<Question>> getPopularUnansweredQuestions(Integer limit) {
-        limit = firstNonNull(limit, 10);
-        return this.questionDao.getPopularUnansweredQuestions(limit).toList()
-            .onErrorResumeNext(e ->
-                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS, e))
-            );
+    public Observable<List<Question>> getPopularUnansweredQuestions(CollectionOptions options) {
+        return handleError(questionDao.getPopularUnansweredQuestions(options), FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS);
     }
 
     @Override
-    public Observable<List<Question>> getRecentlyAcceptedQuestions(Integer limit) {
-        limit = firstNonNull(limit, 10);
-        return this.questionDao.getRecentlyAcceptedQuestions(limit).toList()
-            .onErrorResumeNext(e ->
-                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS, e))
-            );
+    public Observable<List<Question>> getRecentlyAcceptedQuestions(CollectionOptions options) {
+        return handleError(questionDao.getRecentlyAcceptedQuestions(options), FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS);
     }
 
     @Override
@@ -141,7 +126,7 @@ public class QuestionResourceImpl implements QuestionResource {
                         return empty();
                     });
                 return first(postMessageToSlack).thenReturn(savedQuestion);
-            }).onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, "failed.to.add.question.to.database", throwable)));
+            }).onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_ADD_QUESTION_TO_DATABASE, throwable)));
     }
 
     private List<LayoutBlock> notificationMessage(Question question) {
@@ -164,11 +149,11 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<List<Question>> getQuestionsBySearchQuery(String searchQuery, Integer limit) {
+    public Observable<List<Question>> getQuestionsBySearchQuery(String searchQuery, CollectionOptions options) {
         if (isNullOrEmpty(searchQuery)) {
             return just(emptyList());
         }
-        return questionDao.getQuestions(searchQuery, firstNonNull(limit, 50))
+        return questionDao.getQuestions(searchQuery, options)
             .onErrorResumeNext(e -> {
                 LOG.error("failed to search for questions with search query: [" + searchQuery + "]");
                 return error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS, e));
@@ -176,12 +161,8 @@ public class QuestionResourceImpl implements QuestionResource {
     }
 
     @Override
-    public Observable<List<Question>> getQuestions(long userId, Integer limit) {
-        limit = firstNonNull(limit, 10);
-        return this.questionDao
-            .getQuestions(userId, limit).toList()
-            .onErrorResumeNext(throwable ->
-                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTIONS_FROM_DATABASE, throwable)));
+    public Observable<List<Question>> getQuestions(long userId, CollectionOptions options) {
+        return handleError(questionDao.getQuestions(userId, options), FAILED_TO_GET_QUESTIONS_FROM_DATABASE);
     }
 
     @Override
@@ -253,5 +234,12 @@ public class QuestionResourceImpl implements QuestionResource {
             }
             return error(new WebException(BAD_REQUEST, INVALID_VOTE));
         };
+    }
+
+    private static Observable<List<Question>> handleError(Observable<Question> questions, String errorCode) {
+        return questions.toList()
+            .onErrorResumeNext(e ->
+                error(new WebException(INTERNAL_SERVER_ERROR, errorCode, e))
+            );
     }
 }

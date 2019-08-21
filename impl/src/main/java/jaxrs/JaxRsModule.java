@@ -1,12 +1,17 @@
-package dates;
+package jaxrs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.google.inject.Binder;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
+import dates.RWDateFormat;
 import se.fortnox.reactivewizard.binding.AutoBindModule;
 import se.fortnox.reactivewizard.binding.scanners.InjectAnnotatedScanner;
+import se.fortnox.reactivewizard.client.RequestParameterSerializer;
+import se.fortnox.reactivewizard.jaxrs.params.ParamResolver;
 
 import javax.inject.Inject;
 import java.text.DateFormat;
@@ -45,6 +50,12 @@ public class JaxRsModule implements AutoBindModule {
 			.configure(ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
 			.configure(ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
 			.setDateFormat(new RWDateFormat()));
+        Multibinder.newSetBinder(binder, TypeLiteral.get(ParamResolver.class))
+            .addBinding()
+            .to(CollectionOptionsResolver.class);
+        Multibinder.newSetBinder(binder, TypeLiteral.get(RequestParameterSerializer.class))
+            .addBinding()
+            .to(CollectionOptionsRequestParameterSerializer.class);
     }
 
 	private static JavaTimeModule createJavaTimeModule() {

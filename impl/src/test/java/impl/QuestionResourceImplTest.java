@@ -9,12 +9,14 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
+import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackConfig;
 import slack.SlackResource;
 
 import java.sql.SQLException;
 
+import static impl.QuestionResourceImpl.FAILED_TO_ADD_QUESTION_TO_DATABASE;
 import static impl.QuestionResourceImpl.FAILED_TO_DELETE_QUESTION;
 import static impl.QuestionResourceImpl.FAILED_TO_GET_LATEST_QUESTIONS;
 import static impl.QuestionResourceImpl.FAILED_TO_GET_POPULAR_QUESTIONS;
@@ -45,6 +47,7 @@ public class QuestionResourceImplTest {
     private SlackResource    slackResource;
     private Question         question;
     private Auth             auth;
+    private CollectionOptions options;
 
     @Before
     public void beforeEach() {
@@ -57,7 +60,7 @@ public class QuestionResourceImplTest {
         questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
         auth = new Auth(123);
         question = createQuestion(123);
-
+        options = new CollectionOptions();
     }
 
     @Test
@@ -73,15 +76,15 @@ public class QuestionResourceImplTest {
             .isThrownBy(() -> questionResource.createQuestion(auth, question).toBlocking().singleOrDefault(null))
             .satisfies(e -> {
                 assertEquals(INTERNAL_SERVER_ERROR, e.getStatus());
-                assertEquals("failed.to.add.question.to.database", e.getError());
+                assertEquals(FAILED_TO_ADD_QUESTION_TO_DATABASE, e.getError());
             });
     }
 
     @Test
     public void shouldReturnInternalServerErrorWhenGetQuestionsFails() {
-        when(questionDao.getQuestions(123,  1)).thenReturn(error(new SQLException("poff")));
+        when(questionDao.getQuestions(123,  options)).thenReturn(error(new SQLException("poff")));
 
-        assertException(() -> questionResource.getQuestions(123, 1).toBlocking().singleOrDefault(null),
+        assertException(() -> questionResource.getQuestions(123, options).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_GET_QUESTIONS_FROM_DATABASE);
     }
@@ -129,9 +132,9 @@ public class QuestionResourceImplTest {
 
     @Test
     public void shouldThrowInternalServerErrorIfLastestQuestionsCannotBeFetched() {
-        when(questionDao.getLatestQuestions(any())).thenReturn(error(new SQLException("poff")));
+        when(questionDao.getLatestQuestions(options)).thenReturn(error(new SQLException("poff")));
 
-        assertException(() -> questionResource.getLatestQuestions(1).toBlocking().singleOrDefault(null),
+        assertException(() -> questionResource.getLatestQuestions(options).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_GET_LATEST_QUESTIONS);
     }
@@ -140,25 +143,25 @@ public class QuestionResourceImplTest {
     public void shouldThrowInternalServerErrorIfPopularQuestionsCannotBeFetched() {
         when(questionDao.getPopularQuestions(any())).thenReturn(error(new SQLException("poff")));
 
-        assertException(() -> questionResource.getPopularQuestions(1).toBlocking().singleOrDefault(null),
+        assertException(() -> questionResource.getPopularQuestions(options).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_GET_POPULAR_QUESTIONS);
     }
 
     @Test
     public void shouldThrowInternalServerErrorIfPopularUnansweredQuestionsCannotBeFetched() {
-        when(questionDao.getPopularUnansweredQuestions(any())).thenReturn(error(new SQLException("poff")));
+        when(questionDao.getPopularUnansweredQuestions(options)).thenReturn(error(new SQLException("poff")));
 
-        assertException(() -> questionResource.getPopularUnansweredQuestions(1).toBlocking().singleOrDefault(null),
+        assertException(() -> questionResource.getPopularUnansweredQuestions(options).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS);
     }
 
     @Test
     public void shouldThrowInternalServerErrorIfRecentlyAcceptedQuestionsCannotBeFetched() {
-        when(questionDao.getRecentlyAcceptedQuestions(any())).thenReturn(error(new SQLException("poff")));
+        when(questionDao.getRecentlyAcceptedQuestions(options)).thenReturn(error(new SQLException("poff")));
 
-        assertException(() -> questionResource.getRecentlyAcceptedQuestions(1).toBlocking().singleOrDefault(null),
+        assertException(() -> questionResource.getRecentlyAcceptedQuestions(options).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS);
     }
