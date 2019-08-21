@@ -8,6 +8,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * Workaround for framework bug. Should be removed once fixed.
+ */
 public class RWDateFormat extends StdDateFormat {
 
     public RWDateFormat() {

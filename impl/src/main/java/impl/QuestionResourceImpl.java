@@ -92,7 +92,8 @@ public class QuestionResourceImpl implements QuestionResource {
 
     @Override
     public Observable<List<Question>> getLatestQuestions(Integer limit) {
-        return this.questionDao.getLatestQuestions(firstNonNull(limit, 10)).toList()
+        limit = firstNonNull(limit, 10);
+        return this.questionDao.getLatestQuestions(limit).toList()
             .onErrorResumeNext(e ->
                 error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_LATEST_QUESTIONS, e))
             );
@@ -100,7 +101,8 @@ public class QuestionResourceImpl implements QuestionResource {
 
     @Override
     public Observable<List<Question>> getPopularQuestions(Integer limit) {
-        return this.questionDao.getPopularQuestions(firstNonNull(limit, 10)).toList()
+        limit = firstNonNull(limit, 10);
+        return this.questionDao.getPopularQuestions(limit).toList()
             .onErrorResumeNext(e ->
                 error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_POPULAR_QUESTIONS, e))
             );
@@ -108,7 +110,8 @@ public class QuestionResourceImpl implements QuestionResource {
 
     @Override
     public Observable<List<Question>> getPopularUnansweredQuestions(Integer limit) {
-        return this.questionDao.getPopularUnansweredQuestions(firstNonNull(limit, 10)).toList()
+        limit = firstNonNull(limit, 10);
+        return this.questionDao.getPopularUnansweredQuestions(limit).toList()
             .onErrorResumeNext(e ->
                 error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS, e))
             );
@@ -116,7 +119,8 @@ public class QuestionResourceImpl implements QuestionResource {
 
     @Override
     public Observable<List<Question>> getRecentlyAcceptedQuestions(Integer limit) {
-        return this.questionDao.getRecentlyAcceptedQuestions(firstNonNull(limit, 10)).toList()
+        limit = firstNonNull(limit, 10);
+        return this.questionDao.getRecentlyAcceptedQuestions(limit).toList()
             .onErrorResumeNext(e ->
                 error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS, e))
             );
@@ -173,9 +177,7 @@ public class QuestionResourceImpl implements QuestionResource {
 
     @Override
     public Observable<List<Question>> getQuestions(long userId, Integer limit) {
-        if (limit == null) {
-            limit = 10;
-        }
+        limit = firstNonNull(limit, 10);
         return this.questionDao
             .getQuestions(userId, limit).toList()
             .onErrorResumeNext(throwable ->

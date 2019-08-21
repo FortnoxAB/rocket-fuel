@@ -22,6 +22,9 @@ import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
+/**
+ * Workaround for framework bug. Should be removed once fixed.
+ */
 public class JaxRsModule implements AutoBindModule {
 
 	private final InjectAnnotatedScanner injectAnnotatedScanner;
