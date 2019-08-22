@@ -36,7 +36,7 @@ public interface QuestionResource {
     /**
      * Return a list of latest questions
      *
-     * @param options
+     * @param options Sorting and limiting options
      * @return questions
      */
     @GET
@@ -46,7 +46,7 @@ public interface QuestionResource {
     /**
      * Return a list of the highest voted questions
      *
-     * @param options
+     * @param options Sorting and limiting options
      * @return questions
      */
     @GET
@@ -56,7 +56,7 @@ public interface QuestionResource {
     /**
      * Return a list of the highest voted questions without any answers
      *
-     * @param options
+     * @param options Sorting and limiting options
      * @return questions
      */
     @GET
@@ -66,7 +66,7 @@ public interface QuestionResource {
     /**
      * Return a list of the questions that had an answer accepted the most recently
      *
-     * @param options
+     * @param options Sorting and limiting options
      * @return questions
      */
     @GET

@@ -158,11 +158,6 @@ public interface QuestionDao {
     Observable<GeneratedKey<Long>> addQuestion(long userId, Question question);
 
     @Update("UPDATE question " +
-        "SET created_at=:createdAt " +
-        "WHERE question.id=:question.id")
-    Observable<Integer> setCreatedAt(Question question, LocalDateTime createdAt);
-
-    @Update("UPDATE question " +
             "SET question=:question.question, title=:question.title " +
             "WHERE question.id=:questionId AND question.user_id=:userId")
     Observable<Integer> updateQuestion(long userId, long questionId, Question question);

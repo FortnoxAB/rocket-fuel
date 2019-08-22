@@ -27,6 +27,7 @@ import rx.Observable;
 import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.GeneratedKey;
+import se.fortnox.reactivewizard.db.Update;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
 import slack.SlackConfig;
@@ -81,6 +82,7 @@ public class QuestionResourceTest {
     private static SlackResource    slackResource;
     private static QuestionDao      questionDao;
     private static AnswerDao        answerDao;
+    private static TestDao          testDao;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
@@ -100,6 +102,7 @@ public class QuestionResourceTest {
         questionVoteDao = testSetup.getInjector().getInstance(QuestionVoteDao.class);
         questionDao = testSetup.getInjector().getInstance(QuestionDao.class);
         answerDao = testSetup.getInjector().getInstance(AnswerDao.class);
+        testDao = testSetup.getInjector().getInstance(TestDao.class);
         slackResource = mock(SlackResource.class);
         applicationConfig = new ApplicationConfig();
         applicationConfig.setBaseUrl("deployed.fuel.com");
@@ -653,7 +656,7 @@ public class QuestionResourceTest {
               .map(GeneratedKey::getKey)
               .flatMap(questionDao::getQuestion)
               .toBlocking().single();
-        questionDao.setCreatedAt(question, created).toBlocking().single();
+        testDao.setCreatedAt(question, created).toBlocking().single();
 
         range(0, votes)
             .forEach(i -> assertThat(questionResource.upVoteQuestion(newAuth(), question.getId())).isEmpty());
@@ -732,5 +735,12 @@ public class QuestionResourceTest {
             .hasExactlyOne()
             .describedAs("max limit")
             .hasSize(maxLimit + 1); // because CollectionOptionsQueryPart adds one to see if there are more
+    }
+
+    private interface TestDao {
+        @Update("UPDATE question " +
+            "SET created_at=:createdAt " +
+            "WHERE question.id=:question.id")
+        Observable<Integer> setCreatedAt(Question question, LocalDateTime createdAt);
     }
 }
