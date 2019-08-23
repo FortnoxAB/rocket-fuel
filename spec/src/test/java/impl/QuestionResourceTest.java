@@ -72,7 +72,7 @@ import static util.ObservableAssertions.assertThatList;
 public class QuestionResourceTest {
 
     public static final LocalDateTime CURRENT     = now();
-    public static final LocalDateTime ONE_DAY_AGO = CURRENT.minusDays(1);
+    public static final LocalDateTime A_DAY_AGO   = CURRENT.minusDays(1);
     public static final LocalDateTime A_MONTH_AGO = CURRENT.minusMonths(1);
 
     private static QuestionResource questionResource;
@@ -451,7 +451,7 @@ public class QuestionResourceTest {
         // only the question we want to delete should be removed
         List<Question> remaningQuestions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
         assertThat(remaningQuestions.size()).isEqualTo(1);
-        assertThat(remaningQuestions.get(0).getTitle()).isEqualTo("my question title2");
+        assertThat(remaningQuestions.get(0).getTitle()).isEqualTo(questionsSaved.get(1).getTitle());
 
         // and the answers should be deleted as well for the deleted question
         List<Answer> answersForTheNonDeletedQuestion = answerResource.getAnswers(mockAuth, questionsSaved.get(1).getId()).toBlocking().singleOrDefault(null);
@@ -572,8 +572,8 @@ public class QuestionResourceTest {
         List<Long> inExpectedOrder = asList(
             createQuestionWithoutVotes(CURRENT),
             createQuestionWithUnacceptedAnswer(CURRENT.minusMinutes(1), 3),
-            createQuestionWithoutVotes(ONE_DAY_AGO),
-            createQuestionWithoutAnswer(ONE_DAY_AGO.minusMinutes(1), 3),
+            createQuestionWithoutVotes(A_DAY_AGO),
+            createQuestionWithoutAnswer(A_DAY_AGO.minusMinutes(1), 3),
             createQuestionWithoutVotes(A_MONTH_AGO)
         );
         assertOrder(questionResource::getLatestQuestions, inExpectedOrder);
@@ -584,7 +584,7 @@ public class QuestionResourceTest {
         List<Long> inExpectedOrder = asList(
             createQuestionWithUnacceptedAnswer(CURRENT, 3),
             createQuestionWithoutAnswer(CURRENT.minusMinutes(1), 3),
-            createQuestionWithUnacceptedAnswer(ONE_DAY_AGO, 3),
+            createQuestionWithUnacceptedAnswer(A_DAY_AGO, 3),
             createQuestionWithUnacceptedAnswer(A_MONTH_AGO, 3),
             createQuestionWithUnacceptedAnswer(CURRENT, 2),
             createQuestionWithUnacceptedAnswer(CURRENT, 1),
@@ -597,7 +597,7 @@ public class QuestionResourceTest {
     public void shouldSortPopularUnansweredQuestions() {
         List<Long> inExpectedOrder = asList(
             createQuestionWithoutAnswer(CURRENT, 3),
-            createQuestionWithoutAnswer(ONE_DAY_AGO, 3),
+            createQuestionWithoutAnswer(A_DAY_AGO, 3),
             createQuestionWithoutAnswer(A_MONTH_AGO, 3),
             createQuestionWithoutAnswer(CURRENT, 2),
             createQuestionWithoutAnswer(CURRENT, 1)
@@ -614,7 +614,7 @@ public class QuestionResourceTest {
     public void shouldSortRecentlyAcceptedQuestions() {
         List<Long> inExpectedOrder = asList(
             createQuestionWithAcceptedAnswer(CURRENT),
-            createQuestionWithAcceptedAnswer(ONE_DAY_AGO),
+            createQuestionWithAcceptedAnswer(A_DAY_AGO),
             createQuestionWithAcceptedAnswer(A_MONTH_AGO)
         );
 
@@ -623,6 +623,16 @@ public class QuestionResourceTest {
         createQuestionWithoutAnswer(CURRENT, 3);
 
         assertOrder(questionResource::getRecentlyAcceptedQuestions, inExpectedOrder);
+    }
+
+    @Test
+    public void shouldSortUsersQuestionsByCreated() {
+        Auth user = new MockAuth(insertUser(userResource).getId());
+        long oldest = createQuestionForUser(user, A_MONTH_AGO);
+        long old = createQuestionForUser(user, A_DAY_AGO);
+        long current = createQuestionForUser(user, CURRENT);
+
+        assertOrder(options -> questionResource.getQuestions(user.getUserId(), options), asList(current, old, oldest));
     }
 
     private void assertOrder(Function<CollectionOptions, Observable<List<Question>>> method, List<Long> inExpectedOrder) {
@@ -648,11 +658,17 @@ public class QuestionResourceTest {
         return createQuestion("a", now(), accepted, 0, true);
     }
 
+    private Long createQuestionForUser(Auth user, LocalDateTime created) {
+        return createQuestion(user, "title", created, null, 0, false);
+    }
+
     private Long createQuestion(String title, LocalDateTime created, LocalDateTime accepted, int votes, boolean createUnAcceptedAnswer) {
+        return createQuestion(new MockAuth(insertUser(userResource).getId()), title, created, accepted, votes, createUnAcceptedAnswer);
+    }
 
-        Auth mockAuth = new MockAuth(insertUser(userResource).getId());
+    private Long createQuestion(Auth user, String title, LocalDateTime created, LocalDateTime accepted, int votes, boolean createUnAcceptedAnswer) {
 
-        Question question = questionDao.addQuestion(mockAuth.getUserId(), getQuestion(title, RandomString.make()))
+        Question question = questionDao.addQuestion(user.getUserId(), getQuestion(title, RandomString.make()))
               .map(GeneratedKey::getKey)
               .flatMap(questionDao::getQuestion)
               .toBlocking().single();
@@ -661,19 +677,19 @@ public class QuestionResourceTest {
         range(0, votes)
             .forEach(i -> assertThat(questionResource.upVoteQuestion(newAuth(), question.getId())).isEmpty());
 
-        assertThat(questionResource.getQuestion(mockAuth, question.getId()))
+        assertThat(questionResource.getQuestion(user, question.getId()))
             .hasExactlyOne()
             .satisfies(q -> assertThat(q.getVotes()).isEqualTo(votes));
 
         if(createUnAcceptedAnswer) {
-            assertThat(answerResource.createAnswer(mockAuth, getAnswer(RandomString.make()), question.getId()))
+            assertThat(answerResource.createAnswer(user, getAnswer(RandomString.make()), question.getId()))
                 .hasExactlyOne();
         }
 
         if (nonNull(accepted)) {
-            Answer acceptedAnswer = answerResource.createAnswer(mockAuth, getAnswer(RandomString.make()), question.getId()).toBlocking().firstOrDefault(null);
+            Answer acceptedAnswer = answerResource.createAnswer(user, getAnswer(RandomString.make()), question.getId()).toBlocking().firstOrDefault(null);
             acceptedAnswer.setAcceptedAt(accepted);
-            assertThat(answerDao.updateAnswer(mockAuth.getUserId(), acceptedAnswer.getId(), acceptedAnswer)).isEmpty();
+            assertThat(answerDao.updateAnswer(user.getUserId(), acceptedAnswer.getId(), acceptedAnswer)).isEmpty();
         }
         return question.getId();
     }
