@@ -24,7 +24,7 @@ public class ObservableListAssert<E> extends AbstractAssert<ObservableListAssert
      * @return a new assertion object whose object under test is the received List of E
      */
     public ListAssert<E> hasExactlyOne() {
-        List<List<E>> values = actual.test().awaitTerminalEvent().getOnNextEvents();
+        List<List<E>> values = actual.test().awaitTerminalEvent().assertNoErrors().getOnNextEvents();
         Assertions.assertThat(values)
             .hasSize(1);
         return Assertions.assertThat(values.get(0));

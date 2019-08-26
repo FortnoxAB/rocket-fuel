@@ -69,12 +69,12 @@ class Post extends React.Component {
         );
     }
 
-    getTime() {
-        return moment(this.props.created).fromNow();
+    static getTime(time) {
+        return moment(time).fromNow();
     }
 
-    getTimeStamp() {
-        return moment(this.props.created).format('llll');
+    static getTimeStamp(time) {
+        return moment(time).format('llll');
     }
 
     renderAnswered() {
@@ -158,7 +158,7 @@ class Post extends React.Component {
             postingToServer: true,
             editFormError: ''
         });
-        Answer.updateAnswer(this.props.answerId, {answer: this.state.answer})
+        Answer.updateAnswer(this.props.answerId, { answer: this.state.answer })
             .then(() => {
                 this.setState({
                     isEditDialogOpen: false,
@@ -215,7 +215,7 @@ class Post extends React.Component {
     renderVote(isVoteAllowed, onVote, faClass) {
         return (
             <div className={`vote${isVoteAllowed ? '' : '-disabled'}`}>
-                <i onClick={() => `${isVoteAllowed ? onVote(this.props.answerId || this.props.questionId) : ''}`} className={'fa ' + faClass}/>
+                <i onClick={() => `${isVoteAllowed ? onVote(this.props.answerId || this.props.questionId) : ''}`} className={'fa ' + faClass} />
             </div>
         )
     }
@@ -296,11 +296,11 @@ class Post extends React.Component {
                         <div className="post-footer flex flex-between">
                             <div className="flex center-vertical">
                                 <div className="picture">
-                                    <img src={this.props.picture} alt={this.props.userName}/>
+                                    <img src={this.props.picture} alt={this.props.userName} />
                                 </div>
                                 <div className="flex-column flex-start">
                                     <div>{this.props.userName}</div>
-                                    <Tooltip content={this.getTimeStamp()}>{this.getTime()}</Tooltip>
+                                    <Tooltip content={Post.getTimeStamp(this.props.created)}>{Post.getTime(this.props.created)}</Tooltip>
                                 </div>
                             </div>
                             {this.renderButtons()}
@@ -329,11 +329,15 @@ Post.defaultProps = {
     questionId: null,
     answerId: null,
     picture: null,
-    onDelete: () => {},
-    onEdit: () => {},
+    onDelete: () => {
+    },
+    onEdit: () => {
+    },
     enableAccept: false,
-    onUpVote: () => {},
-    onDownVote: () => {},
+    onUpVote: () => {
+    },
+    onDownVote: () => {
+    },
     allowUpVote: false,
     allowDownVote: false
 };

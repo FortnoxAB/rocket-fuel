@@ -1,16 +1,10 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import moment from 'moment';
 
 import Certificate from '../utils/certificate';
-import Coins from '../utils/coins';
 import Trophy from '../utils/trophy';
 import { UserContext } from '../../usercontext';
-import Dropdown from '../utils/dropdown';
-import { t } from 'ttag';
-import Dialog from '../utils/dialog';
-import Button from '../forms/button';
-import * as Question from '../../models/question';
+import Post from './post';
 
 class QuestionRow extends React.Component {
     constructor(props) {
@@ -28,10 +22,6 @@ class QuestionRow extends React.Component {
         });
     }
 
-    getTime() {
-        return moment(this.props.question.createdAt).fromNow();
-    }
-
     getState() {
         if (this.props.question.answerAccepted) {
             return 'answered';
@@ -41,9 +31,6 @@ class QuestionRow extends React.Component {
 
     printCertificate() {
         const hasAccepted = this.props.question.answerAccepted;
-        if (!hasAccepted) {
-            return null;
-        }
         return <Certificate active={hasAccepted} />;
     }
 
@@ -52,15 +39,15 @@ class QuestionRow extends React.Component {
         if (!hasEnoughVotes) {
             return null;
         }
-        return <Trophy active={hasEnoughVotes} />;
+        return <Trophy active />;
     }
 
     getClasses() {
-        let classes = 'question-row flex';
-        if (this.props.small) {
-            classes = `${classes} small`;
-        }
-        return classes;
+        return [
+            'question-row flex',
+            this.props.small ? 'small' : '',
+            this.props.question.answerAccepted ? 'accepted' : '',
+        ].join(' ');
     }
 
     renderTags() {
@@ -95,7 +82,7 @@ class QuestionRow extends React.Component {
                             {this.props.question.title}
                         </div>
                         <div className="user">
-                            {this.props.question.createdBy}, {this.getTime()}
+                            {Post.getTime(this.props.question.createdAt)}
                         </div>
                     </div>
                 </div>

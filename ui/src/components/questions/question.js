@@ -1,7 +1,6 @@
 import React from 'react';
 import Post from './post';
 import { UserContext } from '../../usercontext';
-import Answer from './answer';
 
 class Question extends React.Component {
     render() {

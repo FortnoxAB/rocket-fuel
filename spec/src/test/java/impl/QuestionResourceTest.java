@@ -9,10 +9,12 @@ import api.UserResource;
 import api.auth.Auth;
 import com.github.seratch.jslack.api.model.block.SectionBlock;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
+import dao.AnswerDao;
 import dao.QuestionDao;
 import dao.QuestionVoteDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.log4j.Appender;
+import org.assertj.core.internal.bytebuddy.utility.RandomString;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
@@ -23,22 +25,32 @@ import org.mockito.ArgumentCaptor;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import rx.observers.AssertableSubscriber;
+import se.fortnox.reactivewizard.CollectionOptions;
+import se.fortnox.reactivewizard.db.GeneratedKey;
+import se.fortnox.reactivewizard.db.Update;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
 import slack.SlackConfig;
 import slack.SlackResource;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static impl.QuestionResourceImpl.FAILED_TO_SEARCH_FOR_QUESTIONS;
 import static impl.QuestionResourceImpl.INVALID_VOTE;
 import static impl.QuestionResourceImpl.QUESTION_NOT_FOUND;
+import static impl.TestSetup.getAnswer;
 import static impl.TestSetup.getQuestion;
 import static impl.TestSetup.insertUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static java.time.LocalDateTime.now;
+import static java.util.Arrays.asList;
+import static java.util.Objects.nonNull;
+import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
@@ -54,21 +66,32 @@ import static org.mockito.Mockito.when;
 import static rx.Observable.empty;
 import static rx.Observable.error;
 import static se.fortnox.reactivewizard.test.TestUtil.matches;
+import static util.ObservableAssertions.assertThat;
+import static util.ObservableAssertions.assertThatList;
 
 public class QuestionResourceTest {
+
+    public static final LocalDateTime CURRENT     = now();
+    public static final LocalDateTime A_DAY_AGO   = CURRENT.minusDays(1);
+    public static final LocalDateTime A_MONTH_AGO = CURRENT.minusMonths(1);
+
     private static QuestionResource questionResource;
     private static AnswerResource   answerResource;
     private static UserResource     userResource;
     private static QuestionVoteDao  questionVoteDao;
     private static SlackResource    slackResource;
-    private static QuestionDao questionDao;
+    private static QuestionDao      questionDao;
+    private static AnswerDao        answerDao;
+    private static TestDao          testDao;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
 
-    private static TestSetup testSetup;
-    private static Appender appender;
+    private static TestSetup         testSetup;
+    private static Appender          appender;
     private static ApplicationConfig applicationConfig;
+
+    private CollectionOptions options;
 
     @BeforeClass
     public static void before() {
@@ -78,10 +101,17 @@ public class QuestionResourceTest {
         answerResource = testSetup.getInjector().getInstance(AnswerResource.class);
         questionVoteDao = testSetup.getInjector().getInstance(QuestionVoteDao.class);
         questionDao = testSetup.getInjector().getInstance(QuestionDao.class);
+        answerDao = testSetup.getInjector().getInstance(AnswerDao.class);
+        testDao = testSetup.getInjector().getInstance(TestDao.class);
         slackResource = mock(SlackResource.class);
         applicationConfig = new ApplicationConfig();
         applicationConfig.setBaseUrl("deployed.fuel.com");
         when(slackResource.postMessageToSlack(anyString(), any())).thenReturn(empty());
+    }
+
+    @Before
+    public void setupOptions() {
+        options = new CollectionOptions();
     }
 
     @After
@@ -104,7 +134,7 @@ public class QuestionResourceTest {
         when(questionDao.getLatestQuestions(any())).thenReturn(error(new SQLException()));
 
         try {
-            questionResource.getLatestQuestion(null).toBlocking().single();
+            questionResource.getLatestQuestions(null).toBlocking().single();
             fail("Should have thrown exception");
         } catch (WebException e) {
             assertThat(e.getError()).isEqualTo("failed.to.get.latest.questions");
@@ -115,7 +145,7 @@ public class QuestionResourceTest {
     public void shouldBePossibleToGetQuestionBySlackThreadId() {
 
         TestSetup.insertUser(userResource);
-        Auth mockAuth    = newAuth();
+        Auth mockAuth = newAuth();
 
         Question question      = TestSetup.getQuestion("my question title", "my question");
         String   slackThreadId = String.valueOf(System.currentTimeMillis());
@@ -134,14 +164,32 @@ public class QuestionResourceTest {
         test.awaitTerminalEvent();
 
         test.assertError(WebException.class);
-        assertThat(((WebException)test.getOnErrorEvents().get(0)).getError()).isEqualTo("not.found");
+        assertThat(((WebException)test.getOnErrorEvents().get(0)).getError()).isEqualTo(QUESTION_NOT_FOUND);
     }
 
     @Test
-    public void shouldListLatest10QuestionsAsDefault() {
-        generateQuestions(20);
-        List<Question> questions = questionResource.getLatestQuestion(null).toBlocking().single();
-        assertEquals(10, questions.size());
+    public void shouldList10LatestQuestionsAsDefault() {
+        assertLimit(questionResource::getLatestQuestions, 10, 50);
+    }
+
+    @Test
+    public void shouldList10PopularQuestionsAsDefault() {
+        assertLimit(questionResource::getPopularQuestions, 10, 50);
+    }
+
+    @Test
+    public void shouldList10PopularUnsansweredQuestionsAsDefault() {
+        assertLimit(questionResource::getPopularUnansweredQuestions, 10, 50);
+    }
+
+    @Test
+    public void shouldList10RecentlyAcceptedQuestionsAsDefault() {
+        range(1, 15)
+            .forEach(i -> createQuestionWithAcceptedAnswer(CURRENT));
+
+        assertThatList(questionResource.getRecentlyAcceptedQuestions(options))
+            .hasExactlyOne()
+            .hasSize(11);
     }
 
     @Test
@@ -182,7 +230,7 @@ public class QuestionResourceTest {
     }
 
     private Answer createAnswer(Auth mockAuth, long questionId, String answerBody) {
-        Answer answer = TestSetup.getAnswer(answerBody);
+        Answer answer = getAnswer(answerBody);
         answerResource.createAnswer(mockAuth, answer, questionId).toBlocking().singleOrDefault(null);
         return answer;
     }
@@ -287,7 +335,7 @@ public class QuestionResourceTest {
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
         // then the question should be returned when asking for the users questions
-        List<Question> questions = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question insertedQuestion = questions.get(0);
@@ -306,7 +354,7 @@ public class QuestionResourceTest {
         Auth     mockAuth = newAuth();
         mockAuth.setUserId(mockAuth.getUserId());
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
-        List<Question> questions = questionResource.getQuestions(mockAuth.getUserId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(mockAuth.getUserId(), null).toBlocking().single();
         assertEquals(1, questions.size());
 
         // then the question should be returned when asking for the specific question
@@ -330,12 +378,12 @@ public class QuestionResourceTest {
         mockAuth.setUserId(createdUser.getId());
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
 
-        Question storedQuestion = questionResource.getQuestions(createdUser.getId()).toBlocking().single().get(0);
+        Question storedQuestion = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single().get(0);
         storedQuestion.setBounty(400);
         storedQuestion.setTitle("new title");
         storedQuestion.setQuestion("new question body");
         questionResource.updateQuestion(mockAuth, storedQuestion.getId(), storedQuestion).toBlocking().singleOrDefault(null);
-        List<Question> questions = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question updatedQuestion = questions.get(0);
@@ -363,7 +411,7 @@ public class QuestionResourceTest {
         questionResource.createQuestion(authOtherUser, questionForOtherUser).toBlocking().singleOrDefault(null);
 
         // then only questions for our user should be returned
-        List<Question> questions = questionResource.getQuestions(ourUser.getId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(ourUser.getId(), null).toBlocking().single();
         assertEquals(1, questions.size());
 
         Question insertedQuestion = questions.get(0);
@@ -388,22 +436,22 @@ public class QuestionResourceTest {
         questionResource.createQuestion(mockAuth, questionToInsert2).toBlocking().singleOrDefault(null);
 
         // and the questions has answers
-        List<Question> questions = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
 
         Answer answer = new Answer();
         answer.setAnswer("just a answer");
         answerResource.createAnswer(mockAuth, answer, questions.get(0).getId()).toBlocking().singleOrDefault(null);
         answerResource.createAnswer(mockAuth, answer, questions.get(1).getId()).toBlocking().singleOrDefault(null);
 
-        List<Question> questionsSaved = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> questionsSaved = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
 
         // when we deletes a question
         questionResource.deleteQuestion(mockAuth, questionsSaved.get(0).getId()).toBlocking().singleOrDefault(null);
 
         // only the question we want to delete should be removed
-        List<Question> remaningQuestions = questionResource.getQuestions(createdUser.getId()).toBlocking().single();
+        List<Question> remaningQuestions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
         assertThat(remaningQuestions.size()).isEqualTo(1);
-        assertThat(remaningQuestions.get(0).getTitle()).isEqualTo("my question title2");
+        assertThat(remaningQuestions.get(0).getTitle()).isEqualTo(questionsSaved.get(1).getTitle());
 
         // and the answers should be deleted as well for the deleted question
         List<Answer> answersForTheNonDeletedQuestion = answerResource.getAnswers(mockAuth, questionsSaved.get(1).getId()).toBlocking().singleOrDefault(null);
@@ -430,7 +478,7 @@ public class QuestionResourceTest {
     @Test
     public void shouldLogThatWeCouldNotSendSlackNotificationWhenQuestionIsCreated() {
         // given bad slack config
-        Auth auth = new Auth();
+        Auth     auth     = new Auth();
         Question question = TestSetup.getQuestion("title", "body");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(error(new SQLException("poff")));
         QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
@@ -448,7 +496,7 @@ public class QuestionResourceTest {
     @Test
     public void shouldSendCorrectMessageToSlack() {
         // given that we have a question that we want to save
-        Auth auth = new Auth();
+        Auth     auth     = new Auth();
         Question question = TestSetup.getQuestion("title of question?", "who does one do?");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(empty());
         QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
@@ -459,10 +507,10 @@ public class QuestionResourceTest {
 
         // then a message shall be sent through slack that a new question has been submitted.
         verify(slackResource, times(1)).postMessageToSlack(any(), mapArgumentCaptor.capture());
-        SectionBlock header  = (SectionBlock) mapArgumentCaptor.getValue().get(0);
-        SectionBlock content  = (SectionBlock) mapArgumentCaptor.getValue().get(1);
+        SectionBlock header  = (SectionBlock)mapArgumentCaptor.getValue().get(0);
+        SectionBlock content = (SectionBlock)mapArgumentCaptor.getValue().get(1);
 
-        String headerText = ((MarkdownTextObject)header.getText()).getText();
+        String headerText  = ((MarkdownTextObject)header.getText()).getText();
         String contentText = ((MarkdownTextObject)content.getText()).getText();
         assertThat(headerText).isEqualTo("A new question: *title of question?* was submitted.");
         assertThat(contentText).isEqualTo("Head over to <deployed.fuel.com/question/1|rocket-fuel> to view the question.");
@@ -510,17 +558,140 @@ public class QuestionResourceTest {
     public void shouldListLatest5Questions() {
         int limit               = 5;
         int questionsToGenerate = 10;
+        options.setLimit(limit);
 
         generateQuestions(questionsToGenerate);
 
-        List<Question> questions = questionResource.getLatestQuestion(limit).toBlocking().single();
-        assertEquals(limit, questions.size());
+        assertThatList(questionResource.getLatestQuestions(options))
+            .hasExactlyOne()
+            .hasSize(limit);
+    }
 
-        for (int i = 0; i < limit; i++) {
-            Question insertedQuestion = questions.get(i);
-            assertEquals("my question title " + (questionsToGenerate - i), insertedQuestion.getTitle());
-            assertEquals("my question", insertedQuestion.getQuestion());
+    @Test
+    public void shouldSortLatestQuestions() {
+        List<Long> inExpectedOrder = asList(
+            createQuestionWithoutVotes(CURRENT),
+            createQuestionWithUnacceptedAnswer(CURRENT.minusMinutes(1), 3),
+            createQuestionWithoutVotes(A_DAY_AGO),
+            createQuestionWithoutAnswer(A_DAY_AGO.minusMinutes(1), 3),
+            createQuestionWithoutVotes(A_MONTH_AGO)
+        );
+        assertOrder(questionResource::getLatestQuestions, inExpectedOrder);
+    }
+
+    @Test
+    public void shouldSortPopularQuestions() {
+        List<Long> inExpectedOrder = asList(
+            createQuestionWithUnacceptedAnswer(CURRENT, 3),
+            createQuestionWithoutAnswer(CURRENT.minusMinutes(1), 3),
+            createQuestionWithUnacceptedAnswer(A_DAY_AGO, 3),
+            createQuestionWithUnacceptedAnswer(A_MONTH_AGO, 3),
+            createQuestionWithUnacceptedAnswer(CURRENT, 2),
+            createQuestionWithUnacceptedAnswer(CURRENT, 1),
+            createQuestionWithUnacceptedAnswer(CURRENT, 0)
+        );
+        assertOrder(questionResource::getPopularQuestions, inExpectedOrder);
+    }
+
+    @Test
+    public void shouldSortPopularUnansweredQuestions() {
+        List<Long> inExpectedOrder = asList(
+            createQuestionWithoutAnswer(CURRENT, 3),
+            createQuestionWithoutAnswer(A_DAY_AGO, 3),
+            createQuestionWithoutAnswer(A_MONTH_AGO, 3),
+            createQuestionWithoutAnswer(CURRENT, 2),
+            createQuestionWithoutAnswer(CURRENT, 1)
+        );
+
+        // red herrings
+        createQuestionWithUnacceptedAnswer(CURRENT, 3);
+        createQuestionWithAcceptedAnswer(CURRENT);
+
+        assertOrder(questionResource::getPopularUnansweredQuestions, inExpectedOrder);
+    }
+
+    @Test
+    public void shouldSortRecentlyAcceptedQuestions() {
+        List<Long> inExpectedOrder = asList(
+            createQuestionWithAcceptedAnswer(CURRENT),
+            createQuestionWithAcceptedAnswer(A_DAY_AGO),
+            createQuestionWithAcceptedAnswer(A_MONTH_AGO)
+        );
+
+        // red herrings
+        createQuestionWithUnacceptedAnswer(CURRENT, 3);
+        createQuestionWithoutAnswer(CURRENT, 3);
+
+        assertOrder(questionResource::getRecentlyAcceptedQuestions, inExpectedOrder);
+    }
+
+    @Test
+    public void shouldSortUsersQuestionsByCreated() {
+        Auth user = new MockAuth(insertUser(userResource).getId());
+        long oldest = createQuestionForUser(user, A_MONTH_AGO);
+        long old = createQuestionForUser(user, A_DAY_AGO);
+        long current = createQuestionForUser(user, CURRENT);
+
+        assertOrder(options -> questionResource.getQuestions(user.getUserId(), options), asList(current, old, oldest));
+    }
+
+    private void assertOrder(Function<CollectionOptions, Observable<List<Question>>> method, List<Long> inExpectedOrder) {
+        assertThatList(method.apply(options))
+            .hasExactlyOne()
+            .extracting(Question::getId)
+            .containsExactlyElementsOf(inExpectedOrder);
+    }
+
+    private Long createQuestionWithoutVotes(LocalDateTime created) {
+        return createQuestion("a", created, null, 0, true);
+    }
+
+    private Long createQuestionWithUnacceptedAnswer(LocalDateTime created, int votes) {
+        return createQuestion("a", created, null, votes, true);
+    }
+
+    private Long createQuestionWithoutAnswer(LocalDateTime created, int votes) {
+        return createQuestion("a", created, null, votes, false);
+    }
+
+    private Long createQuestionWithAcceptedAnswer(LocalDateTime accepted) {
+        return createQuestion("a", now(), accepted, 0, true);
+    }
+
+    private Long createQuestionForUser(Auth user, LocalDateTime created) {
+        return createQuestion(user, "title", created, null, 0, false);
+    }
+
+    private Long createQuestion(String title, LocalDateTime created, LocalDateTime accepted, int votes, boolean createUnAcceptedAnswer) {
+        return createQuestion(new MockAuth(insertUser(userResource).getId()), title, created, accepted, votes, createUnAcceptedAnswer);
+    }
+
+    private Long createQuestion(Auth user, String title, LocalDateTime created, LocalDateTime accepted, int votes, boolean createUnAcceptedAnswer) {
+
+        Question question = questionDao.addQuestion(user.getUserId(), getQuestion(title, RandomString.make()))
+              .map(GeneratedKey::getKey)
+              .flatMap(questionDao::getQuestion)
+              .toBlocking().single();
+        testDao.setCreatedAt(question, created).toBlocking().single();
+
+        range(0, votes)
+            .forEach(i -> assertThat(questionResource.upVoteQuestion(newAuth(), question.getId())).isEmpty());
+
+        assertThat(questionResource.getQuestion(user, question.getId()))
+            .hasExactlyOne()
+            .satisfies(q -> assertThat(q.getVotes()).isEqualTo(votes));
+
+        if(createUnAcceptedAnswer) {
+            assertThat(answerResource.createAnswer(user, getAnswer(RandomString.make()), question.getId()))
+                .hasExactlyOne();
         }
+
+        if (nonNull(accepted)) {
+            Answer acceptedAnswer = answerResource.createAnswer(user, getAnswer(RandomString.make()), question.getId()).toBlocking().firstOrDefault(null);
+            acceptedAnswer.setAcceptedAt(accepted);
+            assertThat(answerDao.updateAnswer(user.getUserId(), acceptedAnswer.getId(), acceptedAnswer)).isEmpty();
+        }
+        return question.getId();
     }
 
     private void voteAndAssertSuccess(BiFunction<Auth, Long, Observable<Void>> call, Auth auth, Question question, int expectedVotes) {
@@ -567,4 +738,25 @@ public class QuestionResourceTest {
         }
     }
 
+    private void assertLimit(Function<CollectionOptions, Observable<List<Question>>> method, int defaultLimit, int maxLimit) {
+        generateQuestions(maxLimit + 5);
+
+        assertThatList(method.apply(options))
+            .hasExactlyOne()
+            .describedAs("default limit")
+            .hasSize(defaultLimit + 1);  // because CollectionOptionsQueryPart adds one to see if there are more
+
+        options.setLimit(maxLimit + 5);
+        assertThatList(method.apply(options))
+            .hasExactlyOne()
+            .describedAs("max limit")
+            .hasSize(maxLimit + 1); // because CollectionOptionsQueryPart adds one to see if there are more
+    }
+
+    private interface TestDao {
+        @Update("UPDATE question " +
+            "SET created_at=:createdAt " +
+            "WHERE question.id=:question.id")
+        Observable<Integer> setCreatedAt(Question question, LocalDateTime createdAt);
+    }
 }

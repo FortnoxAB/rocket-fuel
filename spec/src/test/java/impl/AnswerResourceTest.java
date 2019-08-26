@@ -515,7 +515,7 @@ public class AnswerResourceTest {
         questionResource.createQuestion(new MockAuth(auth.getUserId()), question).toBlocking().singleOrDefault(null);
 
         // then the question should be returned when asking for the users questions
-        List<Question> questions = questionResource.getQuestions(auth.getUserId()).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(auth.getUserId(), null).toBlocking().single();
         assertEquals(1, questions.size());
         return questions.get(0);
     }

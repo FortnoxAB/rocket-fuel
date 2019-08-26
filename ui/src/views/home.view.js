@@ -11,6 +11,9 @@ class HomeView extends React.Component {
         this.state = {
             userQuestions: [],
             latestQuestions: [],
+            popularQuestions: [],
+            popularUnansweredQuestions: [],
+            recentlyAcceptedQuestions: [],
             loaded: false
         };
     }
@@ -21,13 +24,19 @@ class HomeView extends React.Component {
 
     fetchQuestions() {
         const user = this.context.state.user;
-        const userQuestions = Question.getQuestionsFromUser(user.id);
-        const latestQuestions = Question.getLatestQuestion();
+        const userQuestions              = Question.getQuestionsFromUser(user.id,5);
+        const latestQuestions            = Question.getLatestQuestions(5);
+        const popularQuestions           = Question.getPopularQuestions(5);
+        const popularUnansweredQuestions = Question.getPopularUnansweredQuestions(5);
+        const recentlyAcceptedQuestions  = Question.getRecentlyAcceptedQuestions(5);
 
-        Promise.all([userQuestions, latestQuestions]).then((response) => {
+        Promise.all([userQuestions, latestQuestions, popularQuestions, popularUnansweredQuestions, recentlyAcceptedQuestions]).then((response) => {
             this.setState({
                 userQuestions: response[0],
                 latestQuestions: response[1],
+                popularQuestions: response[2],
+                popularUnansweredQuestions: response[3],
+                recentlyAcceptedQuestions: response[4],
                 loaded: true
             });
         }).catch(() => {
@@ -49,6 +58,24 @@ class HomeView extends React.Component {
         });
     }
 
+    getPopularQuestions() {
+        return this.state.popularQuestions.map((question, index) => {
+            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
+        });
+    }
+
+    getPopularUnansweredQuestions() {
+        return this.state.popularUnansweredQuestions.map((question, index) => {
+            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
+        });
+    }
+
+    getRecentlyAcceptedQuestions() {
+        return this.state.recentlyAcceptedQuestions.map((question, index) => {
+            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
+        });
+    }
+
     render() {
         if (!this.state.loaded) {
             return (
@@ -56,14 +83,32 @@ class HomeView extends React.Component {
             );
         }
         return (
-            <div className="row flex-grow spacing">
-                <div className="col-2">
-                    <div className="headline">{t`Latest questions`}</div>
-                    {this.getLatestQuestions()}
+            <div>
+                <div className="row flex-grow spacing">
+                    <div className="col-2">
+                        <div className="headline">{t`Latest questions`}</div>
+                        {this.getLatestQuestions()}
+                    </div>
+                    <div className="col-2">
+                        <div className="headline">{t`Popular questions`}</div>
+                        {this.getPopularQuestions()}
+                    </div>
                 </div>
-                <div className="col-2">
-                    <div className="headline">{t`Your recent questions`}</div>
-                    {this.getUserQuestions()}
+                <div className="row flex-grow spacing">
+                    <div className="col-2">
+                        <div className="headline">{t`Popular unanswered questions`}</div>
+                        {this.getPopularUnansweredQuestions()}
+                    </div>
+                    <div className="col-2">
+                        <div className="headline">{t`Recently accepted questions`}</div>
+                        {this.getRecentlyAcceptedQuestions()}
+                    </div>
+                </div>
+                <div className="row flex-grow spacing">
+                    <div className="col-1">
+                        <div className="headline">{t`Your recent questions`}</div>
+                        {this.getUserQuestions()}
+                    </div>
                 </div>
             </div>
         )

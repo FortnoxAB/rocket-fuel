@@ -1,5 +1,6 @@
  package api;
 
+ import java.time.LocalDateTime;
 
  /**
   * A class that defines the shared attributes between a {@link Answer}
@@ -14,7 +15,7 @@
 
     private String picture;
 
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     private Integer votes;
 
@@ -30,11 +31,11 @@
         this.createdBy = createdBy;
     }
 
-    public String getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(String createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 

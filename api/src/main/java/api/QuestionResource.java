@@ -2,6 +2,7 @@ package api;
 
 import api.auth.Auth;
 import rx.Observable;
+import se.fortnox.reactivewizard.CollectionOptions;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -33,14 +34,44 @@ public interface QuestionResource {
     Observable<Question> getQuestion(Auth auth, @PathParam("questionId") long questionId);
 
     /**
-     * Return a list of latest questions with a limit
+     * Return a list of latest questions
      *
-     * @param limit
+     * @param options Sorting and limiting options
      * @return questions
      */
     @GET
     @Path("questions/latest")
-    Observable<List<Question>> getLatestQuestion(@QueryParam("limit") Integer limit);
+    Observable<List<Question>> getLatestQuestions(CollectionOptions options);
+
+    /**
+     * Return a list of the highest voted questions
+     *
+     * @param options Sorting and limiting options
+     * @return questions
+     */
+    @GET
+    @Path("questions/popular")
+    Observable<List<Question>> getPopularQuestions(CollectionOptions options);
+
+    /**
+     * Return a list of the highest voted questions without any answers
+     *
+     * @param options Sorting and limiting options
+     * @return questions
+     */
+    @GET
+    @Path("questions/popularunanswered")
+    Observable<List<Question>> getPopularUnansweredQuestions(CollectionOptions options);
+
+    /**
+     * Return a list of the questions that had an answer accepted the most recently
+     *
+     * @param options Sorting and limiting options
+     * @return questions
+     */
+    @GET
+    @Path("questions/recentlyaccepted")
+    Observable<List<Question>> getRecentlyAcceptedQuestions(CollectionOptions options);
 
     /**
      * Adds a question and links it to the given userId.
@@ -54,7 +85,7 @@ public interface QuestionResource {
      */
     @GET
     @Path("questions")
-    Observable<List<Question>> getQuestionsBySearchQuery(@QueryParam("search") String searchQuery, @QueryParam("limit") Integer limit);
+    Observable<List<Question>> getQuestionsBySearchQuery(@QueryParam("search") String searchQuery, CollectionOptions options);
 
 
     /**
@@ -62,7 +93,7 @@ public interface QuestionResource {
      */
     @Path("users/{userId}/questions")
     @GET
-    Observable<List<Question>> getQuestions(@PathParam("userId") long userId);
+    Observable<List<Question>> getQuestions(@PathParam("userId") long userId, CollectionOptions options);
 
     /**
      * Updates the question with the given questionId

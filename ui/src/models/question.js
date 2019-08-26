@@ -1,16 +1,40 @@
 import ApiFetch from '../components/utils/apifetch';
 
-export function getQuestionsFromUser(userId) {
+export function getQuestionsFromUser(userId, limit = 10) {
     const options = {
-        url: `/api/users/${userId}/questions`
+        url: `/api/users/${userId}/questions?limit=${limit}`
     };
 
     return ApiFetch(options);
 }
 
-export function getLatestQuestion(limit = 10) {
+export function getLatestQuestions(limit = 10) {
     const options = {
         url: `/api/questions/latest?limit=${limit}`
+    };
+
+    return ApiFetch(options);
+}
+
+export function getPopularQuestions(limit = 10) {
+    const options = {
+        url: `/api/questions/popular?limit=${limit}`
+    };
+
+    return ApiFetch(options);
+}
+
+export function getPopularUnansweredQuestions(limit = 10) {
+    const options = {
+        url: `/api/questions/popularunanswered?limit=${limit}`
+    };
+
+    return ApiFetch(options);
+}
+
+export function getRecentlyAcceptedQuestions(limit = 10) {
+    const options = {
+        url: `/api/questions/recentlyaccepted?limit=${limit}`
     };
 
     return ApiFetch(options);

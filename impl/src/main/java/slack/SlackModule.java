@@ -28,5 +28,7 @@ public class SlackModule implements AutoBindModule {
         slackMessageHandlerScanner.getMessageHandlers().forEach(aClass -> slackMessageHandlerMultibinder.addBinding().to(aClass));
 
         binder.bind(SlackRTMClient.class).asEagerSingleton();
+
+
     }
 }
