@@ -25,6 +25,7 @@ import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackResource;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -302,6 +303,10 @@ public class AnswerResourceTest {
         assertEquals("this is the body of the answer", createdAnswer.getAnswer());
         assertThat(createdAnswer.getVotes()).isZero();
         assertEquals("Test Subject", createdAnswer.getCreatedBy());
+        assertThat(createdAnswer.getCreated())
+            .isNotNull();
+        assertThat(createdAnswer.getCreated().getZone())
+            .isEqualTo(ZoneId.systemDefault());
     }
 
     @Test
@@ -528,6 +533,8 @@ public class AnswerResourceTest {
     private static Answer createAnswer( String answerBody) {
         Answer answer = new Answer();
         answer.setAnswer(answerBody);
+        assertThat(answer.getCreated())
+            .isNull();
         return answer;
     }
 
