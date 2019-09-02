@@ -1,6 +1,13 @@
  package api;
 
+ import com.fasterxml.jackson.annotation.JsonIgnore;
+ import com.fasterxml.jackson.annotation.JsonProperty;
+
  import java.time.LocalDateTime;
+ import java.time.ZonedDateTime;
+
+ import static java.time.ZoneId.systemDefault;
+ import static java.util.Optional.ofNullable;
 
  /**
   * A class that defines the shared attributes between a {@link Answer}
@@ -31,6 +38,14 @@
         this.createdBy = createdBy;
     }
 
+    @JsonProperty("createdAt")
+    public ZonedDateTime getCreated() {
+        return ofNullable(createdAt)
+            .map(time -> time.atZone(systemDefault()))
+            .orElse(null);
+    }
+
+    @JsonIgnore
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
