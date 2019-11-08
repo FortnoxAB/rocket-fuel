@@ -1,11 +1,6 @@
 package impl;
 
-import api.Answer;
-import api.AnswerResource;
-import api.Question;
-import api.QuestionResource;
-import api.User;
-import api.UserResource;
+import api.*;
 import api.auth.Auth;
 import com.github.seratch.jslack.api.model.block.SectionBlock;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
@@ -16,11 +11,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.log4j.Appender;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
 import org.jetbrains.annotations.NotNull;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.mockito.ArgumentCaptor;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
@@ -39,12 +30,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static impl.QuestionResourceImpl.FAILED_TO_SEARCH_FOR_QUESTIONS;
-import static impl.QuestionResourceImpl.INVALID_VOTE;
-import static impl.QuestionResourceImpl.QUESTION_NOT_FOUND;
-import static impl.TestSetup.getAnswer;
-import static impl.TestSetup.getQuestion;
-import static impl.TestSetup.insertUser;
+import static impl.QuestionResourceImpl.*;
+import static impl.TestSetup.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.time.LocalDateTime.now;
@@ -53,16 +40,9 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import static rx.Observable.empty;
 import static rx.Observable.error;
 import static se.fortnox.reactivewizard.test.TestUtil.matches;
@@ -106,7 +86,6 @@ public class QuestionResourceTest {
         slackResource = mock(SlackResource.class);
         applicationConfig = new ApplicationConfig();
         applicationConfig.setBaseUrl("deployed.fuel.com");
-        when(slackResource.postMessageToSlack(anyString(), any())).thenReturn(empty());
     }
 
     @Before
@@ -481,7 +460,9 @@ public class QuestionResourceTest {
         Auth     auth     = new Auth();
         Question question = TestSetup.getQuestion("title", "body");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(error(new SQLException("poff")));
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+        SlackConfig      slackConfig      = new SlackConfig();
+        slackConfig.setEnabled(true);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig);
 
         // when we try to add the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();
@@ -499,7 +480,9 @@ public class QuestionResourceTest {
         Auth     auth     = new Auth();
         Question question = TestSetup.getQuestion("title of question?", "who does one do?");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(empty());
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+        SlackConfig      slackConfig      = new SlackConfig();
+        slackConfig.setEnabled(true);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig);
 
         // when we add the the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();
