@@ -1,6 +1,6 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-
+import { t } from 'ttag';
 import Certificate from '../utils/certificate';
 import Trophy from '../utils/trophy';
 import { UserContext } from '../../usercontext';
@@ -45,7 +45,6 @@ class QuestionRow extends React.Component {
     getClasses() {
         return [
             'question-row flex',
-            this.props.small ? 'small' : '',
             this.props.question.answerAccepted ? 'accepted' : '',
         ].join(' ');
     }
@@ -55,20 +54,66 @@ class QuestionRow extends React.Component {
             return null;
         }
 
-        return (
-            <div className="tags">
-                <div className="tag">JavaScript</div>
-                <div className="tag">ReactJs</div>
-                <div className="tag">Frontend</div>
-            </div>
-        );
+        const tags = this.props.question.tags;
+
+        if (!tags || tags.length <= 0) {
+            return <div className="tag alternative">{t`No tags`}</div>
+        }
+
+        return tags.map((tag, i) => {
+            return (
+                <div className="tag" key={i}>
+                    {tag}
+                </div>
+            );
+        })
     }
 
     navigateToQuestion(questionId) {
         this.props.history.push(`/question/${questionId}`);
     }
 
+    getVotesNumber() {
+        const votes = this.props.question.votes;
+
+        if (votes > 0) {
+            return `+${votes}`;
+        }
+
+        return votes;
+    }
+
     render() {
+        return (
+            <div className={`${this.getClasses()} ${this.getState()}`}>
+                <div className="content" onClick={this.navigateToQuestion.bind(this, this.props.question.id)}>
+                    <div className="utils flex-column">
+                        <div className="flex flex-column center-center">
+                            <div className="votes">{this.getVotesNumber()}</div>
+                            <div className="votes-text">{t`votes`}</div>
+                        </div>
+                        <div className="accepted">
+                            {this.printCertificate()}
+                        </div>
+                    </div>
+                    <div className="body">
+                        <div className="title">
+                            {this.props.question.title}
+                        </div>
+                        <div className="footer">
+                            <div className="user">
+                                <div className="username">{this.props.question.createdBy}</div>
+                                <div>{Post.getTime(this.props.question.createdAt)}</div>
+                            </div>
+                            <div className="tags">
+                                {this.renderTags()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
         return (
             <div className={`${this.getClasses()} ${this.getState()}`}>
                 <div className="content" onClick={this.navigateToQuestion.bind(this, this.props.question.id)}>
@@ -80,9 +125,13 @@ class QuestionRow extends React.Component {
                     <div className="body">
                         <div className="title">
                             {this.props.question.title}
+                            <div className="tags">
+                                {this.renderTags()}
+                            </div>
                         </div>
                         <div className="user">
-                            {Post.getTime(this.props.question.createdAt)}
+                            <div>{this.props.question.createdBy}</div>
+                            <div>{Post.getTime(this.props.question.createdAt)}</div>
                         </div>
                     </div>
                 </div>
@@ -94,7 +143,6 @@ class QuestionRow extends React.Component {
 QuestionRow.defaultProps = {
     user: {},
     question: {},
-    small: false,
     hideTags: false
 };
 

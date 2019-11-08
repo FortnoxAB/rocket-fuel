@@ -1,5 +1,7 @@
  package api;
 
+ import java.util.List;
+
  /**
   *  Defines a question. A question is connected to the {@link User} asking it.
   *
@@ -18,6 +20,8 @@
     private boolean answerAccepted;
 
     private String slackThreadId;
+
+    private List<String> tags;
 
     public boolean isAnswerAccepted() {
         return answerAccepted;
@@ -57,5 +61,13 @@
 
      public void setTitle(String title) {
          this.title = title;
+     }
+
+     public List<String> getTags() {
+         return tags;
+     }
+
+     public void setTags(List<String> tags) {
+         this.tags = tags;
      }
  }

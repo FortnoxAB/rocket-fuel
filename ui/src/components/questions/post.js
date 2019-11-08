@@ -274,6 +274,15 @@ class Post extends React.Component {
         );
     }
 
+    getTags() {
+        if (!this.props.tags || this.props.tags.length <= 0) {
+            return null;
+        }
+        return this.props.tags.map((tag, i) => {
+            return <div className="tag" key={i}>{tag}</div>;
+        });
+    }
+
     render() {
         return (
             <div className={this.getClasses()}>
@@ -292,6 +301,9 @@ class Post extends React.Component {
                             <div className="padded-bottom">
                                 <Markdown text={this.props.body} />
                             </div>
+                        </div>
+                        <div className="tags padded-bottom">
+                            {this.getTags()}
                         </div>
                         <div className="post-footer flex flex-between">
                             <div className="flex center-vertical">
@@ -318,6 +330,7 @@ class Post extends React.Component {
 
 Post.defaultProps = {
     className: '',
+    tags: null,
     body: '',
     title: null,
     userName: '',

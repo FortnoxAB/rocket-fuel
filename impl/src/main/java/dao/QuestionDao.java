@@ -22,7 +22,8 @@ public interface QuestionDao {
             "question.created_at, " +
             "question.user_id, " +
             "question.slack_id, \"user\".picture, \"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
         "FROM " +
             "question " +
         "INNER JOIN " +
@@ -46,8 +47,9 @@ public interface QuestionDao {
             "question.slack_id, " +
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
-        "FROM " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
@@ -70,8 +72,9 @@ public interface QuestionDao {
             "question.slack_id, " +
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
-        "FROM " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
@@ -95,8 +98,9 @@ public interface QuestionDao {
             "question.slack_id, " +
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
-        "FROM " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
@@ -124,8 +128,9 @@ public interface QuestionDao {
             "question.slack_id, " +
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
-        "FROM " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
@@ -179,8 +184,9 @@ public interface QuestionDao {
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) " +
                 "FROM question_vote " +
-                "WHERE question_vote.question_id = question.id AND question_vote.user_id = :userId) AS current_user_vote " +
-        "FROM " +
+                "WHERE question_vote.question_id = question.id AND question_vote.user_id = :userId) AS current_user_vote, " +
+            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +

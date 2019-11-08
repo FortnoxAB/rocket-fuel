@@ -6,6 +6,7 @@ class Question extends React.Component {
     render() {
         return (
             <Post
+                tags={this.props.question.tags}
                 body={this.props.question.question}
                 title={this.props.question.title}
                 userName={this.props.question.createdBy}

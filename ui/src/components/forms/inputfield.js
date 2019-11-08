@@ -31,7 +31,6 @@ class InputField extends React.Component {
     getClassName() {
         return [
             'input',
-            this.props.className,
             this.props.errorMessage ? 'error' : '',
             this.props.rounded ? 'rounded' : '',
             this.props.icon ? 'has-icon' : '',

@@ -25,6 +25,10 @@
 
 @media screen and (max-width: $break-large) {
     @for $i from 1 through 12 {
+        .col-#{$i} {
+            width: 50%;
+        }
+
         @if($i % 2 != 0) {
             .col-#{$i} {
                 width: 100%;
@@ -34,10 +38,6 @@
                     padding-left: 0;
                 }
             }
-        }
-
-        .col-#{$i} {
-            width: 50%;
         }
     }
 

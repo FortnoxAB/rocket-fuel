@@ -16,58 +16,68 @@
     }
 
     > .content {
-        padding: 20px;
+        padding: 14px 14px 14px 0;
         display: flex;
         flex-grow: 1;
         cursor: pointer;
         overflow: hidden;
 
-        > .body {
+        .utils {
             display: flex;
-            justify-content: center;
+            padding: 0 20px;
+
+            .votes {
+                font-size: 1.2em;
+            }
+
+            .votes-text {
+                font-size: .8em;
+            }
+
+            .accepted {
+                font-size: 1.2em;
+                padding-top: 10px;
+            }
+        }
+
+        .body {
+            display: flex;
             flex-direction: column;
+            flex-grow: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            flex-grow: 1;
 
-            > .title {
-                width: 80%;
-                margin-right: 10px;
-                padding-bottom: 5px;
+            .title {
                 font-size: 1.2em;
+                padding-bottom: 5px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+                flex-grow: 1;
+            }
+
+            .footer {
+                display: flex;
+                justify-content: space-between;
+
+                .user {
+                    color: contrast($background-color-light, $gray-light, $gray-dark);
+                    font-size: .8em;
+
+                    .username {
+                        @include main-font('bold', 1em);
+                    }
+                }
+
+                .tags {
+
+                }
             }
         }
     }
 
-    .user {
-        font-size: .8em;
-    }
-
-    .marks {
-        align-items: center;
-        justify-content: center;
-        display: flex;
-        margin-right: 10px;
-
-        .trophy, .certificate {
-            // margin-right: 5px;
-        }
-    }
-
-    .question-menu {
-        position: relative;
-        cursor: pointer;
-        align-self: flex-start;
-
-        .menu-button {
-            padding: 15px;
-        }
-    }
-
+    /*
     &.small {
         font-size: 1em;
         justify-content: space-between;
@@ -99,4 +109,82 @@
             margin: 0 5px;
         }
     }
+     */
 }
+
+/*
+.question-row {
+    position: relative;
+    $text-color: contrast($background-color-light);
+
+    transition: .2s;
+    background-color: $background-color-light;
+    color: $text-color;
+    border: 1px solid $border-color;
+
+    + .question-row {
+        border-top: none;
+    }
+
+    &:hover {
+        background-color: contrast($background-color-light, $gray-dark-even-more, $gray-light-even-more);
+    }
+
+    > .content {
+        padding: 15px;
+        display: flex;
+        flex-grow: 1;
+        cursor: pointer;
+        overflow: hidden;
+
+        > .body {
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex-grow: 1;
+
+            > .title {
+                margin-right: 10px;
+                padding-bottom: 5px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                flex-grow: 1;
+            }
+        }
+    }
+
+    .user {
+        align-items: flex-end;
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+        font-size: .8em;
+    }
+
+    .marks {
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        margin-right: 10px;
+
+        .trophy, .certificate {
+            font-size: 1.5em;
+        }
+    }
+
+    .question-menu {
+        position: relative;
+        cursor: pointer;
+        align-self: flex-start;
+
+        .menu-button {
+            padding: 15px;
+        }
+    }
+}
+
+ */
