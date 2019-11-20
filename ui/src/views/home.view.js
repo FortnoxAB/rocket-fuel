@@ -30,7 +30,11 @@ class HomeView extends React.Component {
         const popularUnansweredQuestions = Question.getPopularUnansweredQuestions(5);
         const recentlyAcceptedQuestions  = Question.getRecentlyAcceptedQuestions(5);
 
-        Promise.all([userQuestions, latestQuestions, popularQuestions, popularUnansweredQuestions, recentlyAcceptedQuestions]).then((response) => {
+        Promise.all([userQuestions,
+            latestQuestions,
+            popularQuestions,
+            popularUnansweredQuestions,
+            recentlyAcceptedQuestions]).then((response) => {
             this.setState({
                 userQuestions: response[0],
                 latestQuestions: response[1],
@@ -48,13 +52,13 @@ class HomeView extends React.Component {
 
     getUserQuestions() {
         return this.state.userQuestions.map((question, index) => {
-            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
+            return <QuestionRow key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
         });
     }
 
     getLatestQuestions() {
         return this.state.latestQuestions.map((question, index) => {
-            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
+            return <QuestionRow key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
         });
     }
 
@@ -84,35 +88,41 @@ class HomeView extends React.Component {
         }
         return (
             <div>
-                <div className="row flex-grow spacing">
-                    <div className="col-2">
-                        <div className="headline">{t`Latest questions`}</div>
-                        {this.getLatestQuestions()}
+                <h2>
+                    All questions
+                </h2>
+                <div className="row spacing">
+                    <div className="col-8 col-sm-12 column spacing">
+                        <div>
+                            <div className="headline"><i className="fas fa-clock" /> {t`Recent`}</div>
+                            {this.getLatestQuestions()}
+                        </div>
+                        <div>
+                            <div className="headline"><i className="fas fa-user-clock" /> {t`Your recent`}</div>
+                            {this.getUserQuestions()}
+                        </div>
                     </div>
-                    <div className="col-2">
-                        <div className="headline">{t`Popular questions`}</div>
-                        {this.getPopularQuestions()}
-                    </div>
-                </div>
-                <div className="row flex-grow spacing">
-                    <div className="col-2">
-                        <div className="headline">{t`Popular unanswered questions`}</div>
-                        {this.getPopularUnansweredQuestions()}
-                    </div>
-                    <div className="col-2">
-                        <div className="headline">{t`Recently accepted questions`}</div>
-                        {this.getRecentlyAcceptedQuestions()}
-                    </div>
-                </div>
-                <div className="row flex-grow spacing">
-                    <div className="col-1">
-                        <div className="headline">{t`Your recent questions`}</div>
-                        {this.getUserQuestions()}
+                    <div className="col-4 col-sm-12 column spacing">
+                        <div>
+                            <div className="headline"><i className="fas fa-burn" /> {t`Popular`}</div>
+                            {this.getPopularQuestions()}
+                        </div>
+                        <div>
+                            <div className="headline"><i className="fas fa-eye" /> {t`Popular unanswered`}</div>
+                            {this.getPopularUnansweredQuestions()}
+                        </div>
+                        <div>
+                            <div className="headline"><i className="fas fa-certificate" /> {t`Recently accepted`}</div>
+                            {this.getRecentlyAcceptedQuestions()}
+                        </div>
+                        <div>
+                            <div className="headline"><i className="fas fa-tags" /> {t`Popular tags`}</div>
+                            Tags goes here
+                        </div>
                     </div>
                 </div>
             </div>
-        )
-
+        );
     }
 }
 

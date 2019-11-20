@@ -7,9 +7,10 @@ $picture-size: 40px;
 .post {
     .post-container {
         display: flex;
-        margin-bottom: 20px;
-        background-color: $background-color-light;
-        color: contrast($background-color-light);
+        margin-top: -1px;
+        //background-color: $background-color-dark;
+        color: contrast($background-color-dark);
+        border: 1px solid $background-color-dark;
 
         .post-sidebar {
             color: contrast($background-color);

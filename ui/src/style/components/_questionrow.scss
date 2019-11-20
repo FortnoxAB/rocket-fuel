@@ -3,7 +3,7 @@
     $text-color: contrast($background-color-light);
 
     transition: .2s;
-    background-color: $background-color-light;
+    // background-color: $background-color-light;
     color: $text-color;
     border: 1px solid $border-color;
 
@@ -12,14 +12,13 @@
     }
 
     &:hover {
-        background-color: contrast($background-color-light, $gray-dark-even-more, $gray-light-even-more);
+        background-color: rgba(contrast($background-color-light, $gray-dark-even-more, $gray-light-even-more), .3);
     }
 
     > .content {
         padding: 14px 14px 14px 0;
         display: flex;
         flex-grow: 1;
-        cursor: pointer;
         overflow: hidden;
 
         .utils {
@@ -27,7 +26,7 @@
             padding: 0 20px;
 
             .votes {
-                font-size: 1.2em;
+                font-size: 1em;
             }
 
             .votes-text {
@@ -35,7 +34,7 @@
             }
 
             .accepted {
-                font-size: 1.2em;
+                font-size: 1em;
                 padding-top: 10px;
             }
         }
@@ -49,12 +48,18 @@
             white-space: nowrap;
 
             .title {
-                font-size: 1.2em;
+                cursor: pointer;
+                font-size: 1em;
                 padding-bottom: 5px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 flex-grow: 1;
+                color: $secondary-color;
+
+                &:hover {
+                    color: darken($secondary-color, 10%);
+                }
             }
 
             .footer {
@@ -70,121 +75,23 @@
                     }
                 }
 
-                .tags {
-
+                .tag {
+                    cursor: pointer;
                 }
             }
         }
     }
 
-    /*
+
     &.small {
-        font-size: 1em;
-        justify-content: space-between;
-        align-items: stretch;
-        margin-bottom: 0;
+        border: none;
 
         > .content {
-            padding: 10px;
-
-            > .body {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px;
-
-                > .title {
-                    font-size: 1em;
-                    padding: 0;
-                }
-            }
-        }
-
-        .question-menu {
             padding: 0;
-            align-self: center;
-        }
 
-        .marks {
-            margin: 0 5px;
-        }
-    }
-     */
-}
-
-/*
-.question-row {
-    position: relative;
-    $text-color: contrast($background-color-light);
-
-    transition: .2s;
-    background-color: $background-color-light;
-    color: $text-color;
-    border: 1px solid $border-color;
-
-    + .question-row {
-        border-top: none;
-    }
-
-    &:hover {
-        background-color: contrast($background-color-light, $gray-dark-even-more, $gray-light-even-more);
-    }
-
-    > .content {
-        padding: 15px;
-        display: flex;
-        flex-grow: 1;
-        cursor: pointer;
-        overflow: hidden;
-
-        > .body {
-            display: flex;
-            justify-content: center;
-            flex-direction: row;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            flex-grow: 1;
-
-            > .title {
-                margin-right: 10px;
-                padding-bottom: 5px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                flex-grow: 1;
+            .body .title {
+                padding: 10px;
             }
         }
     }
-
-    .user {
-        align-items: flex-end;
-        justify-content: center;
-        display: flex;
-        flex-direction: column;
-        font-size: .8em;
-    }
-
-    .marks {
-        align-items: center;
-        justify-content: center;
-        display: flex;
-        margin-right: 10px;
-
-        .trophy, .certificate {
-            font-size: 1.5em;
-        }
-    }
-
-    .question-menu {
-        position: relative;
-        cursor: pointer;
-        align-self: flex-start;
-
-        .menu-button {
-            padding: 15px;
-        }
-    }
 }
-
- */

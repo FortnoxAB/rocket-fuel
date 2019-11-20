@@ -1,14 +1,90 @@
+$cols: 12;
+$spacing: 20px;
+
+.row {
+    display: flex;
+    flex-flow: wrap;
+
+    &.spacing > div:not(:last-child) {
+        padding-right: $spacing;
+    }
+}
+
+.column {
+    &.spacing > div {
+        padding-bottom: $spacing;
+    }
+}
+
+@for $i from 1 through $cols {
+    .col-#{$i} {
+        width: (100% / $cols) * $i;
+    }
+
+    @if($i == $cols) {
+        .row.spacing > div.col-#{$i}:not(:last-child) {
+            padding-right: 0;
+        }
+    }
+}
+
+@media screen and (max-width: $break-large) {
+    @for $i from 1 through $cols {
+        .col-md-#{$i} {
+            width: (100% / $cols) * $i;
+        }
+
+        @if($i == $cols) {
+            .row.spacing > div.col-md-#{$i}:not(:last-child) {
+                padding-right: 0;
+            }
+        }
+    }
+
+    .hide-md {
+        display: none;
+    }
+}
+
+@media screen and (max-width: $break-small) {
+    @for $i from 1 through $cols {
+        .col-sm-#{$i} {
+            width: (100% / $cols) * $i;
+        }
+
+        @if($i == $cols) {
+            .row.spacing > div.col-sm-#{$i}:not(:last-child) {
+                padding-right: 0;
+            }
+        }
+    }
+
+    .hide-md, .hide-sm {
+        display: none;
+    }
+}
+
+/*
 .row {
     display: flex;
     flex-flow: wrap;
 
     &.spacing {
-        > [class^="col-"] {
-            padding-bottom: 25px;
-
+        > [class*="col-"] {
             &:not(:first-child) {
                 padding-left: 25px;
             }
+        }
+    }
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+
+    &.spacing {
+        > [class^="col-"] {
+            padding-bottom: 25px;
         }
     }
 }
@@ -19,31 +95,44 @@
 
 @for $i from 1 through 12 {
     .col-#{$i} {
-        width: 100%/$i;
+        // width: 100%/$i;
+        width: (100%/12) * $i;
     }
 }
 
 @media screen and (max-width: $break-large) {
     @for $i from 1 through 12 {
-        .col-#{$i} {
-            width: 50%;
-        }
+        $col-width: 50%;
 
         @if($i % 2 != 0) {
-            .col-#{$i} {
-                width: 100%;
-            }
+            $col-width: 100%;
+
             .row.spacing {
                 .col-#{$i} {
                     padding-left: 0;
                 }
             }
+            .column.spacing {
+                .col-#{$i} {
+                    padding-bottom: 0;
+                }
+            }
+        }
+
+        .col-#{$i} {
+            width: $col-width;
         }
     }
 
     .row.spacing {
         [class^="col-"]:nth-child(odd) {
             padding-left: 0;
+        }
+    }
+
+    .column.spacing {
+        [class^="col-"]:nth-child(odd) {
+            padding-bottom: 0;
         }
     }
 
@@ -64,9 +153,16 @@
                 padding-left: 0;
             }
         }
+
+        .content .column.spacing {
+            .col-#{$i} {
+                bottom: 0;
+            }
+        }
     }
 
     .hide-on-tablet, .hide-on-phone {
         display: none;
     }
 }
+*/
