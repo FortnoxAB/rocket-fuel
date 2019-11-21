@@ -12,6 +12,7 @@ import { t } from 'ttag';
 import Dialog from '../utils/dialog';
 import InputField from '../forms/inputfield';
 import Tooltip from '../utils/tooltip';
+import Tags from './tags';
 
 class Post extends React.Component {
     constructor(props) {
@@ -275,12 +276,11 @@ class Post extends React.Component {
     }
 
     getTags() {
+
         if (!this.props.tags || this.props.tags.length <= 0) {
             return null;
         }
-        return this.props.tags.map((tag, i) => {
-            return <div className="tag" key={i}>{tag}</div>;
-        });
+        return <Tags tags={this.props.tags} />;
     }
 
     render() {

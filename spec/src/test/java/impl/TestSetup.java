@@ -26,6 +26,9 @@ import se.fortnox.reactivewizard.server.ServerConfig;
 import slack.SlackRTMClient;
 import slack.SlackResource;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.Mockito.mock;
@@ -135,17 +138,26 @@ public class TestSetup {
 
     @NotNull
     public static Question getQuestion(String title, String question) {
-        return getQuestion(title,question,300);
+        return getQuestion(title,question,300, Collections.emptySet());
     }
 
     @NotNull
-    public static Question getQuestion(String title, String question, int bounty) {
+    public static Question getQuestion(String title, String question, Set<String> tags) {
+        return getQuestion(title, question, 300, tags);
+    }
+
+    @NotNull
+    public static Question getQuestion(String title, String question, int bounty, Set<String> tags) {
+        if(tags == null) {
+            tags = Collections.emptySet();
+        }
         Question questionObject = new Question();
         questionObject.setAnswerAccepted(false);
         questionObject.setBounty(bounty);
         questionObject.setTitle(title);
         questionObject.setVotes(3);
         questionObject.setQuestion(question);
+        questionObject.setTags(new ArrayList<>(tags));
         return questionObject;
     }
 

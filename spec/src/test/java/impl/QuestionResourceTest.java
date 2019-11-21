@@ -4,6 +4,7 @@ import api.Answer;
 import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
+import api.Tag;
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
@@ -12,6 +13,7 @@ import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import dao.AnswerDao;
 import dao.QuestionDao;
 import dao.QuestionVoteDao;
+import dao.TagDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.log4j.Appender;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
@@ -36,6 +38,7 @@ import slack.SlackResource;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -83,6 +86,7 @@ public class QuestionResourceTest {
     private static QuestionDao      questionDao;
     private static AnswerDao        answerDao;
     private static TestDao          testDao;
+    private static TagDao tagDao;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
@@ -103,6 +107,7 @@ public class QuestionResourceTest {
         questionDao = testSetup.getInjector().getInstance(QuestionDao.class);
         answerDao = testSetup.getInjector().getInstance(AnswerDao.class);
         testDao = testSetup.getInjector().getInstance(TestDao.class);
+        tagDao = testSetup.getInjector().getInstance(TagDao.class);
         slackResource = mock(SlackResource.class);
         applicationConfig = new ApplicationConfig();
         applicationConfig.setBaseUrl("deployed.fuel.com");
@@ -130,7 +135,7 @@ public class QuestionResourceTest {
     @Test
     public void shouldThrowErrorWhenServerIsDown() {
         QuestionDao          questionDao      = mock(QuestionDao.class);
-        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
         when(questionDao.getLatestQuestions(any())).thenReturn(error(new SQLException()));
 
         try {
@@ -307,7 +312,7 @@ public class QuestionResourceTest {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
         when(questionDao.getQuestions(anyString(), any())).thenReturn(error(new WebException()));
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
 
         // when searching
         Observable<List<Question>> questions = questionResource.getQuestionsBySearchQuery("explode", null);
@@ -323,26 +328,23 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldBePossibleToAddQuestionAndFetchIt() {
-
-        User createdUser = insertUser(userResource);
-
+        User        createdUser = insertUser(userResource);
         // when question is created
-        Question question = getQuestion("my question title", "my question");
+        Question question = getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
         Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
-
         // when we create the question
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
-
         // then the question should be returned when asking for the users questions
         List<Question> questions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
         assertEquals(1, questions.size());
-
         Question insertedQuestion = questions.get(0);
         assertEquals("my question title", insertedQuestion.getTitle());
         assertEquals("my question", insertedQuestion.getQuestion());
         assertEquals(question.getBounty(), insertedQuestion.getBounty());
         assertEquals(createdUser.getId(), insertedQuestion.getUserId());
+        // assertEquals(2, insertedQuestion.getTags().size());
+        assertThat(insertedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
         assertNotNull(insertedQuestion.getId());
     }
 
@@ -481,7 +483,7 @@ public class QuestionResourceTest {
         Auth     auth     = new Auth();
         Question question = TestSetup.getQuestion("title", "body");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(error(new SQLException("poff")));
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
 
         // when we try to add the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();
@@ -499,7 +501,7 @@ public class QuestionResourceTest {
         Auth     auth     = new Auth();
         Question question = TestSetup.getQuestion("title of question?", "who does one do?");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(empty());
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
 
         // when we add the the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();

@@ -51,6 +51,7 @@ class CreateQuestionView extends React.Component {
                 title: question.title,
                 question: question.question,
                 bounty: question.bounty,
+                activeTags: question.tags,
                 editPost: questionId,
                 loaded: true
             });
@@ -294,7 +295,7 @@ class CreateQuestionView extends React.Component {
                 {this.state.activeTags.map((tag, i) => {
                     return (
                         <div className="tag flex" key={i}>
-                            {tag}
+                            #{tag}
                             <div className="remove" onClick={this.removeTagByIndex.bind(this, i)}>
                                 <i className="fa fa-times" />
                             </div>

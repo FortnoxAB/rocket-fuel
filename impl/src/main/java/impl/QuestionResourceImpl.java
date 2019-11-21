@@ -2,6 +2,7 @@ package impl;
 
 import api.Question;
 import api.QuestionResource;
+import api.Tag;
 import api.auth.Auth;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import com.github.seratch.jslack.api.model.block.SectionBlock;
@@ -11,16 +12,25 @@ import com.google.inject.Singleton;
 import dao.QuestionDao;
 import dao.QuestionVote;
 import dao.QuestionVoteDao;
+import dao.TagDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.functions.Func1;
 import se.fortnox.reactivewizard.CollectionOptions;
+import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackConfig;
 import slack.SlackResource;
 
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -58,16 +68,18 @@ public class QuestionResourceImpl implements QuestionResource {
     private final SlackResource     slackResource;
     private final SlackConfig       slackConfig;
     private final ApplicationConfig applicationConfig;
+    private final TagDao            tagDao;
 
     @Inject
     public QuestionResourceImpl(QuestionDao questionDao, QuestionVoteDao questionVoteDao,
-        SlackResource slackResource, SlackConfig slackConfig, ApplicationConfig applicationConfig
-    ) {
+                                SlackResource slackResource, SlackConfig slackConfig, ApplicationConfig applicationConfig,
+                                TagDao tagDao) {
         this.questionDao = questionDao;
         this.questionVoteDao = questionVoteDao;
         this.slackResource = slackResource;
         this.slackConfig = slackConfig;
         this.applicationConfig = applicationConfig;
+        this.tagDao = tagDao;
     }
 
     @Override
@@ -111,8 +123,30 @@ public class QuestionResourceImpl implements QuestionResource {
         return handleError(questionDao.getRecentlyAcceptedQuestions(options), FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS);
     }
 
+    private Observable<Set<Tag>> storeTagsMerging(Set<String> requestedLabels) {
+        return tagDao
+            .getTagsByLabels(new ArrayList<>(requestedLabels))
+            .switchIfEmpty(just(new HashSet<Tag>()))
+            .concatMap(foundTags -> {
+                List<Observable<Tag>> collect = requestedLabels
+                    .stream()
+                    .filter(requestedLabel -> {
+                        return !foundTags.stream().anyMatch(tag -> requestedLabel.equals(tag.getLabel()));
+                    })
+                    .map(missingLabel -> tagDao.createTag(missingLabel).map(GeneratedKey::getKey))
+                    .collect(Collectors.toList());
+
+                return Observable
+                    .concat(collect)
+                    .toList()
+                    .collect(() -> new HashSet<>(), AbstractCollection::addAll);
+            });
+    }
+
     @Override
     public Observable<Question> createQuestion(Auth auth, Question question) {
+        return storeTagsMerging(new HashSet<>(question.getTags())).concatMap(tags -> just(question));
+/*
         return this.questionDao
             .addQuestion(auth.getUserId(), question)
             .map(longGeneratedKey -> {
@@ -127,6 +161,7 @@ public class QuestionResourceImpl implements QuestionResource {
                     });
                 return first(postMessageToSlack).thenReturn(savedQuestion);
             }).onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_ADD_QUESTION_TO_DATABASE, throwable)));
+ */
     }
 
     private List<LayoutBlock> notificationMessage(Question question) {

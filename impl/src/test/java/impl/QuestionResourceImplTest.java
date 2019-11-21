@@ -5,6 +5,7 @@ import api.QuestionResource;
 import api.auth.Auth;
 import dao.QuestionDao;
 import dao.QuestionVoteDao;
+import dao.TagDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
@@ -48,16 +49,18 @@ public class QuestionResourceImplTest {
     private Question         question;
     private Auth             auth;
     private CollectionOptions options;
+    private TagDao tagDao;
 
     @Before
     public void beforeEach() {
         questionDao = mock(QuestionDao.class);
         questionVoteDao = mock(QuestionVoteDao.class);
         slackResource = mock(SlackResource.class);
+        tagDao = mock(TagDao.class);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setBaseUrl("deployed.fuel.com");
         when(slackResource.postMessageToSlack(anyString(), any())).thenReturn(empty());
-        questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+        questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
         auth = new Auth(123);
         question = createQuestion(123);
         options = new CollectionOptions();
