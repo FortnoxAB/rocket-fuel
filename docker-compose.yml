@@ -1,0 +1,11 @@
+version: "3"
+services:
+  db:
+    image: "postgres:11"
+    container_name: "db-postgres"
+    environment:
+      - POSTGRES_USER=rocket-fuel
+      - POSTGRES_PASSWORD=rocket-fuel
+      - POSTGRES_DB=rocket-fuel
+    ports:
+      - "15432:5432"
