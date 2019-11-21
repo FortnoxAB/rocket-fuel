@@ -157,7 +157,8 @@ public class TestSetup {
         questionObject.setTitle(title);
         questionObject.setVotes(3);
         questionObject.setQuestion(question);
-        questionObject.setTags(new ArrayList<>(tags));
+        ArrayList<String> tags1 = new ArrayList<>(tags);
+        questionObject.setTags(tags1);
         return questionObject;
     }
 

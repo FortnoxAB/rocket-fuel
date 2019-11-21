@@ -18,7 +18,7 @@ public interface TagDao {
     Observable<Tag> getTagsBySearchQuery(String search);
 
     @Query("SELECT id, label FROM tag WHERE label IN (:labels)")
-    Observable<HashSet<Tag>> getTagsByLabels(List<String> labels);
+    Observable<Tag> getTagsByLabels(List<String> labels);
 
     @Update("INSERT INTO tag (label) VALUES (:label) RETURNING id, label")
     Observable<GeneratedKey<Tag>> createTag(String label);

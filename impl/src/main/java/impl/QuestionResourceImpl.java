@@ -7,6 +7,8 @@ import api.auth.Auth;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import com.github.seratch.jslack.api.model.block.SectionBlock;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.QuestionDao;
@@ -23,10 +25,6 @@ import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackConfig;
 import slack.SlackResource;
 
-import java.util.AbstractCollection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,11 +37,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static rx.Observable.empty;
 import static rx.Observable.error;
 import static rx.Observable.just;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
-import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
 @Singleton
 public class QuestionResourceImpl implements QuestionResource {
@@ -125,21 +121,26 @@ public class QuestionResourceImpl implements QuestionResource {
 
     private Observable<Set<Tag>> storeTagsMerging(Set<String> requestedLabels) {
         return tagDao
-            .getTagsByLabels(new ArrayList<>(requestedLabels))
-            .switchIfEmpty(just(new HashSet<Tag>()))
+            .getTagsByLabels(Lists.newArrayList(requestedLabels))
+            .collect(HashSet<Tag>::new, Set::add)
+            .switchIfEmpty(just(new HashSet<>()))
             .concatMap(foundTags -> {
-                List<Observable<Tag>> collect = requestedLabels
+                Set<String> foundLabels = foundTags
                     .stream()
-                    .filter(requestedLabel -> {
-                        return !foundTags.stream().anyMatch(tag -> requestedLabel.equals(tag.getLabel()));
+                    .map(Tag::getLabel)
+                    .collect(Collectors.toSet());
+
+                List<Observable<Tag>> createTagOperations = Sets.difference(requestedLabels, foundLabels)
+                    .stream()
+                    .map(missingLabel -> {
+                        return tagDao.createTag(missingLabel).map(GeneratedKey::getKey);
                     })
-                    .map(missingLabel -> tagDao.createTag(missingLabel).map(GeneratedKey::getKey))
                     .collect(Collectors.toList());
 
                 return Observable
-                    .concat(collect)
-                    .toList()
-                    .collect(() -> new HashSet<>(), AbstractCollection::addAll);
+                    .concat(createTagOperations)
+                    .collect(HashSet<Tag>::new, Set::add)
+                    .map(createdTags -> Sets.union(foundTags, createdTags));
             });
     }
 

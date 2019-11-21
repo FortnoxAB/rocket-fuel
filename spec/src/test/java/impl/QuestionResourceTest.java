@@ -334,9 +334,44 @@ public class QuestionResourceTest {
         Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
         // when we create the question
-        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        questionResource.createQuestion(mockAuth, question).test().awaitTerminalEvent().assertNoErrors();
         // then the question should be returned when asking for the users questions
-        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
+        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null)
+                       .test()
+            .awaitTerminalEvent()
+            .assertNoErrors()
+            .getOnNextEvents()
+            .get(0);
+        assertEquals(1, questions.size());
+        Question insertedQuestion = questions.get(0);
+        assertEquals("my question title", insertedQuestion.getTitle());
+        assertEquals("my question", insertedQuestion.getQuestion());
+        assertEquals(question.getBounty(), insertedQuestion.getBounty());
+        assertEquals(createdUser.getId(), insertedQuestion.getUserId());
+        // assertEquals(2, insertedQuestion.getTags().size());
+        assertThat(insertedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+        assertNotNull(insertedQuestion.getId());
+    }
+
+    @Test
+    public void shouldBePossibleToAddQuestionWithPreexistingTagAndFetchIt() {
+        // Given
+        User        createdUser = insertUser(userResource);
+        Long tagId = testDao.createTag("tag1").map(GeneratedKey::getKey).test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
+        assertThat(tagId).isGreaterThan(0);
+        // when question is created
+        Question question = getQuestion("my question title", "my question", Set.of("tag2"));
+        Auth     mockAuth = new MockAuth(createdUser.getId());
+        mockAuth.setUserId(createdUser.getId());
+        // when we create the question
+        questionResource.createQuestion(mockAuth, question).test().awaitTerminalEvent().assertNoErrors();
+        // then the question should be returned when asking for the users questions
+        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null)
+            .test()
+            .awaitTerminalEvent()
+            .assertNoErrors()
+            .getOnNextEvents()
+            .get(0);
         assertEquals(1, questions.size());
         Question insertedQuestion = questions.get(0);
         assertEquals("my question title", insertedQuestion.getTitle());
@@ -760,5 +795,8 @@ public class QuestionResourceTest {
             "SET created_at=:createdAt " +
             "WHERE question.id=:question.id")
         Observable<Integer> setCreatedAt(Question question, LocalDateTime createdAt);
+
+        @Update("INSERT INTO tag (label) VALUES (:label) RETURNING id")
+        Observable<GeneratedKey<Long>> createTag(String label);
     }
 }
