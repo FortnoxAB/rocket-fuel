@@ -22,4 +22,7 @@ public interface TagDao {
 
     @Update("INSERT INTO tag (label) VALUES (:label) RETURNING id, label")
     Observable<GeneratedKey<Tag>> createTag(String label);
+
+    @Update("INSERT INTO question_tag (question_id, tag_id) VALUES (:questionId, :tagId)")
+    Observable<Void> associateTagsWithQuestion(Long questionId, Long tagId);
 }

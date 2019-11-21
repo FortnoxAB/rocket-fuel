@@ -360,7 +360,7 @@ public class QuestionResourceTest {
         Long tagId = testDao.createTag("tag1").map(GeneratedKey::getKey).test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
         assertThat(tagId).isGreaterThan(0);
         // when question is created
-        Question question = getQuestion("my question title", "my question", Set.of("tag2"));
+        Question question = getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
         Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
         // when we create the question

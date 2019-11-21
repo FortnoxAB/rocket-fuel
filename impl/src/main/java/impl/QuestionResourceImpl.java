@@ -37,9 +37,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static rx.Observable.empty;
 import static rx.Observable.error;
 import static rx.Observable.just;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
+import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
 @Singleton
 public class QuestionResourceImpl implements QuestionResource {
@@ -119,7 +121,7 @@ public class QuestionResourceImpl implements QuestionResource {
         return handleError(questionDao.getRecentlyAcceptedQuestions(options), FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS);
     }
 
-    private Observable<Set<Tag>> storeTagsMerging(Set<String> requestedLabels) {
+    private Observable<Tag> storeTagsMerging(Set<String> requestedLabels) {
         return tagDao
             .getTagsByLabels(Lists.newArrayList(requestedLabels))
             .collect(HashSet<Tag>::new, Set::add)
@@ -140,29 +142,33 @@ public class QuestionResourceImpl implements QuestionResource {
                 return Observable
                     .concat(createTagOperations)
                     .collect(HashSet<Tag>::new, Set::add)
-                    .map(createdTags -> Sets.union(foundTags, createdTags));
+                    .concatMapIterable(createdTags -> Sets.union(foundTags, createdTags));
             });
     }
 
     @Override
     public Observable<Question> createQuestion(Auth auth, Question question) {
-        return storeTagsMerging(new HashSet<>(question.getTags())).concatMap(tags -> just(question));
-/*
         return this.questionDao
             .addQuestion(auth.getUserId(), question)
             .map(longGeneratedKey -> {
                 question.setId(longGeneratedKey.getKey());
                 return question;
             })
-            .flatMap(savedQuestion -> {
+            .concatMap(savedQuestion -> {
+                Observable<Void> writeTagsToQuestion = storeTagsMerging(new HashSet<>(question.getTags())).concatMap(tag -> tagDao.associateTagsWithQuestion(savedQuestion.getId(), tag.getId()));
                 Observable<Void> postMessageToSlack = slackResource.postMessageToSlack(slackConfig.getFeedChannel(), notificationMessage(question))
                     .onErrorResumeNext(e -> {
                         LOG.error("failed to notify by slack that question has been added", e);
                         return empty();
                     });
-                return first(postMessageToSlack).thenReturn(savedQuestion);
+                return Observable.concat(
+                    writeTagsToQuestion,
+                    postMessageToSlack
+                ).ignoreElements()
+                    .cast(Question.class)
+                    .concatWith(just(savedQuestion));
+                // return first(postMessageToSlack).thenReturn(savedQuestion);
             }).onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_ADD_QUESTION_TO_DATABASE, throwable)));
- */
     }
 
     private List<LayoutBlock> notificationMessage(Question question) {
