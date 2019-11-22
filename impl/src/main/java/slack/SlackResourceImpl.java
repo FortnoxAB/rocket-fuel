@@ -22,7 +22,9 @@ import rx.Observable;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static rx.Observable.*;
+import static rx.Observable.empty;
+import static rx.Observable.error;
+import static rx.Observable.fromCallable;
 
 @Singleton
 public class SlackResourceImpl implements SlackResource {

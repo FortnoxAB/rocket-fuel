@@ -23,10 +23,15 @@ import slack.SlackResource;
 import java.util.List;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static rx.Observable.*;
+import static rx.Observable.empty;
+import static rx.Observable.error;
+import static rx.Observable.just;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
