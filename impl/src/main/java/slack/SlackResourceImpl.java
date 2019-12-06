@@ -92,7 +92,11 @@ public class SlackResourceImpl implements SlackResource {
     }
 
     private <T> Observable<T> callSlack(Callable<T> callable) {
-        return fromCallable(callable);
+        if(slackConfig.isEnabled()) {
+            return fromCallable(callable);
+        }
+        LOG.info("Request to Slack was ignored as the configuration has disabled interaction.");
+        return empty();
     }
 
     @Override

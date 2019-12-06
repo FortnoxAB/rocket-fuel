@@ -38,8 +38,9 @@ application:
 
 # Contains configuration used for slack.
 slack:
-  botUserToken: <your-slack-app-bot-user-token>
-  apiToken: <your-slack-app-api-token>
+  #botUserToken: <your-slack-app-bot-user-token>
+  #apiToken: <your-slack-app-api-token>
+  enabled: false
 
 # Contains configuration for the openId used to validate the openId when users logs in.
 #
