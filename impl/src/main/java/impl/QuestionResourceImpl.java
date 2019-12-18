@@ -214,7 +214,7 @@ public class QuestionResourceImpl implements QuestionResource {
                 }
                 return questionDao.updateQuestion(auth.getUserId(), questionId, question)
                     .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_UPDATE_QUESTION_TO_DATABASE, throwable)))
-                    .flatMap(ignore -> questionDao.getQuestion(questionId)
+                    .concatMap(ignore -> questionDao.getQuestion(questionId)
                         .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable))))
                     .switchIfEmpty(exception(() -> new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE)))
                     .concatMap(updatedQuestionFromDB -> {
@@ -223,7 +223,11 @@ public class QuestionResourceImpl implements QuestionResource {
                             .concatMap(tag -> {
                                 return tagDao.associateTagsWithQuestion(storedQuestion.getId(), tag.getId());
                             });
-                        return Observable.concat(removeTagsFromQuestion, addTagsToQuestion).ignoreElements().cast(Question.class).concatWith(just(updatedQuestionFromDB));
+                        return removeTagsFromQuestion
+                            .concatWith(addTagsToQuestion)
+                            .cast(Question.class)
+                            .concatWith(questionDao.getQuestion(questionId))
+                            .last();
                     });
             }).doOnNext(question1 -> {
                 System.out.println(question);
