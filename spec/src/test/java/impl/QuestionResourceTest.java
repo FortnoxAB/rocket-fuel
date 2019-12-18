@@ -28,7 +28,6 @@ import rx.Observable;
 import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.GeneratedKey;
-import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
@@ -38,12 +37,15 @@ import slack.SlackResource;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static impl.QuestionResourceImpl.*;
-import static impl.TestSetup.*;
+import static impl.QuestionResourceImpl.FAILED_TO_SEARCH_FOR_QUESTIONS;
+import static impl.QuestionResourceImpl.INVALID_VOTE;
+import static impl.QuestionResourceImpl.QUESTION_NOT_FOUND;
+import static impl.TestSetup.getAnswer;
+import static impl.TestSetup.getQuestion;
+import static impl.TestSetup.insertUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.time.LocalDateTime.now;
@@ -52,9 +54,16 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static rx.Observable.empty;
 import static rx.Observable.error;
 import static se.fortnox.reactivewizard.test.TestUtil.matches;
@@ -75,7 +84,7 @@ public class QuestionResourceTest {
     private static QuestionDao      questionDao;
     private static AnswerDao        answerDao;
     private static TestDao          testDao;
-    private static TagDao tagDao;
+    private static TagDao           tagDao;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
@@ -103,8 +112,10 @@ public class QuestionResourceTest {
     }
 
     @Before
-    public void setupOptions() {
+    public void beforeEach() throws Exception {
         options = new CollectionOptions();
+        testSetup.setupDatabase();
+        appender = LoggingMockUtil.createMockedLogAppender(QuestionResourceImpl.class);
     }
 
     @After
@@ -112,12 +123,6 @@ public class QuestionResourceTest {
         testSetup.clearDatabase();
         LoggingMockUtil.destroyMockedAppender(appender, QuestionResourceImpl.class);
 
-    }
-
-    @Before
-    public void beforeEach() throws Exception {
-        testSetup.setupDatabase();
-        appender = LoggingMockUtil.createMockedLogAppender(QuestionResourceImpl.class);
     }
 
     @Test
@@ -137,10 +142,10 @@ public class QuestionResourceTest {
     @Test
     public void shouldBePossibleToGetQuestionBySlackThreadId() {
 
-        TestSetup.insertUser(userResource);
+        insertUser(userResource);
         Auth mockAuth = newAuth();
 
-        Question question      = TestSetup.getQuestion("my question title", "my question");
+        Question question      = getQuestion("my question title", "my question");
         String   slackThreadId = String.valueOf(System.currentTimeMillis());
         question.setSlackId(slackThreadId);
 
@@ -230,7 +235,7 @@ public class QuestionResourceTest {
 
     @NotNull
     private Question createQuestion(Auth mockAuth, String title, String body) {
-        Question question = TestSetup.getQuestion(title, body);
+        Question question = getQuestion(title, body);
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
         return question;
     }
@@ -296,30 +301,6 @@ public class QuestionResourceTest {
     }
 
     @Test
-    public void shouldRemoveUnusedTagsWhenSavingQuestionWithNewTags() {
-        User createdUser = insertUser(userResource);
-        Auth mockAuth = new MockAuth(createdUser.getId());
-        mockAuth.setUserId(createdUser.getId());
-
-        // given a question with tags exist
-        Question question = getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
-        Question storedQuestion = questionResource.createQuestion(mockAuth, question).test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
-
-        // when we update that question with new tags making "tag2" unreferenced
-        Question editedQuestion = getQuestion("my question title updated", "my question updated", Set.of("tag1", "tag3"));
-        Question updatedQuestion = questionResource.updateQuestion(mockAuth, storedQuestion.getId(), editedQuestion).single().test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
-
-
-        // then the question should have the updated tags
-        assertThat(updatedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag3");
-
-        // and there should be no unused tags
-        Integer aggregatedTagMinimumUsage = testDao.aggregatedTagMinimumUsage().toBlocking().single();
-        assertThat(aggregatedTagMinimumUsage).as("Unreferenced tag still exists") .isEqualTo(1);
-        assertNotNull(updatedQuestion.getId());
-    }
-
-    @Test
     public void shouldReturnErrorIfQueryFails() {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
@@ -340,57 +321,26 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldBePossibleToAddQuestionAndFetchIt() {
-        User        createdUser = insertUser(userResource);
-        // when question is created
-        Question question = getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
-        Auth     mockAuth = new MockAuth(createdUser.getId());
-        mockAuth.setUserId(createdUser.getId());
-        // when we create the question
-        questionResource.createQuestion(mockAuth, question).test().awaitTerminalEvent().assertNoErrors();
-        // then the question should be returned when asking for the users questions
-        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null)
-                       .test()
-            .awaitTerminalEvent()
-            .assertNoErrors()
-            .getOnNextEvents()
-            .get(0);
-        assertEquals(1, questions.size());
-        Question insertedQuestion = questions.get(0);
-        assertEquals("my question title", insertedQuestion.getTitle());
-        assertEquals("my question", insertedQuestion.getQuestion());
-        assertEquals(question.getBounty(), insertedQuestion.getBounty());
-        assertEquals(createdUser.getId(), insertedQuestion.getUserId());
-        assertThat(insertedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
-        assertNotNull(insertedQuestion.getId());
-    }
 
-    @Test
-    public void shouldBePossibleToAddQuestionWithPreexistingTagAndFetchIt() {
-        // Given
-        User        createdUser = insertUser(userResource);
-        Long tagId = testDao.createTag("tag1").map(GeneratedKey::getKey).test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
-        assertThat(tagId).isGreaterThan(0);
+        User createdUser = insertUser(userResource);
+
         // when question is created
-        Question question = getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
+        Question question = getQuestion("my question title", "my question");
         Auth     mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
+
         // when we create the question
-        questionResource.createQuestion(mockAuth, question).test().awaitTerminalEvent().assertNoErrors();
+        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+
         // then the question should be returned when asking for the users questions
-        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null)
-            .test()
-            .awaitTerminalEvent()
-            .assertNoErrors()
-            .getOnNextEvents()
-            .get(0);
+        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null).toBlocking().single();
         assertEquals(1, questions.size());
+
         Question insertedQuestion = questions.get(0);
         assertEquals("my question title", insertedQuestion.getTitle());
         assertEquals("my question", insertedQuestion.getQuestion());
         assertEquals(question.getBounty(), insertedQuestion.getBounty());
         assertEquals(createdUser.getId(), insertedQuestion.getUserId());
-        // assertEquals(2, insertedQuestion.getTags().size());
-        assertThat(insertedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
         assertNotNull(insertedQuestion.getId());
     }
 
@@ -527,7 +477,7 @@ public class QuestionResourceTest {
     public void shouldLogThatWeCouldNotSendSlackNotificationWhenQuestionIsCreated() {
         // given bad slack config
         Auth     auth     = new Auth();
-        Question question = TestSetup.getQuestion("title", "body");
+        Question question = getQuestion("title", "body");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(error(new SQLException("poff")));
         SlackConfig      slackConfig      = new SlackConfig();
         slackConfig.setEnabled(true);
@@ -547,7 +497,7 @@ public class QuestionResourceTest {
     public void shouldSendCorrectMessageToSlack() {
         // given that we have a question that we want to save
         Auth     auth     = new Auth();
-        Question question = TestSetup.getQuestion("title of question?", "who does one do?");
+        Question question = getQuestion("title of question?", "who does one do?");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(empty());
         SlackConfig      slackConfig      = new SlackConfig();
         slackConfig.setEnabled(true);
@@ -776,7 +726,7 @@ public class QuestionResourceTest {
     }
 
     private Auth createUserAndAuth() {
-        User createdUser = TestSetup.insertUser(userResource);
+        User createdUser = insertUser(userResource);
         Auth mockAuth    = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
         return mockAuth;
@@ -810,11 +760,5 @@ public class QuestionResourceTest {
             "SET created_at=:createdAt " +
             "WHERE question.id=:question.id")
         Observable<Integer> setCreatedAt(Question question, LocalDateTime createdAt);
-
-        @Update("INSERT INTO tag (label) VALUES (:label) RETURNING id")
-        Observable<GeneratedKey<Long>> createTag(String label);
-
-        @Query("SELECT min(usages) from tag_usage")
-        Observable<Integer> aggregatedTagMinimumUsage();
     }
 }
