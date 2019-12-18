@@ -21,6 +21,7 @@
         <assertj.version>3.12.2</assertj.version>
         <sonar.coverage.jacoco.xmlReportPaths>report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <autoVersionSubmodules>true</autoVersionSubmodules>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <url>https://github.com/FortnoxAB/rocket-fuel</url>
@@ -228,6 +229,11 @@
                     <configuration>
                         <skip>true</skip>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.31.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
