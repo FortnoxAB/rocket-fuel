@@ -25,4 +25,7 @@ public interface TagDao {
 
     @Update("INSERT INTO question_tag (question_id, tag_id) VALUES (:questionId, :tagId)")
     Observable<Void> associateTagsWithQuestion(Long questionId, Long tagId);
+
+    @Update("DELETE FROM question_tag WHERE question_id = :questionId")
+    Observable<Void> removeTagsFromQuestion(Long questionId);
 }

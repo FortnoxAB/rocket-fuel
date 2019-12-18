@@ -135,6 +135,7 @@ class InputField extends React.Component {
             <div className="markdown-text">
                 {t`Use Markdown in this field.`} <a
                 href="https://guides.github.com/features/mastering-markdown/"
+                tabIndex="-1"
                 target="_blank">{t`Markdown-syntax`}</a>
             </div>
         );

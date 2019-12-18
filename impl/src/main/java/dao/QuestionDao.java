@@ -207,7 +207,7 @@ public interface QuestionDao {
             "u.id AS user_id, " +
             "u.name as created_by, " +
             "u.picture as picture, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
             "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
         "FROM " +
             "question " +

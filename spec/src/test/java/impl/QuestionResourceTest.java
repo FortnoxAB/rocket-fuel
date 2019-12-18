@@ -308,6 +308,29 @@ public class QuestionResourceTest {
     }
 
     @Test
+    public void shouldRemoveUnusedTagsWhenSavingQuestionWithNewTags() {
+        User createdUser = insertUser(userResource);
+        Auth mockAuth = new MockAuth(createdUser.getId());
+        mockAuth.setUserId(createdUser.getId());
+
+        // when question is created
+        Question question = getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
+        Question storedQuestion = questionResource.createQuestion(mockAuth, question).test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
+        Question editedQuestion = getQuestion("my question title updated", "my question updated", Set.of("tag1", "tag3"));
+
+        // when we create the question
+        Question updatedQuestion = questionResource.updateQuestion(mockAuth, storedQuestion.getId(), editedQuestion).single().test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
+
+        // then the question should be returned when asking for the users questions
+        assertEquals("my question title updated", updatedQuestion.getTitle());
+        assertEquals("my question updated", updatedQuestion.getQuestion());
+        assertEquals(question.getBounty(), updatedQuestion.getBounty());
+        assertEquals(createdUser.getId(), updatedQuestion.getUserId());
+        assertThat(updatedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag3");
+        assertNotNull(updatedQuestion.getId());
+    }
+
+    @Test
     public void shouldReturnErrorIfQueryFails() {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
@@ -348,7 +371,6 @@ public class QuestionResourceTest {
         assertEquals("my question", insertedQuestion.getQuestion());
         assertEquals(question.getBounty(), insertedQuestion.getBounty());
         assertEquals(createdUser.getId(), insertedQuestion.getUserId());
-        // assertEquals(2, insertedQuestion.getTags().size());
         assertThat(insertedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
         assertNotNull(insertedQuestion.getId());
     }

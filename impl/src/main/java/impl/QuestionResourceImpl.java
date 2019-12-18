@@ -167,7 +167,6 @@ public class QuestionResourceImpl implements QuestionResource {
                 ).ignoreElements()
                     .cast(Question.class)
                     .concatWith(just(savedQuestion));
-                // return first(postMessageToSlack).thenReturn(savedQuestion);
             }).onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_ADD_QUESTION_TO_DATABASE, throwable)));
     }
 
@@ -212,7 +211,7 @@ public class QuestionResourceImpl implements QuestionResource {
         return questionDao.getQuestion(questionId)
             .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable)))
             .switchIfEmpty(exception(() -> new WebException(NOT_FOUND, QUESTION_NOT_FOUND)))
-            .flatMap(storedQuestion -> {
+            .concatMap(storedQuestion -> {
                 if (auth.getUserId() != storedQuestion.getUserId()) {
                     return error(new WebException(FORBIDDEN, NOT_OWNER_OF_QUESTION));
                 }
@@ -220,7 +219,17 @@ public class QuestionResourceImpl implements QuestionResource {
                     .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_UPDATE_QUESTION_TO_DATABASE, throwable)))
                     .flatMap(ignore -> questionDao.getQuestion(questionId)
                         .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable))))
-                    .switchIfEmpty(exception(() -> new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE)));
+                    .switchIfEmpty(exception(() -> new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE)))
+                    .concatMap(updatedQuestionFromDB -> {
+                        Observable<Void> removeTagsFromQuestion = tagDao.removeTagsFromQuestion(updatedQuestionFromDB.getId());
+                        Observable<Void> addTagsToQuestion = storeTagsMerging(new HashSet<>(question.getTags()))
+                            .concatMap(tag -> {
+                                return tagDao.associateTagsWithQuestion(storedQuestion.getId(), tag.getId());
+                            });
+                        return Observable.concat(removeTagsFromQuestion, addTagsToQuestion).ignoreElements().cast(Question.class).concatWith(just(updatedQuestionFromDB));
+                    });
+            }).doOnNext(question1 -> {
+                System.out.println(question);
             });
     }
 
