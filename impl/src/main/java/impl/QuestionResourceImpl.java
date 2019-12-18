@@ -133,9 +133,7 @@ public class QuestionResourceImpl implements QuestionResource {
 
                 List<Observable<Tag>> createTagOperations = Sets.difference(requestedLabels, foundLabels)
                     .stream()
-                    .map(missingLabel -> {
-                        return tagDao.createTag(missingLabel).map(GeneratedKey::getKey);
-                    })
+                    .map(missingLabel -> tagDao.createTag(missingLabel).map(GeneratedKey::getKey))
                     .collect(Collectors.toList());
 
                 return Observable
@@ -198,7 +196,7 @@ public class QuestionResourceImpl implements QuestionResource {
         }
         return questionDao.getQuestions(searchQuery, options)
             .onErrorResumeNext(e -> {
-                LOG.error("failed to search for questions with search query: [" + searchQuery + "]");
+                LOG.error("failed to search for questions with search query: [{}]", searchQuery);
                 return error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS, e));
             }).toList();
     }
@@ -223,11 +221,11 @@ public class QuestionResourceImpl implements QuestionResource {
                         .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable))))
                     .switchIfEmpty(exception(() -> new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE)))
                     .concatMap(updatedQuestionFromDB -> {
+                        HashSet<String> tagSet = new HashSet<>(question.getTags());
                         Observable<Void> removeTagsFromQuestion = tagDao.removeTagsFromQuestion(updatedQuestionFromDB.getId());
-                        Observable<Void> addTagsToQuestion = storeTagsMerging(new HashSet<>(question.getTags()))
-                            .concatMap(tag -> {
-                                return tagDao.associateTagsWithQuestion(storedQuestion.getId(), tag.getId());
-                            });
+                        Observable<Void> addTagsToQuestion = storeTagsMerging(tagSet)
+                            .concatMap(tag -> tagDao.associateTagsWithQuestion(storedQuestion.getId(), tag.getId()));
+
                         return removeTagsFromQuestion
                             .concatWith(addTagsToQuestion)
                             .cast(Question.class)
