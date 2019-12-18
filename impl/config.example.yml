@@ -9,17 +9,17 @@
 # configuration. You should only provide connection information
 # to a a Postgres database, because it's the only one supported.
 liquibase-database:
-  user: postgres
+  user: rocket-fuel
   schema: public
-  password: mysecretpassword
+  password: rocket-fuel
   url: jdbc:postgresql://localhost:15432/rocket-fuel
 
 # Your database connection configuration used when the application is
 # up and running. It should be identical to the liquibase config.
 database:
-  user: postgres
+  user: rocket-fuel
   schema: public
-  password: mysecretpassword
+  password: rocket-fuel
   url: jdbc:postgresql://localhost:15432/rocket-fuel
 
 # Contains configuration for the application token. The application token
@@ -38,8 +38,9 @@ application:
 
 # Contains configuration used for slack.
 slack:
-  botUserToken: <your-slack-app-bot-user-token>
-  apiToken: <your-slack-app-api-token>
+  #botUserToken: <your-slack-app-bot-user-token>
+  #apiToken: <your-slack-app-api-token>
+  enabled: false
 
 # Contains configuration for the openId used to validate the openId when users logs in.
 #

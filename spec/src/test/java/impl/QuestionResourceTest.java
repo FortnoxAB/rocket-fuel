@@ -111,7 +111,6 @@ public class QuestionResourceTest {
         slackResource = mock(SlackResource.class);
         applicationConfig = new ApplicationConfig();
         applicationConfig.setBaseUrl("deployed.fuel.com");
-        when(slackResource.postMessageToSlack(anyString(), any())).thenReturn(empty());
     }
 
     @Before
@@ -540,7 +539,9 @@ public class QuestionResourceTest {
         Auth     auth     = new Auth();
         Question question = TestSetup.getQuestion("title", "body");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(error(new SQLException("poff")));
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
+        SlackConfig      slackConfig      = new SlackConfig();
+        slackConfig.setEnabled(true);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig, tagDao);
 
         // when we try to add the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();
@@ -558,7 +559,9 @@ public class QuestionResourceTest {
         Auth     auth     = new Auth();
         Question question = TestSetup.getQuestion("title of question?", "who does one do?");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(empty());
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
+        SlackConfig      slackConfig      = new SlackConfig();
+        slackConfig.setEnabled(true);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig, tagDao);
 
         // when we add the the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();
