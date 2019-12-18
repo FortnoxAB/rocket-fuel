@@ -243,22 +243,51 @@
                                  referencedTableName="tag"/>
     </changeSet>
 
+    <changeSet id="clean-up-dangling-tags-by-trigger" author="magnus.persson">
+        <createView viewName="tag_usage">
+            <![CDATA[
+                SELECT
+                    tag.id,
+                    tag.label,
+                    SUM(
+                        CASE WHEN
+                          question_id IS NOT NULL THEN 1
+                          ELSE 0
+                        END
+                    ) AS usages
+                FROM tag
+                LEFT JOIN question_tag qt ON tag.id = qt.tag_id
+                GROUP BY tag.id
+            ]]>
+        </createView>
+
+        <createProcedure>
+            <![CDATA[
+                CREATE OR REPLACE FUNCTION remove_dangling_tags()
+                    RETURNS TRIGGER
+                AS $$
+                BEGIN
+                    DELETE FROM tag
+                    WHERE id IN (
+                        SELECT id FROM tag_usage WHERE usages = 0
+                    );
+                    RETURN new;
+                END;
+                $$
+                LANGUAGE plpgsql;
+            ]]>
+        </createProcedure>
+
+        <sql>
+            <![CDATA[
+                DROP TRIGGER IF EXISTS remove_dangling_tags_trigger
+                ON question_tag;
+
+                CREATE TRIGGER remove_dangling_tags_trigger
+                AFTER UPDATE OR DELETE ON question_tag
+                FOR EACH ROW EXECUTE PROCEDURE remove_dangling_tags();
+            ]]>
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>
-
-<!--
-    // CREATE TABLE "rocket-fuel".tag (
-    // id serial NOT NULL,
-    // "label" varchar NOT NULL,
-    // CONSTRAINT tag_pk PRIMARY KEY (id),
-    // CONSTRAINT tag_un UNIQUE (label)
-    // );
-
-    // CREATE TABLE "rocket-fuel".question_tag (
-    // question_id int4 NOT NULL,
-    // tag_id int4 NOT NULL,
-    // CONSTRAINT question_tag_pk PRIMARY KEY (question_id, tag_id),
-    // CONSTRAINT question_tag_question_fk FOREIGN KEY (question_id) REFERENCES question(id) ON DELETE CASCADE,
-    // CONSTRAINT question_tag_tag_fk FOREIGN KEY (tag_id) REFERENCES tag(id) ON DELETE CASCADE
-    // );
-
--->

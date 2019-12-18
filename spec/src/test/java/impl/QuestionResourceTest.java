@@ -1,12 +1,6 @@
 package impl;
 
-import api.Answer;
-import api.AnswerResource;
-import api.Question;
-import api.QuestionResource;
-import api.Tag;
-import api.User;
-import api.UserResource;
+import api.*;
 import api.auth.Auth;
 import com.github.seratch.jslack.api.model.block.SectionBlock;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
@@ -18,17 +12,14 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.log4j.Appender;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
 import org.jetbrains.annotations.NotNull;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.mockito.ArgumentCaptor;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
 import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.GeneratedKey;
+import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
@@ -42,12 +33,8 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static impl.QuestionResourceImpl.FAILED_TO_SEARCH_FOR_QUESTIONS;
-import static impl.QuestionResourceImpl.INVALID_VOTE;
-import static impl.QuestionResourceImpl.QUESTION_NOT_FOUND;
-import static impl.TestSetup.getAnswer;
-import static impl.TestSetup.getQuestion;
-import static impl.TestSetup.insertUser;
+import static impl.QuestionResourceImpl.*;
+import static impl.TestSetup.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.time.LocalDateTime.now;
@@ -56,16 +43,9 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import static rx.Observable.empty;
 import static rx.Observable.error;
 import static se.fortnox.reactivewizard.test.TestUtil.matches;
@@ -312,20 +292,21 @@ public class QuestionResourceTest {
         Auth mockAuth = new MockAuth(createdUser.getId());
         mockAuth.setUserId(createdUser.getId());
 
-        // when question is created
+        // given a question with tags exist
         Question question = getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
-        Question editedQuestion = getQuestion("my question title updated", "my question updated", Set.of("tag1", "tag3"));
 
-        // when we create the question
+        // when we update that question with new tags making "tag2" unreferenced
+        Question editedQuestion = getQuestion("my question title updated", "my question updated", Set.of("tag1", "tag3"));
         Question updatedQuestion = questionResource.updateQuestion(mockAuth, storedQuestion.getId(), editedQuestion).single().test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
 
-        // then the question should be returned when asking for the users questions
-        assertEquals("my question title updated", updatedQuestion.getTitle());
-        assertEquals("my question updated", updatedQuestion.getQuestion());
-        assertEquals(question.getBounty(), updatedQuestion.getBounty());
-        assertEquals(createdUser.getId(), updatedQuestion.getUserId());
+
+        // then the question should have the updated tags
         assertThat(updatedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag3");
+
+        // and there should be no unused tags
+        Integer aggregatedTagMinimumUsage = testDao.aggregatedTagMinimumUsage().toBlocking().single();
+        assertThat(aggregatedTagMinimumUsage).as("Unreferenced tag still exists") .isEqualTo(1);
         assertNotNull(updatedQuestion.getId());
     }
 
@@ -823,5 +804,8 @@ public class QuestionResourceTest {
 
         @Update("INSERT INTO tag (label) VALUES (:label) RETURNING id")
         Observable<GeneratedKey<Long>> createTag(String label);
+
+        @Query("SELECT min(usages) from tag_usage")
+        Observable<Integer> aggregatedTagMinimumUsage();
     }
 }
