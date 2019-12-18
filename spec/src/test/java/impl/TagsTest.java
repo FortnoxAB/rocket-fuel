@@ -2,10 +2,9 @@ package impl;
 
 import api.Question;
 import api.QuestionResource;
+import api.TagResource;
 import api.User;
 import api.UserResource;
-import api.auth.Auth;
-import dao.TagDao;
 import org.apache.log4j.Appender;
 import org.junit.After;
 import org.junit.Before;
@@ -14,31 +13,23 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import rx.Observable;
-import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
 
-import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import static impl.TestSetup.insertUser;
-import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class TagsTest {
-    public static final LocalDateTime CURRENT = now();
-    public static final LocalDateTime A_DAY_AGO = CURRENT.minusDays(1);
-    public static final LocalDateTime A_MONTH_AGO = CURRENT.minusMonths(1);
-
     private static QuestionResource questionResource;
     private static UserResource userResource;
     private static TestDao testDao;
-    private static TagDao tagDao;
+    private static TagResource tagResource;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
@@ -46,8 +37,7 @@ public class TagsTest {
     private static TestSetup testSetup;
     private static Appender appender;
     private static ApplicationConfig applicationConfig;
-
-    private CollectionOptions options;
+    private MockAuth mockAuth;
 
     @BeforeClass
     public static void before() {
@@ -55,15 +45,18 @@ public class TagsTest {
         userResource = testSetup.getInjector().getInstance(UserResource.class);
         questionResource = testSetup.getInjector().getInstance(QuestionResource.class);
         testDao = testSetup.getInjector().getInstance(TestDao.class);
-        tagDao = testSetup.getInjector().getInstance(TagDao.class);
+        tagResource = testSetup.getInjector().getInstance(TagResource.class);
+
         applicationConfig = new ApplicationConfig();
-        applicationConfig.setBaseUrl("deployed.fuel.com");
+        applicationConfig.setBaseUrl("duringtest.example.org");
     }
 
     @Before
     public void beforeEach() throws Exception {
-        options = new CollectionOptions();
         testSetup.setupDatabase();
+        User createdUser = insertUser(userResource);
+        mockAuth = new MockAuth(createdUser.getId());
+        mockAuth.setUserId(createdUser.getId());
         appender = LoggingMockUtil.createMockedLogAppender(QuestionResourceImpl.class);
     }
 
@@ -74,18 +67,65 @@ public class TagsTest {
     }
 
     @Test
-    public void shouldRemoveUnusedTagsWhenSavingQuestionWithNewTags() {
-        User createdUser = insertUser(userResource);
-        Auth mockAuth = new MockAuth(createdUser.getId());
-        mockAuth.setUserId(createdUser.getId());
+    public void shouldBeAbleToCreateQuestionWithMissingTags() {
+        // when a question is created with no tags
+        Question question = TestSetup.getQuestion("my question title", "my question");
+        Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
+        // then no tags should exist on the question
+        assertThat(storedQuestion.getTags()).isEmpty();
+    }
+
+    @Test
+    public void shouldBeAbleToCreateQuestionWithEmptyTags() {
+        // when a question is created with empty tags
+        Question question = TestSetup.getQuestion("my question title", "my question", Collections.emptySet());
+        Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
+
+        // then no tags should exist on the question
+        assertThat(storedQuestion.getTags()).isEmpty();
+    }
+
+    @Test
+    public void shouldBeAbleToCreateQuestionWithTags() {
+        // when a question is created with tags
+        Question question = TestSetup.getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
+        Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
+
+        // then these should be returned
+        assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+    }
+
+    @Test
+    public void shouldBeAbleToLookupTags() {
+        // given we have questions with some distinct tags
+        Observable.just(
+            TestSetup.getQuestion("my question title", "my question", Set.of("alpha", "beta")),
+            TestSetup.getQuestion("my other question title", "my other question", Set.of("alpha", "alpaca", "charlie"))
+        )
+            .concatMap(question -> questionResource.createQuestion(mockAuth, question))
+            .toList()
+            .toBlocking()
+            .single();
+
+        // when a search is made for a partial tag from one of the questions
+        List<String> foundTags = tagResource.getTags("alp").toBlocking().single();
+
+        // then
+        assertThat(foundTags)
+            .hasSize(2)
+            .containsExactly("alpha", "alpaca");
+    }
+
+    @Test
+    public void shouldRemoveUnusedTagsWhenSavingQuestionWithNewTags() {
         // given a question with tags exist
         Question question = TestSetup.getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
-        Question storedQuestion = questionResource.createQuestion(mockAuth, question).test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
+        Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // when we update that question with new tags making "tag2" unreferenced
         Question editedQuestion = TestSetup.getQuestion("my question title updated", "my question updated", Set.of("tag1", "tag3"));
-        Question updatedQuestion = questionResource.updateQuestion(mockAuth, storedQuestion.getId(), editedQuestion).single().test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
+        Question updatedQuestion = questionResource.updateQuestion(mockAuth, storedQuestion.getId(), editedQuestion).single().toBlocking().single();
 
         // then the question should have the updated tags
         assertThat(updatedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag3");
@@ -93,47 +133,22 @@ public class TagsTest {
         // and there should be no unused tags
         Integer aggregatedTagMinimumUsage = testDao.aggregatedTagMinimumUsage().toBlocking().single();
         assertThat(aggregatedTagMinimumUsage).as("Unreferenced tag still exists").isEqualTo(1);
-        assertNotNull(updatedQuestion.getId());
     }
 
     @Test
     public void shouldBePossibleToAddQuestionWithPreexistingTagAndFetchIt() {
-        // Given
-        User createdUser = insertUser(userResource);
-        Long tagId = testDao.createTag("tag1").map(GeneratedKey::getKey).test().awaitTerminalEvent().assertNoErrors().getOnNextEvents().get(0);
-        assertThat(tagId).isGreaterThan(0);
+        // given we have an existing tag
+        testDao.createTag("tag1").map(GeneratedKey::getKey).toBlocking().single();
 
         // when question is created
         Question question = TestSetup.getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
-        Auth mockAuth = new MockAuth(createdUser.getId());
-        mockAuth.setUserId(createdUser.getId());
+        Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
-        // when we create the question
-        questionResource.createQuestion(mockAuth, question).test().awaitTerminalEvent().assertNoErrors();
-
-        // then the question should be returned when asking for the users questions
-        List<Question> questions = questionResource.getQuestions(createdUser.getId(), null)
-            .test()
-            .awaitTerminalEvent()
-            .assertNoErrors()
-            .getOnNextEvents()
-            .get(0);
-        assertEquals(1, questions.size());
-        Question insertedQuestion = questions.get(0);
-        assertEquals("my question title", insertedQuestion.getTitle());
-        assertEquals("my question", insertedQuestion.getQuestion());
-        assertEquals(question.getBounty(), insertedQuestion.getBounty());
-        assertEquals(createdUser.getId(), insertedQuestion.getUserId());
-        assertThat(insertedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
-        assertNotNull(insertedQuestion.getId());
+        // then the question should have a correct set of tags
+        assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
     }
 
     private interface TestDao {
-        @Update("UPDATE question " +
-            "SET created_at=:createdAt " +
-            "WHERE question.id=:question.id")
-        Observable<Integer> setCreatedAt(Question question, LocalDateTime createdAt);
-
         @Update("INSERT INTO tag (label) VALUES (:label) RETURNING id")
         Observable<GeneratedKey<Long>> createTag(String label);
 

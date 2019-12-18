@@ -31,10 +31,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static rx.Observable.*;
+import static rx.Observable.empty;
+import static rx.Observable.error;
+import static rx.Observable.just;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
 
 @Singleton
@@ -163,7 +168,7 @@ public class QuestionResourceImpl implements QuestionResource {
                 return operations
                     .ignoreElements()
                     .cast(Question.class)
-                    .concatWith(just(savedQuestion));
+                    .concatWith(questionDao.getQuestion(savedQuestion.getId()));
             }).onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_ADD_QUESTION_TO_DATABASE, throwable)));
     }
 

@@ -33,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static rx.Observable.empty;
@@ -58,7 +57,7 @@ public class QuestionResourceImplTest {
         slackResource = mock(SlackResource.class);
         tagDao = mock(TagDao.class);
         ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationConfig.setBaseUrl("deployed.fuel.com");
+        applicationConfig.setBaseUrl("duringtest.example.org");
         when(slackResource.postMessageToSlack(anyString(), any())).thenReturn(empty());
         questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
         auth = new Auth(123);

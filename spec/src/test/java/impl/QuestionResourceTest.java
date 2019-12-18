@@ -108,7 +108,7 @@ public class QuestionResourceTest {
         tagDao = testSetup.getInjector().getInstance(TagDao.class);
         slackResource = mock(SlackResource.class);
         applicationConfig = new ApplicationConfig();
-        applicationConfig.setBaseUrl("deployed.fuel.com");
+        applicationConfig.setBaseUrl("duringtest.example.org");
     }
 
     @Before
@@ -515,7 +515,7 @@ public class QuestionResourceTest {
         String headerText  = ((MarkdownTextObject)header.getText()).getText();
         String contentText = ((MarkdownTextObject)content.getText()).getText();
         assertThat(headerText).isEqualTo("A new question: *title of question?* was submitted.");
-        assertThat(contentText).isEqualTo("Head over to <deployed.fuel.com/question/1|rocket-fuel> to view the question.");
+        assertThat(contentText).isEqualTo("Head over to <duringtest.example.org/question/1|rocket-fuel> to view the question.");
 
     }
 
