@@ -6,11 +6,7 @@ import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 public interface TagDao {
 
@@ -26,6 +22,6 @@ public interface TagDao {
     @Update("INSERT INTO question_tag (question_id, tag_id) VALUES (:questionId, :tagId)")
     Observable<Void> associateTagsWithQuestion(Long questionId, Long tagId);
 
-    @Update("DELETE FROM question_tag WHERE question_id = :questionId")
+    @Update(value = "DELETE FROM question_tag WHERE question_id = :questionId", minimumAffected = 0)
     Observable<Void> removeTagsFromQuestion(Long questionId);
 }

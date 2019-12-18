@@ -31,17 +31,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static rx.Observable.empty;
-import static rx.Observable.error;
-import static rx.Observable.just;
+import static rx.Observable.*;
 import static se.fortnox.reactivewizard.util.rx.RxUtils.exception;
-import static se.fortnox.reactivewizard.util.rx.RxUtils.first;
 
 @Singleton
 public class QuestionResourceImpl implements QuestionResource {
@@ -155,16 +149,19 @@ public class QuestionResourceImpl implements QuestionResource {
                 return question;
             })
             .concatMap(savedQuestion -> {
-                Observable<Void> writeTagsToQuestion = storeTagsMerging(new HashSet<>(question.getTags())).concatMap(tag -> tagDao.associateTagsWithQuestion(savedQuestion.getId(), tag.getId()));
-                Observable<Void> postMessageToSlack = slackResource.postMessageToSlack(slackConfig.getFeedChannel(), notificationMessage(question))
+                Observable<Void> operations = slackResource.postMessageToSlack(slackConfig.getFeedChannel(), notificationMessage(question))
                     .onErrorResumeNext(e -> {
                         LOG.error("failed to notify by slack that question has been added", e);
                         return empty();
                     });
-                return Observable.concat(
-                    writeTagsToQuestion,
-                    postMessageToSlack
-                ).ignoreElements()
+                if(question.getTags() != null) {
+                    operations = operations.concatWith(
+                        storeTagsMerging(new HashSet<>(question.getTags())).concatMap(tag -> tagDao.associateTagsWithQuestion(savedQuestion.getId(), tag.getId()))
+                    );
+                }
+
+                return operations
+                    .ignoreElements()
                     .cast(Question.class)
                     .concatWith(just(savedQuestion));
             }).onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_ADD_QUESTION_TO_DATABASE, throwable)));
