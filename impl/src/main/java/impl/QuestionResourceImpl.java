@@ -229,8 +229,6 @@ public class QuestionResourceImpl implements QuestionResource {
                             .concatWith(questionDao.getQuestion(questionId))
                             .last();
                     });
-            }).doOnNext(question1 -> {
-                System.out.println(question);
             });
     }
 
