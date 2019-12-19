@@ -4,6 +4,8 @@ import Loader from '../components/utils/loader';
 import QuestionRow from '../components/questions/questionrow';
 import { UserContext } from '../usercontext';
 import * as Question from '../models/question';
+import * as Tag from '../models/tag';
+import Tags from '../components/questions/tags';
 
 class HomeView extends React.Component {
     constructor(props) {
@@ -14,6 +16,7 @@ class HomeView extends React.Component {
             popularQuestions: [],
             popularUnansweredQuestions: [],
             recentlyAcceptedQuestions: [],
+            popularTags: [],
             loaded: false
         };
     }
@@ -29,18 +32,21 @@ class HomeView extends React.Component {
         const popularQuestions           = Question.getPopularQuestions(5);
         const popularUnansweredQuestions = Question.getPopularUnansweredQuestions(5);
         const recentlyAcceptedQuestions  = Question.getRecentlyAcceptedQuestions(5);
+        const popularTags = Tag.getPopular();
 
         Promise.all([userQuestions,
             latestQuestions,
             popularQuestions,
             popularUnansweredQuestions,
-            recentlyAcceptedQuestions]).then((response) => {
+            recentlyAcceptedQuestions,
+            popularTags]).then((response) => {
             this.setState({
                 userQuestions: response[0],
                 latestQuestions: response[1],
                 popularQuestions: response[2],
                 popularUnansweredQuestions: response[3],
                 recentlyAcceptedQuestions: response[4],
+                popularTags: response[5],
                 loaded: true
             });
         }).catch(() => {
@@ -80,6 +86,10 @@ class HomeView extends React.Component {
         });
     }
 
+    getPopularTags() {
+        return <Tags tags={this.state.popularTags} />
+    }
+
     render() {
         if (!this.state.loaded) {
             return (
@@ -115,9 +125,9 @@ class HomeView extends React.Component {
                             <div className="headline"><i className="fas fa-certificate" /> {t`Recently accepted`}</div>
                             {this.getRecentlyAcceptedQuestions()}
                         </div>
-                        <div>
+                        <div className="popular-tags">
                             <div className="headline"><i className="fas fa-tags" /> {t`Popular tags`}</div>
-                            Tags goes here
+                            {this.getPopularTags()}
                         </div>
                     </div>
                 </div>

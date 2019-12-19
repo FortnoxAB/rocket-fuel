@@ -21,4 +21,11 @@ public class TagResourceImpl implements TagResource {
             .map(Tag::getLabel)
             .toList();
     }
+
+    @Override
+    public Observable<List<String>> getPopularTags() {
+        return tagDao.getPopularTags()
+            .map(Tag::getLabel)
+            .toList();
+    }
 }

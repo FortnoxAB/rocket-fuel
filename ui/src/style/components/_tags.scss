@@ -25,3 +25,14 @@
         cursor: pointer;
     }
 }
+
+
+.popular-tags {
+    .tags {
+        flex-flow: wrap;
+
+        .tag {
+            margin-bottom: 2px;
+        }
+    }
+}

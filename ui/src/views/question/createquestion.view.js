@@ -372,7 +372,6 @@ class CreateQuestionView extends React.Component {
                         <InputField
                             onChange={this.handleTagChange.bind(this)}
                             onKeyPress={this.onKeyDownTags.bind(this)}
-                            onBlur={this.addTag.bind(this)}
                             name="tag"
                             label={t`Tags`}
                             value={this.state.tag}

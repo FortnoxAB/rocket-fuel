@@ -7,3 +7,11 @@ export function searchTag(searchString) {
 
     return ApiFetch(options);
 }
+
+export function getPopular() {
+    const options = {
+        url: `/api/tags/popular`
+    };
+
+    return ApiFetch(options);
+}

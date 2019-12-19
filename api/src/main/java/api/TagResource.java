@@ -12,4 +12,8 @@ public interface TagResource {
     @GET
     @Path("tags")
     Observable<List<String>> getTags(@QueryParam("search") String searchQuery);
+
+    @GET
+    @Path("tags/popular")
+    Observable<List<String>> getPopularTags();
 }

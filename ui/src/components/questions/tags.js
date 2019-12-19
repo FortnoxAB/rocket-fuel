@@ -18,7 +18,7 @@ class Tags extends React.Component {
     }
 
     render() {
-        if (this.props.tags.length <= 0) {
+        if (!this.props.tags || this.props.tags.length <= 0) {
             return null;
         }
         return (

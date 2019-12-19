@@ -24,4 +24,7 @@ public interface TagDao {
 
     @Update(value = "DELETE FROM question_tag WHERE question_id = :questionId", minimumAffected = 0)
     Observable<Void> removeTagsFromQuestion(Long questionId);
+
+    @Query("SELECT id, label FROM tag_usage ORDER BY usages DESC LIMIT 10")
+    Observable<Tag> getPopularTags();
 }
