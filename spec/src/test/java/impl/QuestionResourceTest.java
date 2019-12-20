@@ -37,6 +37,7 @@ import slack.SlackResource;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -58,7 +59,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -205,6 +205,36 @@ public class QuestionResourceTest {
     }
 
     @Test
+    public void shouldOnlySearchForQuestionWithTags() {
+        Auth mockAuth = createUserAndAuth();
+        // Given a question with tags
+        Question question = createQuestionWithTags(mockAuth, "title", "body", Set.of("tag1", "tag2"));
+
+        // when searching by a matching tag
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag1]", null).toBlocking().single();
+
+        // then the matching question should be returned
+        assertThat(questions.size()).isEqualTo(1);
+        assertThat(questions.get(0).getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+    }
+
+    @Test
+    public void shouldOnlySearchForQuestionWithContentMatchAndTagMatch() {
+        Auth mockAuth = createUserAndAuth();
+        // Given a question with tags
+        createQuestionWithTags(mockAuth, "title1", "body1", Set.of("tag1", "tag2"));
+        createQuestionWithTags(mockAuth, "title2", "body2", Set.of("tag1", "tag3"));
+
+        // when searching by a matching tag
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag1] title1", null).toBlocking().single();
+
+        // then the matching question should be returned
+        assertThat(questions.size()).isEqualTo(1);
+        assertThat(questions.get(0).getTitle()).isEqualTo("title1");
+        assertThat(questions.get(0).getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+    }
+
+    @Test
     public void shouldSearchCaseInsensitive() {
         Auth mockAuth = createUserAndAuth();
 
@@ -236,6 +266,14 @@ public class QuestionResourceTest {
     @NotNull
     private Question createQuestion(Auth mockAuth, String title, String body) {
         Question question = getQuestion(title, body);
+        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
+        return question;
+    }
+
+    @NotNull
+    private Question createQuestionWithTags(Auth mockAuth, String title, String body, Set<String> tags) {
+        assertThat(tags).isNotNull();
+        Question question = getQuestion(title, body, tags);
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
         return question;
     }
@@ -298,13 +336,14 @@ public class QuestionResourceTest {
 
         // then the question should be returned
         assertThat(searchResult.size()).isEqualTo(1);
+        assertThat(searchResult.get(0).getTags()).isEmpty();
     }
 
     @Test
     public void shouldReturnErrorIfQueryFails() {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
-        when(questionDao.getQuestions(anyString(), any())).thenReturn(error(new WebException()));
+        when(questionDao.getQuestions(any(QuestionSearchOptions.class), any())).thenReturn(error(new WebException()));
         QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
 
         // when searching

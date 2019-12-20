@@ -194,7 +194,8 @@ public class QuestionResourceImpl implements QuestionResource {
         if (isNullOrEmpty(searchQuery)) {
             return just(emptyList());
         }
-        return questionDao.getQuestions(searchQuery, options)
+        QuestionSearchOptions questionSearchOptions = QuestionSearchOptions.from(searchQuery);
+        return questionDao.getQuestions(questionSearchOptions, options)
             .onErrorResumeNext(e -> {
                 LOG.error("failed to search for questions with search query: [{}]", searchQuery);
                 return error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_SEARCH_FOR_QUESTIONS, e));

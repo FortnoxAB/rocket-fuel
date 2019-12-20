@@ -1,13 +1,12 @@
 package dao;
 
 import api.Question;
+import impl.QuestionSearchOptions;
 import rx.Observable;
 import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
-
-import java.time.LocalDateTime;
 
 public interface QuestionDao {
 
@@ -248,34 +247,63 @@ public interface QuestionDao {
 
     @Query(
         value =
-        "SELECT DISTINCT " +
+        "WITH cte AS ( " +
+            "SELECT DISTINCT " +
             "question.id, " +
-            "question.question, " +
             "answer_accepted, " +
+            "question.question, " +
             "question.title, " +
             "question.bounty, " +
             "question.created_at, " +
-            "question, " +
             "question.user_id, " +
             "\"user\".name as created_by, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags, " +
+            "answer.answer " +
             "FROM " +
             "question " +
-        "INNER JOIN " +
+            "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
-        "LEFT JOIN  " +
+            "LEFT JOIN " +
             "answer on answer.question_id = question.id " +
-        "WHERE  " +
-            "question.title ILIKE ('%' || :search || '%') " +
-        "OR " +
-            "question.question ILIKE ('%' || :search || '%') " +
-        "OR " +
-            "answer.answer  ILIKE ('%' || :search || '%') " +
-        "ORDER BY  " +
+            ") " +
+            "SELECT " +
+            "cte.id, " +
+            "cte.answer_accepted, " +
+            "cte.title, " +
+            "cte.bounty, " +
+            "cte.created_at, " +
+            "cte.question, " +
+            "cte.user_id, " +
+            "cte.created_by, " +
+            "cte.votes, " +
+            "cte.tags " +
+            "FROM " +
+            "cte " +
+            "WHERE " +
+            "( " +
+            ":questionSearchOptions.contentSearch = '' AND tags @> :questionSearchOptions.tags " +
+            ") " +
+            "OR " +
+            "( " +
+            ":questionSearchOptions.contentSearch != '' AND '{}' = :questionSearchOptions.tags AND ( " +
+            "title ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
+            "question ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
+            "answer  ILIKE ('%' || :questionSearchOptions.contentSearch || '%') " +
+            ") " +
+            ") " +
+            "OR " +
+            "( " +
+            ":questionSearchOptions.contentSearch != '' AND tags @> :questionSearchOptions.tags AND ( " +
+            "title ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
+            "question ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
+            "answer  ILIKE ('%' || :questionSearchOptions.contentSearch || '%') " +
+            ") " +
+            ") " +
+            "ORDER BY " +
             "votes desc, " +
-            "question.created_at desc ",
+            "created_at desc",
         defaultLimit = 50,
         maxLimit = 50)
-    Observable<Question> getQuestions(String search, CollectionOptions options);
+    Observable<Question> getQuestions(QuestionSearchOptions questionSearchOptions, CollectionOptions options);
 }
