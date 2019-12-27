@@ -1,9 +1,7 @@
 .question-row {
     position: relative;
     $text-color: contrast($background-color-light);
-
     transition: .2s;
-    // background-color: $background-color-light;
     color: $text-color;
     border: 1px solid $border-color;
 
@@ -74,10 +72,6 @@
                         @include main-font('bold', 1em);
                     }
                 }
-
-                .tag {
-                    cursor: pointer;
-                }
             }
         }
     }
@@ -86,11 +80,25 @@
     &.small {
         border: none;
 
+        &:hover {
+            background-color: transparent;
+        }
+
         > .content {
             padding: 0;
 
-            .body .title {
-                padding: 10px;
+            .body {
+                .title {
+                    padding: 0 10px 5px 10px;
+                }
+                .tags {
+                    padding: 0 10px 10px 10px;
+
+                    .tag {
+                        padding: 2px;
+                        font-size: .55em;
+                    }
+                }
             }
         }
     }

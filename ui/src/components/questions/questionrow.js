@@ -51,10 +51,6 @@ class QuestionRow extends React.Component {
         ].join(' ');
     }
 
-    test(e) {
-        console.log(1);
-    }
-
     renderTags() {
         if (this.props.hideTags) {
             return null;
@@ -91,7 +87,11 @@ class QuestionRow extends React.Component {
 
     renderFooter() {
         if (this.props.small) {
-            return null;
+            return (
+                <div>
+                    <Tags tags={this.props.question.tags} />
+                </div>
+            );
         }
 
         return (
@@ -100,7 +100,7 @@ class QuestionRow extends React.Component {
                     <div className="username">{this.props.question.createdBy}</div>
                     <div>{Post.getTime(this.props.question.createdAt)}</div>
                 </div>
-                <div className="tags">
+                <div>
                     <Tags tags={this.props.question.tags} />
                 </div>
             </div>
@@ -135,30 +135,6 @@ class QuestionRow extends React.Component {
                             {this.props.question.title}
                         </div>
                         {this.renderFooter()}
-                    </div>
-                </div>
-            </div>
-        );
-
-        return (
-            <div className={`${this.getClasses()} ${this.getState()}`}>
-                <div className="content" onClick={this.navigateToQuestion.bind(this, this.props.question.id)}>
-                    {/*<Coins amount={this.props.question.bounty} />*/}
-                    <div className="marks">
-                        {this.printCertificate()}
-                        {this.printTrophy()}
-                    </div>
-                    <div className="body">
-                        <div className="title">
-                            {this.props.question.title}
-                            <div className="tags">
-                                {this.renderTags()}
-                            </div>
-                        </div>
-                        <div className="user">
-                            <div>{this.props.question.createdBy}</div>
-                            <div>{Post.getTime(this.props.question.createdAt)}</div>
-                        </div>
                     </div>
                 </div>
             </div>

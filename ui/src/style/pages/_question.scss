@@ -8,9 +8,12 @@ $picture-size: 40px;
     .post-container {
         display: flex;
         margin-top: -1px;
-        //background-color: $background-color-dark;
         color: contrast($background-color-dark);
         border: 1px solid $background-color-dark;
+
+        .flex-grow, code {
+            overflow: auto;
+        }
 
         .post-sidebar {
             color: contrast($background-color);

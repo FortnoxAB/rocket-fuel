@@ -96,3 +96,9 @@ h3 {
         font-size: 1.5em;
     }
 }
+
+a {
+    &.link-secondary {
+        color: $secondary-color;
+    }
+}

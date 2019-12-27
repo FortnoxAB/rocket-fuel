@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import { withRouter } from 'react-router-dom';
 
 class Tags extends React.Component {
     constructor(props) {
@@ -6,7 +7,7 @@ class Tags extends React.Component {
     }
 
     clickTag(tag) {
-        console.log(tag);
+        this.props.history.push(`/search/[${tag}]`);
     }
 
     renderTags() {
@@ -33,4 +34,4 @@ Tags.defaultProps = {
     tags: []
 };
 
-export default Tags;
+export default withRouter(Tags);

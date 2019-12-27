@@ -87,6 +87,8 @@ class Header extends React.Component {
             return item;
         });
 
+        localStorage.setItem('theme', newItem.value);
+
         this.context.setState({
             theme: newItem.value
         });

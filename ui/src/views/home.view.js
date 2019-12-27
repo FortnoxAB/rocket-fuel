@@ -126,8 +126,8 @@ class HomeView extends React.Component {
                             {this.getRecentlyAcceptedQuestions()}
                         </div>
                         <div className="popular-tags">
-                            <div className="headline"><i className="fas fa-tags" /> {t`Popular tags`}</div>
-                            {this.getPopularTags()}
+                            <div className="headline"><i className="fas fa-tags" />{t`Popular tags`}</div>
+                            <div className="flex-wrap">{this.getPopularTags()}</div>
                         </div>
                     </div>
                 </div>
