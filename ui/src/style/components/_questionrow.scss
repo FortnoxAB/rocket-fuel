@@ -78,26 +78,19 @@
 
 
     &.small {
-        border: none;
+       border-left: none;
+       border-right: none;
 
         &:hover {
             background-color: transparent;
         }
 
         > .content {
-            padding: 0;
+            padding: 5px 10px;
 
             .body {
                 .title {
-                    padding: 0 10px 5px 10px;
-                }
-                .tags {
-                    padding: 0 10px 10px 10px;
-
-                    .tag {
-                        padding: 2px;
-                        font-size: .55em;
-                    }
+                    padding: 0;
                 }
             }
         }

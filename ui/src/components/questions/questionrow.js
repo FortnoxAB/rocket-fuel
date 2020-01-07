@@ -86,6 +86,9 @@ class QuestionRow extends React.Component {
     }
 
     renderFooter() {
+        if (this.props.hideTags) {
+            return null;
+        }
         if (this.props.small) {
             return (
                 <div>

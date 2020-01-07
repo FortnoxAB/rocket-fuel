@@ -70,19 +70,19 @@ class HomeView extends React.Component {
 
     getPopularQuestions() {
         return this.state.popularQuestions.map((question, index) => {
-            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
+            return <QuestionRow hideTags small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
         });
     }
 
     getPopularUnansweredQuestions() {
         return this.state.popularUnansweredQuestions.map((question, index) => {
-            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
+            return <QuestionRow small hideTags key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
         });
     }
 
     getRecentlyAcceptedQuestions() {
         return this.state.recentlyAcceptedQuestions.map((question, index) => {
-            return <QuestionRow small key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
+            return <QuestionRow small hideTags key={index} question={question} onDeleteQuestion={this.fetchQuestions.bind(this)} />;
         });
     }
 
