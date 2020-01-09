@@ -766,9 +766,7 @@ public class QuestionResourceTest {
 
     private Auth createUserAndAuth() {
         User createdUser = insertUser(userResource);
-        Auth mockAuth    = new MockAuth(createdUser.getId());
-        mockAuth.setUserId(createdUser.getId());
-        return mockAuth;
+        return new MockAuth(createdUser.getId());
     }
 
     private void generateQuestions(int questionsToGenerate) {

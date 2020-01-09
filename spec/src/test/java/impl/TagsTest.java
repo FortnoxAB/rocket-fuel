@@ -56,7 +56,6 @@ public class TagsTest {
         testSetup.setupDatabase();
         User createdUser = insertUser(userResource);
         mockAuth = new MockAuth(createdUser.getId());
-        mockAuth.setUserId(createdUser.getId());
         appender = LoggingMockUtil.createMockedLogAppender(QuestionResourceImpl.class);
     }
 
