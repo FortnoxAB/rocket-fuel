@@ -93,7 +93,7 @@ public class QuestionResourceTest {
     private static Appender          appender;
     private static ApplicationConfig applicationConfig;
 
-    private CollectionOptions options;
+    private CollectionOptions collectionOptions;
 
     @BeforeClass
     public static void before() {
@@ -113,7 +113,7 @@ public class QuestionResourceTest {
 
     @Before
     public void beforeEach() throws Exception {
-        options = new CollectionOptions();
+        collectionOptions = new CollectionOptions();
         testSetup.setupDatabase();
         appender = LoggingMockUtil.createMockedLogAppender(QuestionResourceImpl.class);
     }
@@ -185,7 +185,7 @@ public class QuestionResourceTest {
         range(1, 15)
             .forEach(i -> createQuestionWithAcceptedAnswer(CURRENT));
 
-        assertThatList(questionResource.getRecentlyAcceptedQuestions(options))
+        assertThatList(questionResource.getRecentlyAcceptedQuestions(collectionOptions))
             .hasExactlyOne()
             .hasSize(11);
     }
@@ -599,11 +599,11 @@ public class QuestionResourceTest {
     public void shouldListLatest5Questions() {
         int limit               = 5;
         int questionsToGenerate = 10;
-        options.setLimit(limit);
+        collectionOptions.setLimit(limit);
 
         generateQuestions(questionsToGenerate);
 
-        assertThatList(questionResource.getLatestQuestions(options))
+        assertThatList(questionResource.getLatestQuestions(collectionOptions))
             .hasExactlyOne()
             .hasSize(limit);
     }
@@ -677,7 +677,7 @@ public class QuestionResourceTest {
     }
 
     private void assertOrder(Function<CollectionOptions, Observable<List<Question>>> method, List<Long> inExpectedOrder) {
-        assertThatList(method.apply(options))
+        assertThatList(method.apply(collectionOptions))
             .hasExactlyOne()
             .extracting(Question::getId)
             .containsExactlyElementsOf(inExpectedOrder);
@@ -780,13 +780,13 @@ public class QuestionResourceTest {
     private void assertLimit(Function<CollectionOptions, Observable<List<Question>>> method, int defaultLimit, int maxLimit) {
         generateQuestions(maxLimit + 5);
 
-        assertThatList(method.apply(options))
+        assertThatList(method.apply(collectionOptions))
             .hasExactlyOne()
             .describedAs("default limit")
             .hasSize(defaultLimit + 1);  // because CollectionOptionsQueryPart adds one to see if there are more
 
-        options.setLimit(maxLimit + 5);
-        assertThatList(method.apply(options))
+        collectionOptions.setLimit(maxLimit + 5);
+        assertThatList(method.apply(collectionOptions))
             .hasExactlyOne()
             .describedAs("max limit")
             .hasSize(maxLimit + 1); // because CollectionOptionsQueryPart adds one to see if there are more
