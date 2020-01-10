@@ -108,7 +108,7 @@ public class TagsTest {
             .single();
 
         // when a search is made for a partial tag from one of the questions
-        List<String> foundTags = tagResource.getTags("alp").toBlocking().single();
+        List<String> foundTags = tagResource.queryTags("alp").toBlocking().single();
 
         // then
         assertThat(foundTags)

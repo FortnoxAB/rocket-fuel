@@ -16,7 +16,7 @@ public class TagResourceImpl implements TagResource {
         this.tagDao = tagDao;
     }
 
-    public Observable<List<String>> getTags(String searchQuery) {
+    public Observable<List<String>> queryTags(String searchQuery) {
         return tagDao.getTagsBySearchQuery(searchQuery)
             .map(Tag::getLabel)
             .toList();
