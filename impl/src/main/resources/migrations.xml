@@ -260,34 +260,6 @@
                 GROUP BY tag.id
             ]]>
         </createView>
-
-        <createProcedure>
-            <![CDATA[
-                CREATE OR REPLACE FUNCTION remove_dangling_tags()
-                    RETURNS TRIGGER
-                AS $$
-                BEGIN
-                    DELETE FROM tag
-                    WHERE id IN (
-                        SELECT id FROM tag_usage WHERE usages = 0
-                    );
-                    RETURN new;
-                END;
-                $$
-                LANGUAGE plpgsql;
-            ]]>
-        </createProcedure>
-
-        <sql>
-            <![CDATA[
-                DROP TRIGGER IF EXISTS remove_dangling_tags_trigger
-                ON question_tag;
-
-                CREATE TRIGGER remove_dangling_tags_trigger
-                AFTER UPDATE OR DELETE ON question_tag
-                FOR EACH ROW EXECUTE PROCEDURE remove_dangling_tags();
-            ]]>
-        </sql>
     </changeSet>
 
 </databaseChangeLog>

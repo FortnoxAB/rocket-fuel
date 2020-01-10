@@ -13,18 +13,18 @@ public interface TagDao {
     @Query(value = "SELECT label FROM tag WHERE label ILIKE ( :search || '%')")
     Observable<Tag> getTagsBySearchQuery(String search);
 
-    @Query("SELECT id, label FROM tag WHERE label IN (:labels)")
-    Observable<Tag> getTagsByLabels(List<String> labels);
-
-    @Update("INSERT INTO tag (label) VALUES (:label) RETURNING id, label")
-    Observable<GeneratedKey<Tag>> createTag(String label);
-
-    @Update("INSERT INTO question_tag (question_id, tag_id) VALUES (:questionId, :tagId)")
-    Observable<Void> associateTagsWithQuestion(Long questionId, Long tagId);
-
-    @Update(value = "DELETE FROM question_tag WHERE question_id = :questionId", minimumAffected = 0)
-    Observable<Void> removeTagsFromQuestion(Long questionId);
+    @Update(value = "INSERT INTO question_tag (SELECT DISTINCT :questionId, id FROM tag WHERE label IN (:labels)) ON CONFLICT DO NOTHING", minimumAffected = 0)
+    Observable<Integer> associateTagsWithQuestion(Long questionId, List<String> labels);
 
     @Query("SELECT id, label FROM tag_usage ORDER BY usages DESC LIMIT 10")
     Observable<Tag> getPopularTags();
+
+    @Update(value = "INSERT INTO tag (label) VALUES (:tag) ON CONFLICT DO NOTHING", minimumAffected = 0)
+    Observable<Integer> mergeTag(String tag);
+
+    @Update(value = "DELETE FROM tag WHERE id IN (SELECT id FROM tag_usage WHERE usages = 0)", minimumAffected = 0)
+    Observable<Integer> deleteUnusedTags();
+
+    @Update(value = "DELETE FROM question_tag WHERE question_id=:id", minimumAffected = 0)
+    Observable<Integer> removeTagAssociationFromQuestion(Long id);
 }

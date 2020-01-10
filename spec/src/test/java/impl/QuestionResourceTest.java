@@ -29,6 +29,7 @@ import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Update;
+import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
 import slack.SlackConfig;
@@ -37,7 +38,6 @@ import slack.SlackResource;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -94,6 +94,7 @@ public class QuestionResourceTest {
     private static ApplicationConfig applicationConfig;
 
     private CollectionOptions collectionOptions;
+    private static DaoTransactions daoTransactions;
 
     @BeforeClass
     public static void before() {
@@ -106,6 +107,7 @@ public class QuestionResourceTest {
         answerDao = testSetup.getInjector().getInstance(AnswerDao.class);
         testDao = testSetup.getInjector().getInstance(TestDao.class);
         tagDao = testSetup.getInjector().getInstance(TagDao.class);
+        daoTransactions = testSetup.getInjector().getInstance(DaoTransactions.class);
         slackResource = mock(SlackResource.class);
         applicationConfig = new ApplicationConfig();
         applicationConfig.setBaseUrl("duringtest.example.org");
@@ -128,7 +130,7 @@ public class QuestionResourceTest {
     @Test
     public void shouldThrowErrorWhenServerIsDown() {
         QuestionDao          questionDao      = mock(QuestionDao.class);
-        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
+        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao, daoTransactions);
         when(questionDao.getLatestQuestions(any())).thenReturn(error(new SQLException()));
 
         try {
@@ -141,7 +143,6 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldBePossibleToGetQuestionBySlackThreadId() {
-
         insertUser(userResource);
         Auth mockAuth = newAuth();
 
@@ -208,7 +209,7 @@ public class QuestionResourceTest {
     public void shouldOnlySearchForQuestionWithTags() {
         Auth mockAuth = createUserAndAuth();
         // Given a question with tags
-        Question question = createQuestionWithTags(mockAuth, "title", "body", Set.of("tag1", "tag2"));
+        createQuestionWithTags(mockAuth, "title", "body", List.of("tag1", "tag2"));
 
         // when searching by a matching tag
         List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag1]", null).toBlocking().single();
@@ -222,8 +223,8 @@ public class QuestionResourceTest {
     public void shouldOnlySearchForQuestionWithContentMatchAndTagMatch() {
         Auth mockAuth = createUserAndAuth();
         // Given a question with tags
-        createQuestionWithTags(mockAuth, "title1", "body1", Set.of("tag1", "tag2"));
-        createQuestionWithTags(mockAuth, "title2", "body2", Set.of("tag1", "tag3"));
+        createQuestionWithTags(mockAuth, "title1", "body1", List.of("tag1", "tag2"));
+        createQuestionWithTags(mockAuth, "title2", "body2", List.of("tag1", "tag3"));
 
         // when searching by a matching tag
         List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag1] title1", null).toBlocking().single();
@@ -271,7 +272,7 @@ public class QuestionResourceTest {
     }
 
     @NotNull
-    private Question createQuestionWithTags(Auth mockAuth, String title, String body, Set<String> tags) {
+    private Question createQuestionWithTags(Auth mockAuth, String title, String body, List<String> tags) {
         assertThat(tags).isNotNull();
         Question question = getQuestion(title, body, tags);
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
@@ -344,7 +345,7 @@ public class QuestionResourceTest {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
         when(questionDao.getQuestions(any(QuestionSearchOptions.class), any())).thenReturn(error(new WebException()));
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao, daoTransactions);
 
         // when searching
         Observable<List<Question>> questions = questionResource.getQuestionsBySearchQuery("explode", null);
@@ -385,7 +386,6 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldBePossibleToGetQuestionById() {
-
         // when question is inserted
         Question question = getQuestion("my question title", "my question");
         Auth     mockAuth = newAuth();
@@ -405,7 +405,6 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldBePossibleToUpdateQuestion() {
-
         User createdUser = insertUser(userResource);
 
         // when question is inserted
@@ -520,7 +519,7 @@ public class QuestionResourceTest {
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(error(new SQLException("poff")));
         SlackConfig      slackConfig      = new SlackConfig();
         slackConfig.setEnabled(true);
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig, tagDao);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig, tagDao, daoTransactions);
 
         // when we try to add the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();
@@ -540,7 +539,7 @@ public class QuestionResourceTest {
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(empty());
         SlackConfig      slackConfig      = new SlackConfig();
         slackConfig.setEnabled(true);
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig, tagDao);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig, tagDao, daoTransactions);
 
         // when we add the the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();

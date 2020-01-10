@@ -2,13 +2,10 @@ package impl;
 
 import api.Question;
 import api.QuestionResource;
-import api.Tag;
 import api.auth.Auth;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import com.github.seratch.jslack.api.model.block.SectionBlock;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dao.QuestionDao;
@@ -20,14 +17,13 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.functions.Func1;
 import se.fortnox.reactivewizard.CollectionOptions;
-import se.fortnox.reactivewizard.db.GeneratedKey;
+import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackConfig;
 import slack.SlackResource;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -66,17 +62,19 @@ public class QuestionResourceImpl implements QuestionResource {
     private final SlackConfig       slackConfig;
     private final ApplicationConfig applicationConfig;
     private final TagDao            tagDao;
+    private final DaoTransactions daoTransactions;
 
     @Inject
     public QuestionResourceImpl(QuestionDao questionDao, QuestionVoteDao questionVoteDao,
                                 SlackResource slackResource, SlackConfig slackConfig, ApplicationConfig applicationConfig,
-                                TagDao tagDao) {
+                                TagDao tagDao, DaoTransactions daoTransactions) {
         this.questionDao = questionDao;
         this.questionVoteDao = questionVoteDao;
         this.slackResource = slackResource;
         this.slackConfig = slackConfig;
         this.applicationConfig = applicationConfig;
         this.tagDao = tagDao;
+        this.daoTransactions = daoTransactions;
     }
 
     @Override
@@ -120,29 +118,6 @@ public class QuestionResourceImpl implements QuestionResource {
         return handleError(questionDao.getRecentlyAcceptedQuestions(options), FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS);
     }
 
-    private Observable<Tag> storeTagsMerging(Set<String> requestedLabels) {
-        return tagDao
-            .getTagsByLabels(Lists.newArrayList(requestedLabels))
-            .collect(HashSet<Tag>::new, Set::add)
-            .switchIfEmpty(just(new HashSet<>()))
-            .concatMap(foundTags -> {
-                Set<String> foundLabels = foundTags
-                    .stream()
-                    .map(Tag::getLabel)
-                    .collect(Collectors.toSet());
-
-                List<Observable<Tag>> createTagOperations = Sets.difference(requestedLabels, foundLabels)
-                    .stream()
-                    .map(missingLabel -> tagDao.createTag(missingLabel).map(GeneratedKey::getKey))
-                    .collect(Collectors.toList());
-
-                return Observable
-                    .concat(createTagOperations)
-                    .collect(HashSet<Tag>::new, Set::add)
-                    .concatMapIterable(createdTags -> Sets.union(foundTags, createdTags));
-            });
-    }
-
     @Override
     public Observable<Question> createQuestion(Auth auth, Question question) {
         return this.questionDao
@@ -157,10 +132,12 @@ public class QuestionResourceImpl implements QuestionResource {
                         LOG.error("failed to notify by slack that question has been added", e);
                         return empty();
                     });
+
                 if(question.getTags() != null) {
-                    operations = operations.concatWith(
-                        storeTagsMerging(new HashSet<>(question.getTags())).concatMap(tag -> tagDao.associateTagsWithQuestion(savedQuestion.getId(), tag.getId()))
-                    );
+                    List<Observable<Integer>> daoCalls = question.getTags().stream().map(tagDao::mergeTag).collect(Collectors.toList());
+                    daoCalls.add(tagDao.associateTagsWithQuestion(savedQuestion.getId(), question.getTags()));
+                    daoCalls.add(tagDao.deleteUnusedTags());
+                    operations = operations.concatWith(daoTransactions.executeTransaction(daoCalls));
                 }
 
                 return operations
@@ -221,16 +198,22 @@ public class QuestionResourceImpl implements QuestionResource {
                     .concatMap(ignore -> questionDao.getQuestion(questionId)
                         .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable))))
                     .switchIfEmpty(exception(() -> new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE)))
-                    .concatMap(updatedQuestionFromDB -> {
-                        HashSet<String> tagSet = new HashSet<>(question.getTags());
-                        Observable<Void> removeTagsFromQuestion = tagDao.removeTagsFromQuestion(updatedQuestionFromDB.getId());
-                        Observable<Void> addTagsToQuestion = storeTagsMerging(tagSet)
-                            .concatMap(tag -> tagDao.associateTagsWithQuestion(storedQuestion.getId(), tag.getId()));
+                    .concatMap(updatedQuestion -> {
+                        List<Observable<Integer>> daoCalls = new ArrayList<>();
+                        if(question.getTags() != null) { // Null means we shouldn't touch existing tags
+                            for (String tag : question.getTags()) {
+                                daoCalls.add(tagDao.mergeTag(tag));
+                            }
+                            daoCalls.add(tagDao.removeTagAssociationFromQuestion(updatedQuestion.getId()));
+                            daoCalls.add(tagDao.associateTagsWithQuestion(updatedQuestion.getId(), question.getTags()));
+                            daoCalls.add(tagDao.deleteUnusedTags());
+                        }
 
-                        return removeTagsFromQuestion
-                            .concatWith(addTagsToQuestion)
+                        return daoTransactions
+                            .executeTransaction(daoCalls)
+                            .ignoreElements()
                             .cast(Question.class)
-                            .concatWith(questionDao.getQuestion(questionId))
+                            .concatWith(questionDao.getQuestion(updatedQuestion.getId()))
                             .last();
                     });
             });
@@ -241,14 +224,19 @@ public class QuestionResourceImpl implements QuestionResource {
         return questionDao.getQuestion(questionId)
             .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable)))
             .switchIfEmpty(exception(() -> new WebException(NOT_FOUND, QUESTION_NOT_FOUND)))
-            .flatMap(storedAnswer -> {
-                if (auth.getUserId() != storedAnswer.getUserId()) {
+            .concatMap(storedQuestion -> {
+                if (auth.getUserId() != storedQuestion.getUserId()) {
                     return error(new WebException(FORBIDDEN, NOT_OWNER_OF_QUESTION));
                 }
-                return questionDao.deleteQuestion(auth.getUserId(), questionId)
+                List<Observable<Integer>> daoCalls = asList(
+                    questionDao.deleteQuestion(auth.getUserId(), questionId),
+                    tagDao.deleteUnusedTags()
+                );
+                return daoTransactions
+                    .executeTransaction(daoCalls)
+                    .ignoreElements()
                     .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_DELETE_QUESTION, throwable)));
             });
-
     }
 
     @Override

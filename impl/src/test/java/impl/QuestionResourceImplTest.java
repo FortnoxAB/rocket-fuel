@@ -11,6 +11,7 @@ import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
 import se.fortnox.reactivewizard.CollectionOptions;
+import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import slack.SlackConfig;
 import slack.SlackResource;
@@ -32,6 +33,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,17 +51,19 @@ public class QuestionResourceImplTest {
     private Auth             auth;
     private CollectionOptions options;
     private TagDao tagDao;
+    private DaoTransactions daoTransactions;
 
     @Before
     public void beforeEach() {
         questionDao = mock(QuestionDao.class);
         questionVoteDao = mock(QuestionVoteDao.class);
         slackResource = mock(SlackResource.class);
+        daoTransactions = mock(DaoTransactions.class);
         tagDao = mock(TagDao.class);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setBaseUrl("duringtest.example.org");
         when(slackResource.postMessageToSlack(anyString(), any())).thenReturn(empty());
-        questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao);
+        questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao, daoTransactions);
         auth = new Auth(123);
         question = createQuestion(123);
         options = new CollectionOptions();
@@ -170,9 +174,8 @@ public class QuestionResourceImplTest {
 
     @Test
     public void shouldThrowInternalIfQuestionToDeleteCannotBeDeleted() {
-
-        when(questionDao.deleteQuestion(123, 123)).thenReturn(error(new SQLException("poff")));
         when(questionDao.getQuestion(123)).thenReturn(just(question));
+        when(daoTransactions.executeTransaction(anyList())).thenReturn(error(new SQLException("poff")));
 
         assertException(() -> questionResource.deleteQuestion(auth, 123).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,

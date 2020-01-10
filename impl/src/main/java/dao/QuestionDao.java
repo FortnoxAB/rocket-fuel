@@ -243,7 +243,7 @@ public interface QuestionDao {
             "question " +
         "WHERE " +
             "question.user_id = :userId AND question.id = :questionId")
-    Observable<Void> deleteQuestion(long userId, long questionId);
+    Observable<Integer> deleteQuestion(long userId, long questionId);
 
     @Query(
         value =

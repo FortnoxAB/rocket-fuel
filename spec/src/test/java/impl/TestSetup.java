@@ -27,6 +27,7 @@ import slack.SlackRTMClient;
 import slack.SlackResource;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -141,22 +142,19 @@ public class TestSetup {
     }
 
     @NotNull
-    public static Question getQuestion(String title, String question, Set<String> tags) {
+    public static Question getQuestion(String title, String question, List<String> tags) {
         return getQuestion(title, question, 300, tags);
     }
 
     @NotNull
-    public static Question getQuestion(String title, String question, int bounty, Set<String> tags) {
+    public static Question getQuestion(String title, String question, int bounty, List<String> tags) {
         Question questionObject = new Question();
         questionObject.setAnswerAccepted(false);
         questionObject.setBounty(bounty);
         questionObject.setTitle(title);
         questionObject.setVotes(3);
         questionObject.setQuestion(question);
-        if(tags != null) {
-            ArrayList<String> tags1 = new ArrayList<>(tags);
-            questionObject.setTags(tags1);
-        }
+        questionObject.setTags(tags);
         return questionObject;
     }
 

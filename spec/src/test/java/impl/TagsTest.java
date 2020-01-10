@@ -2,6 +2,7 @@ package impl;
 
 import api.Question;
 import api.QuestionResource;
+import api.Tag;
 import api.TagResource;
 import api.User;
 import api.UserResource;
@@ -20,7 +21,6 @@ import se.fortnox.reactivewizard.test.LoggingMockUtil;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static impl.TestSetup.insertUser;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,7 +78,7 @@ public class TagsTest {
     @Test
     public void shouldBeAbleToCreateQuestionWithEmptyTags() {
         // when a question is created with empty tags
-        Question question = TestSetup.getQuestion("my question title", "my question", Collections.emptySet());
+        Question question = TestSetup.getQuestion("my question title", "my question", Collections.emptyList());
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then no tags should exist on the question
@@ -88,7 +88,7 @@ public class TagsTest {
     @Test
     public void shouldBeAbleToCreateQuestionWithTags() {
         // when a question is created with tags
-        Question question = TestSetup.getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
+        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then these should be returned
@@ -99,8 +99,8 @@ public class TagsTest {
     public void shouldBeAbleToLookupTags() {
         // given we have questions with some distinct tags
         Observable.just(
-            TestSetup.getQuestion("my question title", "my question", Set.of("alpha", "beta")),
-            TestSetup.getQuestion("my other question title", "my other question", Set.of("alpha", "alpaca", "charlie"))
+            TestSetup.getQuestion("my question title", "my question", List.of("alpha", "beta")),
+            TestSetup.getQuestion("my other question title", "my other question", List.of("alpha", "alpaca", "charlie"))
         )
             .concatMap(question -> questionResource.createQuestion(mockAuth, question))
             .toList()
@@ -119,11 +119,11 @@ public class TagsTest {
     @Test
     public void shouldRemoveUnusedTagsWhenSavingQuestionWithNewTags() {
         // given a question with tags exist
-        Question question = TestSetup.getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
+        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // when we update that question with new tags making "tag2" unreferenced
-        Question editedQuestion = TestSetup.getQuestion("my question title updated", "my question updated", Set.of("tag1", "tag3"));
+        Question editedQuestion = TestSetup.getQuestion("my question title updated", "my question updated", List.of("tag1", "tag3"));
         Question updatedQuestion = questionResource.updateQuestion(mockAuth, storedQuestion.getId(), editedQuestion).single().toBlocking().single();
 
         // then the question should have the updated tags
@@ -135,15 +135,75 @@ public class TagsTest {
     }
 
     @Test
+    public void shouldCreateUniqueTags() {
+        Question question = TestSetup.getQuestion("title", "body", List.of("tag1", "tag2", "tag2"));
+        questionResource.createQuestion(mockAuth, question).toBlocking().single();
+
+        List<Tag> single = testDao.getAllTags().toList().toBlocking().single();
+        assertThat(single)
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag1", "tag2");
+    }
+
+    @Test
     public void shouldBePossibleToAddQuestionWithPreexistingTagAndFetchIt() {
         // given we have an existing tag
         testDao.createTag("tag1").map(GeneratedKey::getKey).toBlocking().single();
 
         // when question is created
-        Question question = TestSetup.getQuestion("my question title", "my question", Set.of("tag1", "tag2"));
+        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then the question should have a correct set of tags
+        assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+    }
+
+    @Test
+    public void shouldRemoveDanglingTagsWhenQuestionIsDeleted() {
+        // Given a question with tags
+        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
+        questionResource.createQuestion(mockAuth, question).toBlocking().single();
+        List<Tag> tagsInStorage = testDao.getAllTags().toList().toBlocking().single();
+        assertThat(tagsInStorage)
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag1", "tag2");
+
+        // When the question is removed
+        questionResource.deleteQuestion(mockAuth, question.getId()).toBlocking().singleOrDefault(null);
+
+        // Then no tags should exist
+        tagsInStorage = testDao.getAllTags().toList().toBlocking().single();
+        assertThat(tagsInStorage)
+            .hasSize(0);
+    }
+
+    @Test
+    public void shouldRemoveAllTagsFromQuestion() {
+        // Given a question with tags
+        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
+        Question storedQuestion   = questionResource.createQuestion(mockAuth, question).toBlocking().single();
+
+        // when tags are removed from the question
+        question.setTags(Collections.emptyList());
+        questionResource.updateQuestion(mockAuth, storedQuestion.getId(), question).toBlocking().single();
+
+        // then no tags should exist on the question
+        storedQuestion = questionResource.getQuestion(mockAuth, storedQuestion.getId()).toBlocking().single();
+        assertThat(storedQuestion.getTags()).isEmpty();
+    }
+
+    @Test
+    public void shouldKeepTagsOnQuestion() {
+        // Given a question with tags
+        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
+        Question storedQuestion   = questionResource.createQuestion(mockAuth, question).toBlocking().single();
+
+        // when tags are missing
+        question.setTags(null);
+        questionResource.updateQuestion(mockAuth, storedQuestion.getId(), question).toBlocking().single();
+
+        // then tags should remain
+        storedQuestion = questionResource.getQuestion(mockAuth, storedQuestion.getId()).toBlocking().single();
         assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
     }
 
@@ -153,5 +213,8 @@ public class TagsTest {
 
         @Query("SELECT min(usages) from tag_usage")
         Observable<Integer> aggregatedTagMinimumUsage();
+
+        @Query("SELECT id, label FROM tag")
+        Observable<Tag> getAllTags();
     }
 }
