@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface TagDao {
 
-    @Query(value = "SELECT label FROM tag WHERE label ILIKE ( :search || '%')")
+    @Query(value = "SELECT label FROM tag WHERE label ILIKE ( '%' || :search || '%')")
     Observable<Tag> getTagsBySearchQuery(String search);
 
     @Update(value = "INSERT INTO question_tag (SELECT DISTINCT :questionId, id FROM tag WHERE label IN (:labels)) ON CONFLICT DO NOTHING", minimumAffected = 0)
