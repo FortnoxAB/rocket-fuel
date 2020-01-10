@@ -2,7 +2,6 @@ package dao;
 
 import api.Tag;
 import rx.Observable;
-import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
 
@@ -10,7 +9,7 @@ import java.util.List;
 
 public interface TagDao {
 
-    @Query(value = "SELECT label FROM tag WHERE label ILIKE ( '%' || :search || '%')")
+    @Query("SELECT label FROM tag WHERE label ILIKE ( '%' || :search || '%')")
     Observable<Tag> getTagsBySearchQuery(String search);
 
     @Update(value = "INSERT INTO question_tag (SELECT DISTINCT :questionId, id FROM tag WHERE label IN (:labels)) ON CONFLICT DO NOTHING", minimumAffected = 0)
