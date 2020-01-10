@@ -207,6 +207,17 @@ public class TagsTest {
         assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
     }
 
+    @Test
+    public void shouldStoreLowercaseTags() {
+        // when a request is made to create a question with mixed case tags
+        Question question = TestSetup.getQuestion("my question title", "my question", List.of("Tag1", "tAG2"));
+        Question storedQuestion   = questionResource.createQuestion(mockAuth, question).toBlocking().single();
+
+        // then tags should have been stored lowercased
+        storedQuestion = questionResource.getQuestion(mockAuth, storedQuestion.getId()).toBlocking().single();
+        assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+    }
+
     private interface TestDao {
         @Update("INSERT INTO tag (label) VALUES (:label) RETURNING id")
         Observable<GeneratedKey<Long>> createTag(String label);

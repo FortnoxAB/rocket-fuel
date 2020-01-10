@@ -134,8 +134,16 @@ public class QuestionResourceImpl implements QuestionResource {
                     });
 
                 if(question.getTags() != null) {
-                    List<Observable<Integer>> daoCalls = question.getTags().stream().map(tagDao::mergeTag).collect(Collectors.toList());
-                    daoCalls.add(tagDao.associateTagsWithQuestion(savedQuestion.getId(), question.getTags()));
+                    List<String> lowerCasedTags = question
+                        .getTags()
+                        .stream()
+                        .map(String::toLowerCase)
+                        .collect(Collectors.toList());
+                    List<Observable<Integer>> daoCalls = lowerCasedTags
+                        .stream()
+                        .map(tagDao::mergeTag)
+                        .collect(Collectors.toList());
+                    daoCalls.add(tagDao.associateTagsWithQuestion(savedQuestion.getId(), lowerCasedTags));
                     daoCalls.add(tagDao.deleteUnusedTags());
                     operations = operations.concatWith(daoTransactions.executeTransaction(daoCalls));
                 }
