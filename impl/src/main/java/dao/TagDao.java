@@ -16,7 +16,7 @@ public interface TagDao {
     @Update(value = "INSERT INTO question_tag (SELECT DISTINCT :questionId, id FROM tag WHERE label IN (:labels)) ON CONFLICT DO NOTHING", minimumAffected = 0)
     Observable<Integer> associateTagsWithQuestion(Long questionId, List<String> labels);
 
-    @Query("SELECT id, label FROM tag_usage ORDER BY usages DESC LIMIT 10")
+    @Query("SELECT id, label FROM tag_usage ORDER BY usages, label DESC LIMIT 10")
     Observable<Tag> getPopularTags();
 
     @Update(value = "INSERT INTO tag (label) VALUES (:tag) ON CONFLICT DO NOTHING", minimumAffected = 0)

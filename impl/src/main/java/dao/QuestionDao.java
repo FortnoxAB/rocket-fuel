@@ -207,7 +207,7 @@ public interface QuestionDao {
             "u.name as created_by, " +
             "u.picture as picture, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id ORDER BY tag.label) AS tags " +
         "FROM " +
             "question " +
         "LEFT JOIN " +
@@ -258,7 +258,7 @@ public interface QuestionDao {
             "question.user_id, " +
             "\"user\".name as created_by, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags, " +
+            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id ORDER BY tag.label) AS tags, " +
             "answer.answer " +
             "FROM " +
             "question " +
