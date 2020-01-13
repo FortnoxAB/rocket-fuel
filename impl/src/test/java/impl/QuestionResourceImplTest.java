@@ -43,15 +43,15 @@ import static rx.Observable.just;
 
 public class QuestionResourceImplTest {
 
-    private QuestionResource questionResource;
-    private QuestionDao      questionDao;
-    private QuestionVoteDao  questionVoteDao;
-    private SlackResource    slackResource;
-    private Question         question;
-    private Auth             auth;
+    private QuestionResource  questionResource;
+    private QuestionDao       questionDao;
+    private QuestionVoteDao   questionVoteDao;
+    private SlackResource     slackResource;
+    private Question          question;
+    private Auth              auth;
     private CollectionOptions options;
-    private TagDao tagDao;
-    private DaoTransactions daoTransactions;
+    private TagDao            tagDao;
+    private DaoTransactions   daoTransactions;
 
     @Before
     public void beforeEach() {
@@ -88,7 +88,7 @@ public class QuestionResourceImplTest {
 
     @Test
     public void shouldReturnInternalServerErrorWhenGetQuestionsFails() {
-        when(questionDao.getQuestions(123,  options)).thenReturn(error(new SQLException("poff")));
+        when(questionDao.getQuestions(123, options)).thenReturn(error(new SQLException("poff")));
 
         assertException(() -> questionResource.getQuestions(123, options).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,

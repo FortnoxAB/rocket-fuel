@@ -35,17 +35,17 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class TagsTest {
     private static QuestionResource questionResource;
-    private static UserResource userResource;
-    private static TestDao testDao;
-    private static TagResource tagResource;
+    private static UserResource     userResource;
+    private static TestDao          testDao;
+    private static TagResource      tagResource;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
 
-    private static TestSetup testSetup;
-    private static Appender appender;
+    private static TestSetup         testSetup;
+    private static Appender          appender;
     private static ApplicationConfig applicationConfig;
-    private MockAuth mockAuth;
+    private        MockAuth          mockAuth;
 
     @BeforeClass
     public static void before() {
@@ -76,7 +76,7 @@ public class TagsTest {
     @Test
     public void shouldBeAbleToCreateQuestionWithMissingTags() {
         // when a question is created with no tags
-        Question question = TestSetup.getQuestion("my question title", "my question");
+        Question question       = TestSetup.getQuestion("my question title", "my question");
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then no tags should exist on the question
@@ -86,7 +86,7 @@ public class TagsTest {
     @Test
     public void shouldBeAbleToCreateQuestionWithEmptyTags() {
         // when a question is created with empty tags
-        Question question = TestSetup.getQuestion("my question title", "my question", Collections.emptyList());
+        Question question       = TestSetup.getQuestion("my question title", "my question", Collections.emptyList());
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then no tags should exist on the question
@@ -96,7 +96,7 @@ public class TagsTest {
     @Test
     public void shouldBeAbleToCreateQuestionWithTags() {
         // when a question is created with tags
-        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag-1", "tag_2", "tag3"));
+        Question question       = TestSetup.getQuestion("my question title", "my question", List.of("tag-1", "tag_2", "tag3"));
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then these should be returned
@@ -130,11 +130,11 @@ public class TagsTest {
     @Test
     public void shouldRemoveUnusedTagsWhenSavingQuestionWithNewTags() {
         // given a question with tags exist
-        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
+        Question question       = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // when we update that question with new tags making "tag2" unreferenced
-        Question editedQuestion = TestSetup.getQuestion("my question title updated", "my question updated", List.of("tag1", "tag3"));
+        Question editedQuestion  = TestSetup.getQuestion("my question title updated", "my question updated", List.of("tag1", "tag3"));
         Question updatedQuestion = questionResource.updateQuestion(mockAuth, storedQuestion.getId(), editedQuestion).single().toBlocking().single();
 
         // then the question should have the updated tags
@@ -164,7 +164,7 @@ public class TagsTest {
         testDao.createTag("tag1").map(GeneratedKey::getKey).toBlocking().single();
 
         // when question is created
-        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
+        Question question       = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then the question should have a correct set of tags
@@ -195,8 +195,8 @@ public class TagsTest {
     @Test
     public void shouldRemoveAllTagsFromQuestion() {
         // Given a question with tags
-        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
-        Question storedQuestion   = questionResource.createQuestion(mockAuth, question).toBlocking().single();
+        Question question       = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
+        Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // when tags are removed from the question
         question.setTags(Collections.emptyList());
@@ -210,8 +210,8 @@ public class TagsTest {
     @Test
     public void shouldKeepTagsOnQuestion() {
         // Given a question with tags
-        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
-        Question storedQuestion   = questionResource.createQuestion(mockAuth, question).toBlocking().single();
+        Question question       = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
+        Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // when tags are missing
         question.setTags(null);
