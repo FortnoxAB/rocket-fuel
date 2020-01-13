@@ -11,9 +11,9 @@ import java.util.List;
 public interface TagResource {
     @GET
     @Path("tags")
-    Observable<List<String>> queryTags(@QueryParam("search") String searchQuery);
+    Observable<List<Tag>> queryTags(@QueryParam("search") String searchQuery);
 
     @GET
     @Path("tags/popular")
-    Observable<List<String>> getPopularTags();
+    Observable<List<Tag>> getPopularTags();
 }

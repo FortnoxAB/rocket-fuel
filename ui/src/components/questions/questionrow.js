@@ -1,9 +1,9 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
-import { t } from 'ttag';
+import {withRouter} from 'react-router-dom';
+import {t} from 'ttag';
 import Certificate from '../utils/certificate';
 import Trophy from '../utils/trophy';
-import { UserContext } from '../../usercontext';
+import {UserContext} from '../../usercontext';
 import Post from './post';
 import Tags from './tags';
 

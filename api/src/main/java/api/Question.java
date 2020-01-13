@@ -1,5 +1,7 @@
  package api;
 
+ import javax.validation.Valid;
+ import javax.validation.constraints.Size;
  import java.util.List;
 
  /**
@@ -21,7 +23,9 @@
 
     private String slackThreadId;
 
-    private List<String> tags;
+    @Valid
+    @Size(max=5)
+    private List<Tag> tags;
 
     public boolean isAnswerAccepted() {
         return answerAccepted;
@@ -63,11 +67,11 @@
          this.title = title;
      }
 
-     public List<String> getTags() {
+     public List<Tag> getTags() {
          return tags;
      }
 
-     public void setTags(List<String> tags) {
+     public void setTags(List<Tag> tags) {
          this.tags = tags;
      }
  }

@@ -4,6 +4,7 @@ import api.Answer;
 import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
+import api.Tag;
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
@@ -32,6 +33,7 @@ import se.fortnox.reactivewizard.db.Update;
 import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
+import se.fortnox.reactivewizard.validation.ValidationFailedException;
 import slack.SlackConfig;
 import slack.SlackResource;
 
@@ -209,14 +211,16 @@ public class QuestionResourceTest {
     public void shouldOnlySearchForQuestionWithTags() {
         Auth mockAuth = createUserAndAuth();
         // Given a question with tags
-        createQuestionWithTags(mockAuth, "title", "body", List.of("tag1", "tag2"));
+        createQuestionWithTags(mockAuth, "title", "body", List.of("tag-1", "tag2"));
 
         // when searching by a matching tag
-        List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag1]", null).toBlocking().single();
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag-1]", null).toBlocking().single();
 
         // then the matching question should be returned
         assertThat(questions.size()).isEqualTo(1);
-        assertThat(questions.get(0).getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+        assertThat(questions.get(0).getTags())
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag-1", "tag2");
     }
 
     @Test
@@ -227,12 +231,30 @@ public class QuestionResourceTest {
         createQuestionWithTags(mockAuth, "title2", "body2", List.of("tag1", "tag3"));
 
         // when searching by a matching tag
-        List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag1] title1", null).toBlocking().single();
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag1] [tag2] title1", null).toBlocking().single();
 
         // then the matching question should be returned
         assertThat(questions.size()).isEqualTo(1);
         assertThat(questions.get(0).getTitle()).isEqualTo("title1");
-        assertThat(questions.get(0).getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+        assertThat(questions.get(0).getTags())
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag1", "tag2");
+    }
+
+    @Test
+    public void shouldDenyCreatingQuestionWithTooManyTags() {
+        Auth mockAuth = createUserAndAuth();
+        assertThatExceptionOfType(ValidationFailedException.class)
+            .isThrownBy(() -> {
+                createQuestionWithTags(mockAuth, "title1", "body1", List.of("tag1", "tag2", "tag3", "tag4", "tag5", "tag6"));
+            })
+            .satisfies(e -> {
+                assertThat(e.getFields())
+                    .allSatisfy(fieldError -> {
+                        assertThat(fieldError.getError()).isEqualTo("validation.size");
+                        assertThat(fieldError.getField()).matches("tags");
+                    });
+            });
     }
 
     @Test
@@ -272,11 +294,10 @@ public class QuestionResourceTest {
     }
 
     @NotNull
-    private Question createQuestionWithTags(Auth mockAuth, String title, String body, List<String> tags) {
+    private void createQuestionWithTags(Auth mockAuth, String title, String body, List<String> tags) {
         assertThat(tags).isNotNull();
         Question question = getQuestion(title, body, tags);
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
-        return question;
     }
 
     @Test

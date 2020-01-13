@@ -22,7 +22,7 @@ public interface QuestionDao {
             "question.user_id, " +
             "question.slack_id, \"user\".picture, \"user\".name as created_by, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "(SELECT COALESCE(json_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
         "FROM " +
             "question " +
         "INNER JOIN " +
@@ -47,7 +47,7 @@ public interface QuestionDao {
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "(SELECT COALESCE(json_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
             "FROM " +
             "question " +
         "INNER JOIN " +
@@ -72,7 +72,7 @@ public interface QuestionDao {
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "(SELECT COALESCE(json_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
             "FROM " +
             "question " +
         "INNER JOIN " +
@@ -98,7 +98,7 @@ public interface QuestionDao {
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "(SELECT COALESCE(json_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
             "FROM " +
             "question " +
         "INNER JOIN " +
@@ -128,7 +128,7 @@ public interface QuestionDao {
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "(SELECT COALESCE(json_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
             "FROM " +
             "question " +
         "INNER JOIN " +
@@ -184,7 +184,7 @@ public interface QuestionDao {
             "(SELECT COALESCE(SUM(question_vote.value), 0) " +
                 "FROM question_vote " +
                 "WHERE question_vote.question_id = question.id AND question_vote.user_id = :userId) AS current_user_vote, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "(SELECT COALESCE(json_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
             "FROM " +
             "question " +
         "INNER JOIN " +
@@ -207,7 +207,7 @@ public interface QuestionDao {
             "u.name as created_by, " +
             "u.picture as picture, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id ORDER BY tag.label) AS tags " +
+            "(SELECT COALESCE(json_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
         "FROM " +
             "question " +
         "LEFT JOIN " +
@@ -258,7 +258,8 @@ public interface QuestionDao {
             "question.user_id, " +
             "\"user\".name as created_by, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "array(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id ORDER BY tag.label) AS tags, " +
+            "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags, " +
+            "ARRAY(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id ORDER BY tag.label) AS tag_labels, " +
             "answer.answer " +
             "FROM " +
             "question " +
@@ -282,7 +283,7 @@ public interface QuestionDao {
             "cte " +
             "WHERE " +
             "( " +
-            ":questionSearchOptions.contentSearch = '' AND tags @> :questionSearchOptions.tags " +
+            ":questionSearchOptions.contentSearch = '' AND tag_labels @> :questionSearchOptions.tags " +
             ") " +
             "OR " +
             "( " +
@@ -294,7 +295,7 @@ public interface QuestionDao {
             ") " +
             "OR " +
             "( " +
-            ":questionSearchOptions.contentSearch != '' AND tags @> :questionSearchOptions.tags AND ( " +
+            ":questionSearchOptions.contentSearch != '' AND tag_labels @> :questionSearchOptions.tags AND ( " +
             "title ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
             "question ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
             "answer  ILIKE ('%' || :questionSearchOptions.contentSearch || '%') " +

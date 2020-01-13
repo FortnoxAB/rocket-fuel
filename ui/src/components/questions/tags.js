@@ -1,5 +1,5 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
+import {withRouter} from 'react-router-dom';
 
 class Tags extends React.Component {
     constructor(props) {
@@ -7,13 +7,13 @@ class Tags extends React.Component {
     }
 
     clickTag(tag) {
-        this.props.history.push(`/search/[${tag}]`);
+        this.props.history.push(`/search/[${tag.label}]`);
     }
 
     renderTags() {
         return this.props.tags.map((tag, i) => {
             return (
-                <div key={i} onClick={this.clickTag.bind(this, tag)} className="tag">#{tag}</div>
+                <div key={i} onClick={this.clickTag.bind(this, tag)} className="tag">#{tag.label}</div>
             );
         })
     }

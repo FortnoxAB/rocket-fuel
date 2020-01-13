@@ -2,6 +2,7 @@ package impl;
 
 import api.Question;
 import api.QuestionResource;
+import api.Tag;
 import api.auth.Auth;
 import com.github.seratch.jslack.api.model.block.LayoutBlock;
 import com.github.seratch.jslack.api.model.block.SectionBlock;
@@ -137,7 +138,7 @@ public class QuestionResourceImpl implements QuestionResource {
                     List<String> lowerCasedTags = question
                         .getTags()
                         .stream()
-                        .map(String::toLowerCase)
+                        .map(tag -> tag.getLabel().toLowerCase())
                         .collect(Collectors.toList());
                     List<Observable<Integer>> daoCalls = lowerCasedTags
                         .stream()
@@ -209,11 +210,16 @@ public class QuestionResourceImpl implements QuestionResource {
                     .concatMap(updatedQuestion -> {
                         List<Observable<Integer>> daoCalls = new ArrayList<>();
                         if(question.getTags() != null) { // Null means we shouldn't touch existing tags
-                            for (String tag : question.getTags()) {
-                                daoCalls.add(tagDao.mergeTag(tag));
+                            List<String> labels = question
+                                .getTags()
+                                .stream()
+                                .map(tag -> tag.getLabel().toLowerCase())
+                                .collect(Collectors.toList());
+                            for (Tag tag : question.getTags()) {
+                                daoCalls.add(tagDao.mergeTag(tag.getLabel()));
                             }
                             daoCalls.add(tagDao.removeTagAssociationFromQuestion(updatedQuestion.getId()));
-                            daoCalls.add(tagDao.associateTagsWithQuestion(updatedQuestion.getId(), question.getTags()));
+                            daoCalls.add(tagDao.associateTagsWithQuestion(updatedQuestion.getId(), labels));
                             daoCalls.add(tagDao.deleteUnusedTags());
                         }
 

@@ -7,15 +7,17 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static api.Tag.LABEL_PATTERN;
+
 public class QuestionSearchOptions {
-    private static final Pattern tagPattern = Pattern.compile("^\\[(\\w+)]$");
+    private static final Pattern tagPattern = Pattern.compile("^\\[(" + LABEL_PATTERN + ")]$");
     private       String         contentSearch;
     private       List<String>   tags       = new ArrayList<>();
 
     public static QuestionSearchOptions from(String searchQuery) {
         QuestionSearchOptions questionSearchOptions = new QuestionSearchOptions();
 
-        StringBuffer searchStringBuffer = new StringBuffer();
+        StringBuilder searchStringBuilder = new StringBuilder();
         Splitter
             .on(" ")
             .splitToList(searchQuery)
@@ -25,9 +27,9 @@ public class QuestionSearchOptions {
                     questionSearchOptions.getTags().add(matcher.group(1));
                     return;
                 }
-                searchStringBuffer.append(item).append(" ");
+                searchStringBuilder.append(item).append(" ");
             });
-        questionSearchOptions.setContentSearch(searchStringBuffer.toString().trim());
+        questionSearchOptions.setContentSearch(searchStringBuilder.toString().trim());
         return questionSearchOptions;
     }
 

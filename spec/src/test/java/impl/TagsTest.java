@@ -6,6 +6,9 @@ import api.Tag;
 import api.TagResource;
 import api.User;
 import api.UserResource;
+import dao.QuestionDao;
+import dao.QuestionVoteDao;
+import dao.TagDao;
 import org.apache.log4j.Appender;
 import org.junit.After;
 import org.junit.Before;
@@ -17,13 +20,18 @@ import rx.Observable;
 import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
+import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
+import se.fortnox.reactivewizard.validation.ValidationFailedException;
+import slack.SlackConfig;
+import slack.SlackResource;
 
 import java.util.Collections;
 import java.util.List;
 
 import static impl.TestSetup.insertUser;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class TagsTest {
     private static QuestionResource questionResource;
@@ -88,11 +96,13 @@ public class TagsTest {
     @Test
     public void shouldBeAbleToCreateQuestionWithTags() {
         // when a question is created with tags
-        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag1", "tag2"));
+        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag-1", "tag_2", "tag3"));
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then these should be returned
-        assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+        assertThat(storedQuestion.getTags())
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag-1", "tag_2", "tag3");
     }
 
     @Test
@@ -108,10 +118,11 @@ public class TagsTest {
             .single();
 
         // when a search is made for a partial tag from one of the questions
-        List<String> foundTags = tagResource.queryTags("alp").toBlocking().single();
+        List<Tag> foundTags = tagResource.queryTags("alp").toBlocking().single();
 
         // then
         assertThat(foundTags)
+            .extracting(Tag::getLabel)
             .hasSize(2)
             .containsExactly("alpha", "alpaca");
     }
@@ -127,7 +138,9 @@ public class TagsTest {
         Question updatedQuestion = questionResource.updateQuestion(mockAuth, storedQuestion.getId(), editedQuestion).single().toBlocking().single();
 
         // then the question should have the updated tags
-        assertThat(updatedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag3");
+        assertThat(updatedQuestion.getTags())
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag1", "tag3");
 
         // and there should be no unused tags
         Integer aggregatedTagMinimumUsage = testDao.aggregatedTagMinimumUsage().toBlocking().single();
@@ -155,7 +168,9 @@ public class TagsTest {
         Question storedQuestion = questionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then the question should have a correct set of tags
-        assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+        assertThat(storedQuestion.getTags())
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag1", "tag2");
     }
 
     @Test
@@ -204,18 +219,45 @@ public class TagsTest {
 
         // then tags should remain
         storedQuestion = questionResource.getQuestion(mockAuth, storedQuestion.getId()).toBlocking().single();
-        assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+        assertThat(storedQuestion.getTags())
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag1", "tag2");
     }
 
     @Test
     public void shouldStoreLowercaseTags() {
+        // Given we are not validating request data
+        QuestionDao      questionDao                   = testSetup.getInjector().getInstance(QuestionDao.class);
+        QuestionVoteDao  questionVoteDao               = testSetup.getInjector().getInstance(QuestionVoteDao.class);
+        SlackResource    slackResource                 = testSetup.getInjector().getInstance(SlackResource.class);
+        SlackConfig      slackConfig                   = testSetup.getInjector().getInstance(SlackConfig.class);
+        TagDao           tagDao                        = testSetup.getInjector().getInstance(TagDao.class);
+        DaoTransactions  daoTransactions               = testSetup.getInjector().getInstance(DaoTransactions.class);
+        QuestionResource nonValidatingQuestionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig, tagDao, daoTransactions);
+
         // when a request is made to create a question with mixed case tags
-        Question question = TestSetup.getQuestion("my question title", "my question", List.of("Tag1", "tAG2"));
-        Question storedQuestion   = questionResource.createQuestion(mockAuth, question).toBlocking().single();
+        Question question       = TestSetup.getQuestion("my question title", "my question", List.of("Tag1", "tAG2"));
+        Question storedQuestion = nonValidatingQuestionResource.createQuestion(mockAuth, question).toBlocking().single();
 
         // then tags should have been stored lowercased
         storedQuestion = questionResource.getQuestion(mockAuth, storedQuestion.getId()).toBlocking().single();
-        assertThat(storedQuestion.getTags()).containsExactlyInAnyOrder("tag1", "tag2");
+        assertThat(storedQuestion.getTags())
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag1", "tag2");
+    }
+
+    @Test
+    public void shouldValidateTags() {
+        Question question = TestSetup.getQuestion("my question title", "my question", List.of("tag 1", "tag-@", " tag3", "tag4 ", " tag5 "));
+        assertThatExceptionOfType(ValidationFailedException.class)
+            .isThrownBy(() -> questionResource.createQuestion(mockAuth, question).toBlocking().single())
+            .satisfies(e -> {
+                assertThat(e.getFields())
+                    .allSatisfy(fieldError -> {
+                        assertThat(fieldError.getError()).isEqualTo("validation.pattern");
+                        assertThat(fieldError.getField()).matches("tags\\[\\d+\\]\\.label");
+                    });
+            });
     }
 
     private interface TestDao {

@@ -2,6 +2,7 @@ package impl;
 
 import api.Answer;
 import api.Question;
+import api.Tag;
 import api.User;
 import api.UserResource;
 import auth.JwkResource;
@@ -26,10 +27,9 @@ import se.fortnox.reactivewizard.server.ServerConfig;
 import slack.SlackRTMClient;
 import slack.SlackResource;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -142,19 +142,29 @@ public class TestSetup {
     }
 
     @NotNull
-    public static Question getQuestion(String title, String question, List<String> tags) {
-        return getQuestion(title, question, 300, tags);
+    public static Question getQuestion(String title, String question, List<String> labels) {
+        return getQuestion(title, question, 300, labels);
     }
 
     @NotNull
-    public static Question getQuestion(String title, String question, int bounty, List<String> tags) {
+    public static Question getQuestion(String title, String question, int bounty, List<String> labels) {
         Question questionObject = new Question();
         questionObject.setAnswerAccepted(false);
         questionObject.setBounty(bounty);
         questionObject.setTitle(title);
         questionObject.setVotes(3);
         questionObject.setQuestion(question);
-        questionObject.setTags(tags);
+        if (labels != null) {
+            List<Tag> tags = labels
+                .stream()
+                .map(label -> {
+                    Tag tag = new Tag();
+                    tag.setLabel(label);
+                    return tag;
+                })
+                .collect(Collectors.toList());
+            questionObject.setTags(tags);
+        }
         return questionObject;
     }
 

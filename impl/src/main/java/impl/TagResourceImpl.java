@@ -16,16 +16,14 @@ public class TagResourceImpl implements TagResource {
         this.tagDao = tagDao;
     }
 
-    public Observable<List<String>> queryTags(String searchQuery) {
+    public Observable<List<Tag>> queryTags(String searchQuery) {
         return tagDao.getTagsBySearchQuery(searchQuery)
-            .map(Tag::getLabel)
             .toList();
     }
 
     @Override
-    public Observable<List<String>> getPopularTags() {
+    public Observable<List<Tag>> getPopularTags() {
         return tagDao.getPopularTags()
-            .map(Tag::getLabel)
             .toList();
     }
 }

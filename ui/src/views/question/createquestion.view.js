@@ -1,12 +1,12 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
-import { t } from 'ttag';
+import {withRouter} from 'react-router-dom';
+import {t} from 'ttag';
 import InputField from '../../components/forms/inputfield';
 import Button from '../../components/forms/button';
 import Loader from '../../components/utils/loader';
 import * as Question from '../../models/question';
 import * as Tag from '../../models/tag';
-import { UserContext } from '../../usercontext';
+import {UserContext} from '../../usercontext';
 import Post from '../../components/questions/post';
 
 class CreateQuestionView extends React.Component {
@@ -51,7 +51,7 @@ class CreateQuestionView extends React.Component {
                 title: question.title,
                 question: question.question,
                 bounty: question.bounty,
-                activeTags: question.tags,
+                activeTags: question.tags.map(tag => tag.label),
                 editPost: questionId,
                 loaded: true
             });
@@ -82,7 +82,7 @@ class CreateQuestionView extends React.Component {
         this.searchTimer = setTimeout(() => {
             Tag.searchTag(value).then((result) => {
                 this.setState({
-                    tagSearchResult: result
+                    tagSearchResult: result.map(tag => tag.label)
                 });
             })
         }, 700);

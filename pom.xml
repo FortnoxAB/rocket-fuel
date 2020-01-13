@@ -72,6 +72,11 @@
             </dependency>
             <dependency>
                 <groupId>se.fortnox.reactivewizard</groupId>
+                <artifactId>reactivewizard-validation</artifactId>
+                <version>${reactivewizard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>se.fortnox.reactivewizard</groupId>
                 <artifactId>reactivewizard-dao</artifactId>
                 <version>${reactivewizard.version}</version>
             </dependency>
