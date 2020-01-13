@@ -157,11 +157,7 @@ public class TestSetup {
         if (labels != null) {
             List<Tag> tags = labels
                 .stream()
-                .map(label -> {
-                    Tag tag = new Tag();
-                    tag.setLabel(label);
-                    return tag;
-                })
+                .map(Tag::new)
                 .collect(Collectors.toList());
             questionObject.setTags(tags);
         }
