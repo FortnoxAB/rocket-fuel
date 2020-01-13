@@ -243,7 +243,7 @@
                                  referencedTableName="tag"/>
     </changeSet>
 
-    <changeSet id="clean-up-dangling-tags-by-trigger" author="magnus.persson">
+    <changeSet id="tag-usage-view" author="magnus.persson">
         <createView viewName="tag_usage">
             <![CDATA[
                 SELECT
