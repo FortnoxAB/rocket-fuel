@@ -55,7 +55,8 @@ public class QuestionResourceImpl implements QuestionResource {
     public static final  String FAILED_TO_GET_POPULAR_QUESTIONS            = "failed.to.get.popular.questions";
     public static final  String FAILED_TO_GET_POPULAR_UNANSWERED_QUESTIONS = "failed.to.get.popular.unanswered.questions";
     public static final  String FAILED_TO_GET_RECENTLY_ACCEPTED_QUESTIONS  = "failed.to.get.recently.accepted.questions";
-    public static final String FAILED_TO_ADD_QUESTION_TO_DATABASE = "failed.to.add.question.to.database";
+    public static final  String FAILED_TO_ADD_QUESTION_TO_DATABASE         = "failed.to.add.question.to.database";
+    public static final  String FAILED_TO_UPDATE_TAGS_ON_QUESTION          = "failed.to.update.tags.on.question";
 
     private final QuestionDao       questionDao;
     private final QuestionVoteDao   questionVoteDao;
@@ -127,33 +128,45 @@ public class QuestionResourceImpl implements QuestionResource {
                 question.setId(longGeneratedKey.getKey());
                 return question;
             })
+            .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_ADD_QUESTION_TO_DATABASE, throwable)))
             .concatMap(savedQuestion -> {
-                Observable<Void> operations = slackResource.postMessageToSlack(slackConfig.getFeedChannel(), notificationMessage(question))
+                return slackResource.postMessageToSlack(slackConfig.getFeedChannel(), notificationMessage(question))
                     .onErrorResumeNext(e -> {
                         LOG.error("failed to notify by slack that question has been added", e);
                         return empty();
-                    });
-
-                if(question.getTags() != null) {
-                    List<String> lowerCasedTags = question
-                        .getTags()
-                        .stream()
-                        .map(tag -> tag.getLabel().toLowerCase())
-                        .collect(Collectors.toList());
-                    List<Observable<Integer>> daoCalls = lowerCasedTags
-                        .stream()
-                        .map(tagDao::mergeTag)
-                        .collect(Collectors.toList());
-                    daoCalls.add(tagDao.associateTagsWithQuestion(savedQuestion.getId(), lowerCasedTags));
-                    daoCalls.add(tagDao.deleteUnusedTags());
-                    operations = operations.concatWith(daoTransactions.executeTransaction(daoCalls));
-                }
-
-                return operations
-                    .ignoreElements()
+                    })
                     .cast(Question.class)
-                    .concatWith(questionDao.getQuestion(savedQuestion.getId()));
-            }).onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_ADD_QUESTION_TO_DATABASE, throwable)));
+                    .switchIfEmpty(just(savedQuestion));
+            })
+            .concatMap(savedQuestion -> {
+                return associateTagsWithCreatedQuestion(savedQuestion, question.getTags())
+                    .cast(Question.class)
+                    .switchIfEmpty(
+                        questionDao.getQuestion(savedQuestion.getId())
+                            .onErrorResumeNext(throwable ->
+                                error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable)))
+                    );
+
+            });
+    }
+
+    private Observable<Void> associateTagsWithCreatedQuestion(Question question, List<Tag> tags) {
+        if (tags == null) {
+            return Observable.empty();
+        }
+        List<String> lowerCasedTags = tags
+            .stream()
+            .map(tag -> tag.getLabel().toLowerCase())
+            .collect(Collectors.toList());
+        List<Observable<Integer>> daoCalls = lowerCasedTags
+            .stream()
+            .map(tagDao::mergeTag)
+            .collect(Collectors.toList());
+        daoCalls.add(tagDao.associateTagsWithQuestion(question.getId(), lowerCasedTags));
+        daoCalls.add(tagDao.deleteUnusedTags());
+        return daoTransactions
+            .executeTransaction(daoCalls)
+            .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_UPDATE_TAGS_ON_QUESTION, throwable)));
     }
 
     private List<LayoutBlock> notificationMessage(Question question) {
