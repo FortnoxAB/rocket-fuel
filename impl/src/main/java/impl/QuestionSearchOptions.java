@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import static api.Tag.LABEL_PATTERN;
 
 public class QuestionSearchOptions {
-    private static final Pattern tagPattern = Pattern.compile("^\\[(" + LABEL_PATTERN + ")]$");
+    private static final Pattern TAG_PATTERN = Pattern.compile("^#(" + LABEL_PATTERN + ")$");
     private       String         contentSearch;
     private       List<String>   tags       = new ArrayList<>();
 
@@ -22,7 +22,7 @@ public class QuestionSearchOptions {
             .on(" ")
             .splitToList(searchQuery)
             .forEach(item -> {
-                Matcher matcher = tagPattern.matcher(item);
+                Matcher matcher = TAG_PATTERN.matcher(item);
                 if(matcher.matches()) {
                     questionSearchOptions.getTags().add(matcher.group(1));
                     return;

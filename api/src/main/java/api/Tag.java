@@ -3,16 +3,17 @@ package api;
 import javax.validation.constraints.Pattern;
 
 public class Tag {
-    public static final String LABEL_PATTERN = "[a-z0-9_\\-]+";
+    public static final  String LABEL_PATTERN          = "[a-z0-9_\\-]+";
+    private static final String ANCHORED_LABEL_PATTERN = "^" + LABEL_PATTERN + "$";
 
-    @Pattern(regexp = "^" + LABEL_PATTERN + "$")
+    @Pattern(regexp = ANCHORED_LABEL_PATTERN)
     private String label;
-    private Long id;
+    private Long   id;
 
     public Tag() {
     }
 
-    public Tag(@Pattern(regexp = "^[a-z0-9_\\-]+$") String label) {
+    public Tag(@Pattern(regexp = ANCHORED_LABEL_PATTERN) String label) {
         this.label = label;
     }
 

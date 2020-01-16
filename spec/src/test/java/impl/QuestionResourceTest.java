@@ -214,7 +214,7 @@ public class QuestionResourceTest {
         createQuestionWithTags(mockAuth, "title", "body", List.of("tag-1", "tag2"));
 
         // when searching by a matching tag
-        List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag-1]", null).toBlocking().single();
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("#tag-1", null).toBlocking().single();
 
         // then the matching question should be returned
         assertThat(questions.size()).isEqualTo(1);
@@ -231,7 +231,7 @@ public class QuestionResourceTest {
         createQuestionWithTags(mockAuth, "title2", "body2", List.of("tag1", "tag3"));
 
         // when searching by a matching tag
-        List<Question> questions = questionResource.getQuestionsBySearchQuery("[tag1] [tag2] title1", null).toBlocking().single();
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("#tag1 #tag2 title1", null).toBlocking().single();
 
         // then the matching question should be returned
         assertThat(questions.size()).isEqualTo(1);
