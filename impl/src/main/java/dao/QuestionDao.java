@@ -249,61 +249,61 @@ public interface QuestionDao {
         value =
         "WITH cte AS ( " +
             "SELECT DISTINCT " +
-            "question.id, " +
-            "answer_accepted, " +
-            "question.question, " +
-            "question.title, " +
-            "question.bounty, " +
-            "question.created_at, " +
-            "question.user_id, " +
-            "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
-            "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags, " +
-            "ARRAY(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id ORDER BY tag.label) AS tag_labels, " +
-            "answer.answer " +
+                "question.id, " +
+                "answer_accepted, " +
+                "question.question, " +
+                "question.title, " +
+                "question.bounty, " +
+                "question.created_at, " +
+                "question.user_id, " +
+                "\"user\".name as created_by, " +
+                "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+                "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags, " +
+                "ARRAY(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id ORDER BY tag.label) AS tag_labels, " +
+                "answer.answer " +
             "FROM " +
-            "question " +
+                "question " +
             "INNER JOIN " +
-            "\"user\" on \"user\".id = question.user_id " +
+                "\"user\" on \"user\".id = question.user_id " +
             "LEFT JOIN " +
-            "answer on answer.question_id = question.id " +
+                "answer on answer.question_id = question.id " +
             ") " +
             "SELECT " +
-            "cte.id, " +
-            "cte.answer_accepted, " +
-            "cte.title, " +
-            "cte.bounty, " +
-            "cte.created_at, " +
-            "cte.question, " +
-            "cte.user_id, " +
-            "cte.created_by, " +
-            "cte.votes, " +
-            "cte.tags " +
+                "cte.id, " +
+                "cte.answer_accepted, " +
+                "cte.title, " +
+                "cte.bounty, " +
+                "cte.created_at, " +
+                "cte.question, " +
+                "cte.user_id, " +
+                "cte.created_by, " +
+                "cte.votes, " +
+                "cte.tags " +
             "FROM " +
-            "cte " +
+                "cte " +
             "WHERE " +
-            "( " +
-            ":questionSearchOptions.contentSearch = '' AND tag_labels @> :questionSearchOptions.tags " +
-            ") " +
-            "OR " +
-            "( " +
-            ":questionSearchOptions.contentSearch != '' AND '{}' = :questionSearchOptions.tags AND ( " +
-            "title ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
-            "question ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
-            "answer  ILIKE ('%' || :questionSearchOptions.contentSearch || '%') " +
-            ") " +
-            ") " +
-            "OR " +
-            "( " +
-            ":questionSearchOptions.contentSearch != '' AND tag_labels @> :questionSearchOptions.tags AND ( " +
-            "title ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
-            "question ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
-            "answer  ILIKE ('%' || :questionSearchOptions.contentSearch || '%') " +
-            ") " +
-            ") " +
+                "( " +
+                    ":questionSearchOptions.contentSearch = '' AND tag_labels @> :questionSearchOptions.tags " +
+                ") " +
+                "OR " +
+                "( " +
+                    ":questionSearchOptions.contentSearch != '' AND '{}' = :questionSearchOptions.tags AND ( " +
+                        "title ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
+                        "question ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
+                        "answer  ILIKE ('%' || :questionSearchOptions.contentSearch || '%') " +
+                    ") " +
+                ") " +
+                "OR " +
+                "( " +
+                    ":questionSearchOptions.contentSearch != '' AND tag_labels @> :questionSearchOptions.tags AND ( " +
+                        "title ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
+                        "question ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
+                        "answer  ILIKE ('%' || :questionSearchOptions.contentSearch || '%') " +
+                    ") " +
+                ") " +
             "ORDER BY " +
-            "votes desc, " +
-            "created_at desc",
+                "votes desc, " +
+                "created_at desc",
         defaultLimit = 50,
         maxLimit = 50)
     Observable<Question> getQuestions(QuestionSearchOptions questionSearchOptions, CollectionOptions options);
