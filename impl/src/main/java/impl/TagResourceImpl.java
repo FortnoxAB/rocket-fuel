@@ -19,7 +19,7 @@ public class TagResourceImpl implements TagResource {
     }
 
     public Observable<List<Tag>> queryTags(String searchQuery) {
-        return tagDao.getTagsBySearchQuery(searchQuery)
+        return tagDao.getTagsContaining(searchQuery)
             .toList();
     }
 
