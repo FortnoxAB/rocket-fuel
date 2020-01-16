@@ -202,34 +202,33 @@ public class QuestionResourceImpl implements QuestionResource {
                 if (auth.getUserId() != storedQuestion.getUserId()) {
                     return error(new WebException(FORBIDDEN, NOT_OWNER_OF_QUESTION));
                 }
-                return questionDao.updateQuestion(auth.getUserId(), questionId, question)
-                    .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_UPDATE_QUESTION_TO_DATABASE, throwable)))
-                    .concatMap(ignore -> questionDao.getQuestion(questionId)
-                        .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable))))
-                    .switchIfEmpty(exception(() -> new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE)))
-                    .concatMap(updatedQuestion -> {
-                        List<Observable<Integer>> daoCalls = new ArrayList<>();
-                        if(question.getTags() != null) { // Null means we shouldn't touch existing tags
-                            List<String> labels = question
-                                .getTags()
-                                .stream()
-                                .map(tag -> tag.getLabel().toLowerCase())
-                                .collect(Collectors.toList());
-                            for (Tag tag : question.getTags()) {
-                                daoCalls.add(tagDao.mergeTag(tag.getLabel()));
-                            }
-                            daoCalls.add(tagDao.removeTagAssociationFromQuestion(updatedQuestion.getId()));
-                            daoCalls.add(tagDao.associateTagsWithQuestion(updatedQuestion.getId(), labels));
-                            daoCalls.add(tagDao.deleteUnusedTags());
-                        }
+                List<Observable<Integer>> daoCalls = new ArrayList<>();
+                daoCalls.add(questionDao.updateQuestion(auth.getUserId(), questionId, question));
+                if(question.getTags() != null) { // Null means we shouldn't touch existing tags
+                    List<String> labels = question
+                        .getTags()
+                        .stream()
+                        .map(tag -> tag.getLabel().toLowerCase())
+                        .collect(Collectors.toList());
+                    for (Tag tag : question.getTags()) {
+                        daoCalls.add(tagDao.mergeTag(tag.getLabel()));
+                    }
+                    daoCalls.add(tagDao.removeTagAssociationFromQuestion(storedQuestion.getId()));
+                    daoCalls.add(tagDao.associateTagsWithQuestion(storedQuestion.getId(), labels));
+                    daoCalls.add(tagDao.deleteUnusedTags());
+                }
 
-                        return daoTransactions
-                            .executeTransaction(daoCalls)
-                            .ignoreElements()
-                            .cast(Question.class)
-                            .concatWith(questionDao.getQuestion(updatedQuestion.getId()))
-                            .last();
-                    });
+                return daoTransactions
+                    .executeTransaction(daoCalls)
+                    .ignoreElements()
+                    .cast(Question.class)
+                    .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_UPDATE_QUESTION_TO_DATABASE, throwable)))
+                    .concatWith(
+                        questionDao.getQuestion(storedQuestion.getId())
+                            .onErrorResumeNext(throwable -> error(new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE, throwable)))
+                            .switchIfEmpty(exception(() -> new WebException(INTERNAL_SERVER_ERROR, FAILED_TO_GET_QUESTION_FROM_DATABASE)))
+                    )
+                    .last();
             });
     }
 

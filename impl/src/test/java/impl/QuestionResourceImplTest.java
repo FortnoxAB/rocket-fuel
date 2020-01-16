@@ -10,6 +10,9 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import rx.Observable;
 import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
@@ -35,6 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static rx.Observable.empty;
@@ -97,22 +101,40 @@ public class QuestionResourceImplTest {
 
     @Test
     public void shouldReturnInternalServerErrorWhenUpdateQuestionFails() {
-        when(questionDao.getQuestion(123)).thenReturn(just(question));
-        when(questionDao.updateQuestion(123, 123, question)).thenReturn(error(new SQLException("poff")));
+        question = createQuestion(123, 2);
 
-        assertException(() -> questionResource.updateQuestion(auth, 123, question).toBlocking().singleOrDefault(null),
+        when(questionDao.getQuestion(2)).thenReturn(just(question));
+        when(daoTransactions.executeTransaction(anyList())).thenReturn(error(new SQLException("poff")));
+
+        assertException(() -> questionResource.updateQuestion(auth, question.getId(), question).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_UPDATE_QUESTION_TO_DATABASE);
     }
 
     @Test
     public void shouldThrowInternalServerErrorIfQuestionCannotBeFetchedOnUpdate() {
-        when(questionDao.getQuestion(123))
-            .thenReturn(just(question))
-            .thenReturn(error(new SQLException("poff")));
-        when(questionDao.updateQuestion(123, 123, question)).thenReturn(just(1));
+        question = createQuestion(123, 2);
+        doAnswer(new Answer<Observable<Question>>() {
+            int invocationCounter = 0;
 
-        assertException(() -> questionResource.updateQuestion(auth, 123, question).toBlocking().singleOrDefault(null),
+            @Override
+            public Observable<Question> answer(InvocationOnMock invocation) {
+                if (invocationCounter == 0) {
+                    invocationCounter++;
+                    return just(question);
+
+                } else if (invocationCounter == 1) {
+                    invocationCounter++;
+                    return empty();
+                }
+                throw new RuntimeException("Did not expect more than " + invocationCounter + " invocations.");
+            }
+        })
+            .when(questionDao).getQuestion(question.getId());
+
+        when(daoTransactions.executeTransaction(anyList())).thenReturn(Observable.empty());
+
+        assertException(() -> questionResource.updateQuestion(auth, question.getId(), question).toBlocking().singleOrDefault(null),
             INTERNAL_SERVER_ERROR,
             FAILED_TO_GET_QUESTION_FROM_DATABASE);
     }
@@ -194,6 +216,12 @@ public class QuestionResourceImplTest {
     private Question createQuestion(long userId) {
         Question question = new Question();
         question.setUserId(userId);
+        return question;
+    }
+
+    private Question createQuestion(long userId, long id) {
+        Question question = createQuestion(userId);
+        question.setId(id);
         return question;
     }
 
