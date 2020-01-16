@@ -6,8 +6,10 @@ import com.google.inject.Inject;
 import dao.TagDao;
 import rx.Observable;
 
+import javax.inject.Singleton;
 import java.util.List;
 
+@Singleton
 public class TagResourceImpl implements TagResource {
     private final TagDao tagDao;
 
