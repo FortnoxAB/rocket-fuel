@@ -97,7 +97,7 @@ class SearchView extends React.Component {
         }
 
         const searchResult = this.state.searchResult.map((question, index) => {
-            return <QuestionRow small key={index} question={question} />;
+            return <QuestionRow key={index} question={question} />;
         });
         return (
             <div className="padded-bottom-large">

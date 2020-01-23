@@ -21,6 +21,7 @@
         <assertj.version>3.12.2</assertj.version>
         <sonar.coverage.jacoco.xmlReportPaths>report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <autoVersionSubmodules>true</autoVersionSubmodules>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <url>https://github.com/FortnoxAB/rocket-fuel</url>
@@ -67,6 +68,11 @@
             <dependency>
                 <groupId>se.fortnox.reactivewizard</groupId>
                 <artifactId>reactivewizard-server</artifactId>
+                <version>${reactivewizard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>se.fortnox.reactivewizard</groupId>
+                <artifactId>reactivewizard-validation</artifactId>
                 <version>${reactivewizard.version}</version>
             </dependency>
             <dependency>
@@ -176,8 +182,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>11</source>
+                    <target>11</target>
                     <compilerArgument>-parameters</compilerArgument>
                 </configuration>
             </plugin>
@@ -228,6 +234,11 @@
                     <configuration>
                         <skip>true</skip>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.31.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>

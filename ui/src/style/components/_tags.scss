@@ -1,0 +1,39 @@
+.tags {
+    display: flex;
+    align-items: center;
+}
+
+.tag {
+    cursor: pointer;
+    background-color: rgba($secondary-color, .2);
+    padding: 4px;
+    margin-right: 2px;
+    border-radius: $roundness;
+    color: contrast(darken($background-color, 20%));
+    align-items: center;
+    justify-content: center;
+    font-size: .7em;
+
+    &.alternative {
+        background-color: $gray;
+        opacity: .6;
+        font-style: italic;
+    }
+
+    .remove {
+        margin-left: 2px;
+        padding: 3px;
+        cursor: pointer;
+    }
+}
+
+
+.popular-tags {
+    .tags {
+        flex-flow: wrap;
+
+        .tag {
+            margin-bottom: 2px;
+        }
+    }
+}

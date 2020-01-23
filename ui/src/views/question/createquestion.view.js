@@ -1,11 +1,12 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
-import { t } from 'ttag';
+import {withRouter} from 'react-router-dom';
+import {t} from 'ttag';
 import InputField from '../../components/forms/inputfield';
 import Button from '../../components/forms/button';
 import Loader from '../../components/utils/loader';
 import * as Question from '../../models/question';
-import { UserContext } from '../../usercontext';
+import * as Tag from '../../models/tag';
+import {UserContext} from '../../usercontext';
 import Post from '../../components/questions/post';
 
 class CreateQuestionView extends React.Component {
@@ -15,6 +16,9 @@ class CreateQuestionView extends React.Component {
             title: '',
             question: '',
             bounty: '0',
+            tag: '',
+            activeTags: [],
+            tagSearchResult: null,
             postingQuestion: false,
             error: {
                 title: null,
@@ -47,6 +51,7 @@ class CreateQuestionView extends React.Component {
                 title: question.title,
                 question: question.question,
                 bounty: question.bounty,
+                activeTags: question.tags.map(tag => tag.label),
                 editPost: questionId,
                 loaded: true
             });
@@ -58,13 +63,74 @@ class CreateQuestionView extends React.Component {
         });
     }
 
+    handleTagChange(node) {
+        clearTimeout(this.searchTimer);
+        const target = node.target;
+        const value  = target.value.replace(/\s/g, '').toLowerCase();
+
+        this.setState({
+            tag: value
+        });
+
+        if (value.length <= 0) {
+            this.setState({
+                tagSearchResult: null
+            });
+            return;
+        }
+
+        this.searchTimer = setTimeout(() => {
+            Tag.searchTag(value).then((result) => {
+                this.setState({
+                    tagSearchResult: result.map(tag => tag.label)
+                });
+            })
+        }, 700);
+    }
+
     handleChange(node) {
         const target = node.target;
         const value  = target.value;
         const name   = target.name;
+
         this.setState({
             [name]: value
         });
+    }
+
+    addTag(tag = null) {
+        this.setError('tag', '');
+        if (!tag) {
+            tag = this.state.tag;
+        }
+
+        if (tag.length <= 0) {
+            return;
+        }
+
+        if (this.hasMaxAmountOfTags()){
+            this.setError('tag', t`You have the maximum amount of tags.`);
+            return;
+        }
+
+        if (this.state.activeTags.indexOf(tag) > -1) {
+            this.setError('tag', t`${tag} is already in your tags.`);
+            return;
+        }
+
+        this.setState({
+            activeTags: [...this.state.activeTags, tag],
+            tag: '',
+            tagSearchResult: null
+        });
+    }
+
+    onKeyDownTags(e) {
+        const isAddKeyPressed = e.key === 'Enter' || e.key === ' ';
+
+        if (isAddKeyPressed) {
+            this.addTag();
+        }
     }
 
     handleChangeBounty(node) {
@@ -102,7 +168,8 @@ class CreateQuestionView extends React.Component {
         const question = {
             title: this.state.title,
             question: this.state.question,
-            bounty: this.state.bounty
+            bounty: this.state.bounty,
+            tags: this.state.activeTags
         };
 
         if (!this.state.editPost) {
@@ -134,6 +201,7 @@ class CreateQuestionView extends React.Component {
             <div className="padded-vertical">
                 <div className="headline">{t`Preview`}</div>
                 <Post
+                    tags={this.state.activeTags}
                     body={this.state.question}
                     title={this.state.title}
                     userName={this.context.state.user.name}
@@ -177,6 +245,10 @@ class CreateQuestionView extends React.Component {
         this.setError(fieldName, newError);
     }
 
+    hasMaxAmountOfTags() {
+        return this.state.activeTags.length >= 5;
+    }
+
     setError(fieldName, errorMessage) {
         const newErrors      = this.state.error;
         newErrors[fieldName] = errorMessage;
@@ -200,6 +272,55 @@ class CreateQuestionView extends React.Component {
         }
 
         return t`Post question`;
+    }
+
+    removeTagByIndex(index) {
+        if (this.state.activeTags.length <= 0) {
+            return;
+        }
+        const newTagsArray = this.state.activeTags;
+        newTagsArray.splice(index, 1);
+        this.setState({
+            activeTags: newTagsArray
+        });
+    }
+
+    renderTags() {
+        if (this.state.activeTags.length <= 0) {
+            return null;
+        }
+
+        return (
+            <div className="flex padded-vertical">
+                {this.state.activeTags.map((tag, i) => {
+                    return (
+                        <div className="tag flex" key={i}>
+                            #{tag}
+                            <div className="remove" onClick={this.removeTagByIndex.bind(this, i)}>
+                                <i className="fa fa-times" />
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    renderTagsDropdown() {
+        const searchResult = this.state.tagSearchResult;
+        if (!searchResult) {
+            return null;
+        }
+
+        return (
+            <ul className="field-auto-complete">
+                {
+                    searchResult.map((tag, i) => {
+                        return <li onClick={this.addTag.bind(this, tag)} key={i}>{tag}</li>
+                    })
+                }
+            </ul>
+        );
     }
 
     render() {
@@ -244,6 +365,22 @@ class CreateQuestionView extends React.Component {
                         errorMessage={this.state.error.bounty}
                         validate={this.validateBounty.bind(this)}
 					/>*/}
+                    <div className="markdown-text">
+                        {t`Enter a tag and press space/enter to add it, you may have up to five tags.`}
+                    </div>
+                    <div className="relative">
+                        <InputField
+                            onChange={this.handleTagChange.bind(this)}
+                            onKeyPress={this.onKeyDownTags.bind(this)}
+                            name="tag"
+                            label={t`Tags`}
+                            value={this.state.tag}
+                            errorMessage={this.state.error.tag}
+                            autocomplete="off"
+                        />
+                        {this.renderTagsDropdown()}
+                    </div>
+                    {this.renderTags()}
                     <Button
                         color="secondary"
                         loading={this.state.postingQuestion}

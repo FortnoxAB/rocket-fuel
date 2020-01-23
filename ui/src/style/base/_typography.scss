@@ -66,6 +66,10 @@ h3 {
         text-align: center;
     }
 
+    &-bold {
+        @include main-font('bold');
+    }
+
     &-faded {
         color: rgba(contrast($background-color, $text-color-light, $text-color-dark), .6);
     }
@@ -90,5 +94,11 @@ h3 {
 .text-size {
     &-large {
         font-size: 1.5em;
+    }
+}
+
+a {
+    &.link-secondary {
+        color: $secondary-color;
     }
 }

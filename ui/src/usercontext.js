@@ -6,7 +6,7 @@ export class UserProvider extends React.Component {
     state = {
         user: null,
         token: null,
-        theme: null
+        theme: localStorage.getItem('theme')
     };
 
     render() {

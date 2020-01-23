@@ -4,6 +4,7 @@ import api.Answer;
 import api.AnswerResource;
 import api.Question;
 import api.QuestionResource;
+import api.Tag;
 import api.User;
 import api.UserResource;
 import api.auth.Auth;
@@ -12,6 +13,7 @@ import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import dao.AnswerDao;
 import dao.QuestionDao;
 import dao.QuestionVoteDao;
+import dao.TagDao;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.log4j.Appender;
 import org.assertj.core.internal.bytebuddy.utility.RandomString;
@@ -28,8 +30,10 @@ import rx.observers.AssertableSubscriber;
 import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Update;
+import se.fortnox.reactivewizard.db.transactions.DaoTransactions;
 import se.fortnox.reactivewizard.jaxrs.WebException;
 import se.fortnox.reactivewizard.test.LoggingMockUtil;
+import se.fortnox.reactivewizard.validation.ValidationFailedException;
 import slack.SlackConfig;
 import slack.SlackResource;
 
@@ -57,7 +61,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -83,6 +86,7 @@ public class QuestionResourceTest {
     private static QuestionDao      questionDao;
     private static AnswerDao        answerDao;
     private static TestDao          testDao;
+    private static TagDao           tagDao;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer();
@@ -91,7 +95,8 @@ public class QuestionResourceTest {
     private static Appender          appender;
     private static ApplicationConfig applicationConfig;
 
-    private CollectionOptions options;
+    private CollectionOptions collectionOptions;
+    private static DaoTransactions daoTransactions;
 
     @BeforeClass
     public static void before() {
@@ -103,14 +108,18 @@ public class QuestionResourceTest {
         questionDao = testSetup.getInjector().getInstance(QuestionDao.class);
         answerDao = testSetup.getInjector().getInstance(AnswerDao.class);
         testDao = testSetup.getInjector().getInstance(TestDao.class);
+        tagDao = testSetup.getInjector().getInstance(TagDao.class);
+        daoTransactions = testSetup.getInjector().getInstance(DaoTransactions.class);
         slackResource = mock(SlackResource.class);
         applicationConfig = new ApplicationConfig();
-        applicationConfig.setBaseUrl("deployed.fuel.com");
+        applicationConfig.setBaseUrl("duringtest.example.org");
     }
 
     @Before
-    public void setupOptions() {
-        options = new CollectionOptions();
+    public void beforeEach() throws Exception {
+        collectionOptions = new CollectionOptions();
+        testSetup.setupDatabase();
+        appender = LoggingMockUtil.createMockedLogAppender(QuestionResourceImpl.class);
     }
 
     @After
@@ -120,16 +129,10 @@ public class QuestionResourceTest {
 
     }
 
-    @Before
-    public void beforeEach() throws Exception {
-        testSetup.setupDatabase();
-        appender = LoggingMockUtil.createMockedLogAppender(QuestionResourceImpl.class);
-    }
-
     @Test
     public void shouldThrowErrorWhenServerIsDown() {
         QuestionDao          questionDao      = mock(QuestionDao.class);
-        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+        QuestionResourceImpl questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao, daoTransactions);
         when(questionDao.getLatestQuestions(any())).thenReturn(error(new SQLException()));
 
         try {
@@ -142,11 +145,10 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldBePossibleToGetQuestionBySlackThreadId() {
-
-        TestSetup.insertUser(userResource);
+        insertUser(userResource);
         Auth mockAuth = newAuth();
 
-        Question question      = TestSetup.getQuestion("my question title", "my question");
+        Question question      = getQuestion("my question title", "my question");
         String   slackThreadId = String.valueOf(System.currentTimeMillis());
         question.setSlackId(slackThreadId);
 
@@ -186,7 +188,7 @@ public class QuestionResourceTest {
         range(1, 15)
             .forEach(i -> createQuestionWithAcceptedAnswer(CURRENT));
 
-        assertThatList(questionResource.getRecentlyAcceptedQuestions(options))
+        assertThatList(questionResource.getRecentlyAcceptedQuestions(collectionOptions))
             .hasExactlyOne()
             .hasSize(11);
     }
@@ -203,6 +205,56 @@ public class QuestionResourceTest {
         // then the question should be returned
         assertEquals(1, questions.size());
         assertThat(questions.get(0).getTitle()).isEqualTo(question.getTitle());
+    }
+
+    @Test
+    public void shouldOnlySearchForQuestionWithTags() {
+        Auth mockAuth = createUserAndAuth();
+        // Given a question with tags
+        createQuestionWithTags(mockAuth, "title", "body", List.of("tag-1", "tag2"));
+
+        // when searching by a matching tag
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("#tag-1", null).toBlocking().single();
+
+        // then the matching question should be returned
+        assertThat(questions.size()).isEqualTo(1);
+        assertThat(questions.get(0).getTags())
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag-1", "tag2");
+    }
+
+    @Test
+    public void shouldOnlySearchForQuestionWithContentMatchAndTagMatch() {
+        Auth mockAuth = createUserAndAuth();
+        // Given a question with tags
+        createQuestionWithTags(mockAuth, "title1", "body1", List.of("tag1", "tag2"));
+        createQuestionWithTags(mockAuth, "title2", "body2", List.of("tag1", "tag3"));
+
+        // when searching by a matching tag
+        List<Question> questions = questionResource.getQuestionsBySearchQuery("#tag1 #tag2 title1", null).toBlocking().single();
+
+        // then the matching question should be returned
+        assertThat(questions.size()).isEqualTo(1);
+        assertThat(questions.get(0).getTitle()).isEqualTo("title1");
+        assertThat(questions.get(0).getTags())
+            .extracting(Tag::getLabel)
+            .containsExactlyInAnyOrder("tag1", "tag2");
+    }
+
+    @Test
+    public void shouldDenyCreatingQuestionWithTooManyTags() {
+        Auth mockAuth = createUserAndAuth();
+        assertThatExceptionOfType(ValidationFailedException.class)
+            .isThrownBy(() -> {
+                createQuestionWithTags(mockAuth, "title1", "body1", List.of("tag1", "tag2", "tag3", "tag4", "tag5", "tag6"));
+            })
+            .satisfies(e -> {
+                assertThat(e.getFields())
+                    .allSatisfy(fieldError -> {
+                        assertThat(fieldError.getError()).isEqualTo("validation.size");
+                        assertThat(fieldError.getField()).matches("tags");
+                    });
+            });
     }
 
     @Test
@@ -236,9 +288,16 @@ public class QuestionResourceTest {
 
     @NotNull
     private Question createQuestion(Auth mockAuth, String title, String body) {
-        Question question = TestSetup.getQuestion(title, body);
+        Question question = getQuestion(title, body);
         questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
         return question;
+    }
+
+    @NotNull
+    private void createQuestionWithTags(Auth mockAuth, String title, String body, List<String> tags) {
+        assertThat(tags).isNotNull();
+        Question question = getQuestion(title, body, tags);
+        questionResource.createQuestion(mockAuth, question).toBlocking().singleOrDefault(null);
     }
 
     @Test
@@ -299,14 +358,15 @@ public class QuestionResourceTest {
 
         // then the question should be returned
         assertThat(searchResult.size()).isEqualTo(1);
+        assertThat(searchResult.get(0).getTags()).isEmpty();
     }
 
     @Test
     public void shouldReturnErrorIfQueryFails() {
         // given that the query will fail
         QuestionDao questionDao = mock(QuestionDao.class);
-        when(questionDao.getQuestions(anyString(), any())).thenReturn(error(new WebException()));
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig);
+        when(questionDao.getQuestions(any(QuestionSearchOptions.class), any())).thenReturn(error(new WebException()));
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, new SlackConfig(), applicationConfig, tagDao, daoTransactions);
 
         // when searching
         Observable<List<Question>> questions = questionResource.getQuestionsBySearchQuery("explode", null);
@@ -347,7 +407,6 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldBePossibleToGetQuestionById() {
-
         // when question is inserted
         Question question = getQuestion("my question title", "my question");
         Auth     mockAuth = newAuth();
@@ -367,7 +426,6 @@ public class QuestionResourceTest {
 
     @Test
     public void shouldBePossibleToUpdateQuestion() {
-
         User createdUser = insertUser(userResource);
 
         // when question is inserted
@@ -478,11 +536,11 @@ public class QuestionResourceTest {
     public void shouldLogThatWeCouldNotSendSlackNotificationWhenQuestionIsCreated() {
         // given bad slack config
         Auth     auth     = new Auth();
-        Question question = TestSetup.getQuestion("title", "body");
+        Question question = getQuestion("title", "body");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(error(new SQLException("poff")));
         SlackConfig      slackConfig      = new SlackConfig();
         slackConfig.setEnabled(true);
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig, tagDao, daoTransactions);
 
         // when we try to add the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();
@@ -498,11 +556,11 @@ public class QuestionResourceTest {
     public void shouldSendCorrectMessageToSlack() {
         // given that we have a question that we want to save
         Auth     auth     = new Auth();
-        Question question = TestSetup.getQuestion("title of question?", "who does one do?");
+        Question question = getQuestion("title of question?", "who does one do?");
         when(slackResource.postMessageToSlack(eq("rocket-fuel"), any())).thenReturn(empty());
         SlackConfig      slackConfig      = new SlackConfig();
         slackConfig.setEnabled(true);
-        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig);
+        QuestionResource questionResource = new QuestionResourceImpl(questionDao, questionVoteDao, slackResource, slackConfig, applicationConfig, tagDao, daoTransactions);
 
         // when we add the the question to rocket fuel
         questionResource.createQuestion(auth, question).toBlocking().single();
@@ -516,7 +574,7 @@ public class QuestionResourceTest {
         String headerText  = ((MarkdownTextObject)header.getText()).getText();
         String contentText = ((MarkdownTextObject)content.getText()).getText();
         assertThat(headerText).isEqualTo("A new question: *title of question?* was submitted.");
-        assertThat(contentText).isEqualTo("Head over to <deployed.fuel.com/question/1|rocket-fuel> to view the question.");
+        assertThat(contentText).isEqualTo("Head over to <duringtest.example.org/question/1|rocket-fuel> to view the question.");
 
     }
 
@@ -561,11 +619,11 @@ public class QuestionResourceTest {
     public void shouldListLatest5Questions() {
         int limit               = 5;
         int questionsToGenerate = 10;
-        options.setLimit(limit);
+        collectionOptions.setLimit(limit);
 
         generateQuestions(questionsToGenerate);
 
-        assertThatList(questionResource.getLatestQuestions(options))
+        assertThatList(questionResource.getLatestQuestions(collectionOptions))
             .hasExactlyOne()
             .hasSize(limit);
     }
@@ -639,7 +697,7 @@ public class QuestionResourceTest {
     }
 
     private void assertOrder(Function<CollectionOptions, Observable<List<Question>>> method, List<Long> inExpectedOrder) {
-        assertThatList(method.apply(options))
+        assertThatList(method.apply(collectionOptions))
             .hasExactlyOne()
             .extracting(Question::getId)
             .containsExactlyElementsOf(inExpectedOrder);
@@ -727,10 +785,8 @@ public class QuestionResourceTest {
     }
 
     private Auth createUserAndAuth() {
-        User createdUser = TestSetup.insertUser(userResource);
-        Auth mockAuth    = new MockAuth(createdUser.getId());
-        mockAuth.setUserId(createdUser.getId());
-        return mockAuth;
+        User createdUser = insertUser(userResource);
+        return new MockAuth(createdUser.getId());
     }
 
     private void generateQuestions(int questionsToGenerate) {
@@ -744,13 +800,13 @@ public class QuestionResourceTest {
     private void assertLimit(Function<CollectionOptions, Observable<List<Question>>> method, int defaultLimit, int maxLimit) {
         generateQuestions(maxLimit + 5);
 
-        assertThatList(method.apply(options))
+        assertThatList(method.apply(collectionOptions))
             .hasExactlyOne()
             .describedAs("default limit")
             .hasSize(defaultLimit + 1);  // because CollectionOptionsQueryPart adds one to see if there are more
 
-        options.setLimit(maxLimit + 5);
-        assertThatList(method.apply(options))
+        collectionOptions.setLimit(maxLimit + 5);
+        assertThatList(method.apply(collectionOptions))
             .hasExactlyOne()
             .describedAs("max limit")
             .hasSize(maxLimit + 1); // because CollectionOptionsQueryPart adds one to see if there are more
