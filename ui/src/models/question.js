@@ -49,8 +49,9 @@ export function getQuestionById(id) {
 }
 
 export function searchQuestions(param, limit = 50) {
+    const encodedParam = encodeURIComponent(param);
     const options = {
-        url: `/api/questions?search=${param}&limit=${limit}`
+        url: `/api/questions?search=${encodedParam}&limit=${limit}`
     };
 
     return ApiFetch(options);
