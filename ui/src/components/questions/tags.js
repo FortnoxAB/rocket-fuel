@@ -7,7 +7,8 @@ class Tags extends React.Component {
     }
 
     clickTag(tag) {
-        this.props.history.push(`/search/[${tag.label}]`);
+        const encodedLabel = encodeURIComponent(`#${tag.label}`);
+        this.props.history.push(`/search/${encodedLabel}`);
     }
 
     renderTags() {
