@@ -27,8 +27,12 @@ public class SlackModule implements AutoBindModule {
 
         slackMessageHandlerScanner.getMessageHandlers().forEach(aClass -> slackMessageHandlerMultibinder.addBinding().to(aClass));
 
-        binder.bind(SlackRTMClient.class).asEagerSingleton();
-
-
+        /*
+         SlackConfig#isEnabled is used for deciding if notifications
+         should be sent and if a websocket to Slack should be established.
+         Since events are kind of a to-do we quick fix notifications by
+         disabling SlackRTMClient.
+         */
+        //binder.bind(SlackRTMClient.class).asEagerSingleton();
     }
 }
