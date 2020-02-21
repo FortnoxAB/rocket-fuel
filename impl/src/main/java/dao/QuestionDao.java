@@ -248,7 +248,7 @@ public interface QuestionDao {
     @Query(
         value =
         "WITH cte AS ( " +
-            "SELECT DISTINCT " +
+            "SELECT " +
                 "question.id, " +
                 "answer_accepted, " +
                 "question.question, " +
@@ -260,7 +260,7 @@ public interface QuestionDao {
                 "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
                 "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags, " +
                 "ARRAY(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id ORDER BY tag.label) AS tag_labels, " +
-                "answer.answer " +
+                "COALESCE(question.title, '') || ' ' || COALESCE(question.question, '') || ' ' || COALESCE(answer.answer, '') AS search_body " +
             "FROM " +
                 "question " +
             "INNER JOIN " +
@@ -268,7 +268,7 @@ public interface QuestionDao {
             "LEFT JOIN " +
                 "answer on answer.question_id = question.id " +
             ") " +
-            "SELECT " +
+            "SELECT DISTINCT " +
                 "cte.id, " +
                 "cte.answer_accepted, " +
                 "cte.title, " +
@@ -287,19 +287,11 @@ public interface QuestionDao {
                 ") " +
                 "OR " +
                 "( " +
-                    ":questionSearchOptions.contentSearch != '' AND '{}' = :questionSearchOptions.tags AND ( " +
-                        "title ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
-                        "question ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
-                        "answer  ILIKE ('%' || :questionSearchOptions.contentSearch || '%') " +
-                    ") " +
+                    ":questionSearchOptions.contentSearch != '' AND '{}' = :questionSearchOptions.tags AND search_body ILIKE ('%' || :questionSearchOptions.contentSearch || '%')" +
                 ") " +
                 "OR " +
                 "( " +
-                    ":questionSearchOptions.contentSearch != '' AND tag_labels @> :questionSearchOptions.tags AND ( " +
-                        "title ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
-                        "question ILIKE ('%' || :questionSearchOptions.contentSearch || '%') OR " +
-                        "answer  ILIKE ('%' || :questionSearchOptions.contentSearch || '%') " +
-                    ") " +
+                    ":questionSearchOptions.contentSearch != '' AND tag_labels @> :questionSearchOptions.tags AND search_body ILIKE ('%' || :questionSearchOptions.contentSearch || '%')" +
                 ") " +
             "ORDER BY " +
                 "votes desc, " +
