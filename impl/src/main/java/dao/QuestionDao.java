@@ -1,13 +1,12 @@
 package dao;
 
 import api.Question;
+import impl.QuestionSearchOptions;
 import rx.Observable;
 import se.fortnox.reactivewizard.CollectionOptions;
 import se.fortnox.reactivewizard.db.GeneratedKey;
 import se.fortnox.reactivewizard.db.Query;
 import se.fortnox.reactivewizard.db.Update;
-
-import java.time.LocalDateTime;
 
 public interface QuestionDao {
 
@@ -22,7 +21,8 @@ public interface QuestionDao {
             "question.created_at, " +
             "question.user_id, " +
             "question.slack_id, \"user\".picture, \"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
         "FROM " +
             "question " +
         "INNER JOIN " +
@@ -46,8 +46,9 @@ public interface QuestionDao {
             "question.slack_id, " +
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
-        "FROM " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
@@ -70,8 +71,9 @@ public interface QuestionDao {
             "question.slack_id, " +
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
-        "FROM " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
@@ -95,8 +97,9 @@ public interface QuestionDao {
             "question.slack_id, " +
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
-        "FROM " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
@@ -124,8 +127,9 @@ public interface QuestionDao {
             "question.slack_id, " +
             "\"user\".picture, " +
             "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
-        "FROM " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
@@ -179,8 +183,9 @@ public interface QuestionDao {
             "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
             "(SELECT COALESCE(SUM(question_vote.value), 0) " +
                 "FROM question_vote " +
-                "WHERE question_vote.question_id = question.id AND question_vote.user_id = :userId) AS current_user_vote " +
-        "FROM " +
+                "WHERE question_vote.question_id = question.id AND question_vote.user_id = :userId) AS current_user_vote, " +
+            "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
+            "FROM " +
             "question " +
         "INNER JOIN " +
             "\"user\" on \"user\".id = question.user_id " +
@@ -201,7 +206,8 @@ public interface QuestionDao {
             "u.id AS user_id, " +
             "u.name as created_by, " +
             "u.picture as picture, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
+            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+            "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags " +
         "FROM " +
             "question " +
         "LEFT JOIN " +
@@ -237,37 +243,60 @@ public interface QuestionDao {
             "question " +
         "WHERE " +
             "question.user_id = :userId AND question.id = :questionId")
-    Observable<Void> deleteQuestion(long userId, long questionId);
+    Observable<Integer> deleteQuestion(long userId, long questionId);
 
     @Query(
         value =
-        "SELECT DISTINCT " +
-            "question.id, " +
-            "question.question, " +
-            "answer_accepted, " +
-            "question.title, " +
-            "question.bounty, " +
-            "question.created_at, " +
-            "question, " +
-            "question.user_id, " +
-            "\"user\".name as created_by, " +
-            "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes " +
-        "FROM " +
-            "question " +
-        "INNER JOIN " +
-            "\"user\" on \"user\".id = question.user_id " +
-        "LEFT JOIN  " +
-            "answer on answer.question_id = question.id " +
-        "WHERE  " +
-            "question.title ILIKE ('%' || :search || '%') " +
-        "OR " +
-            "question.question ILIKE ('%' || :search || '%') " +
-        "OR " +
-            "answer.answer  ILIKE ('%' || :search || '%') " +
-        "ORDER BY  " +
-            "votes desc, " +
-            "question.created_at desc ",
+        "WITH cte AS ( " +
+            "SELECT " +
+                "question.id, " +
+                "answer_accepted, " +
+                "question.question, " +
+                "question.title, " +
+                "question.bounty, " +
+                "question.created_at, " +
+                "question.user_id, " +
+                "\"user\".name as created_by, " +
+                "(SELECT COALESCE(SUM(question_vote.value), 0) FROM question_vote WHERE question_vote.question_id = question.id) AS votes, " +
+                "(SELECT COALESCE(jsonb_agg(tag ORDER BY label), '[]') FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id) AS tags, " +
+                "ARRAY(SELECT tag.label FROM question_tag RIGHT JOIN tag ON question_tag.tag_id = tag.id WHERE question_tag.question_id = question.id ORDER BY tag.label) AS tag_labels, " +
+                "COALESCE(question.title, '') || ' ' || COALESCE(question.question, '') || ' ' || COALESCE(answer.answer, '') AS search_body " +
+            "FROM " +
+                "question " +
+            "INNER JOIN " +
+                "\"user\" on \"user\".id = question.user_id " +
+            "LEFT JOIN " +
+                "answer on answer.question_id = question.id " +
+            ") " +
+            "SELECT DISTINCT " +
+                "cte.id, " +
+                "cte.answer_accepted, " +
+                "cte.title, " +
+                "cte.bounty, " +
+                "cte.created_at, " +
+                "cte.question, " +
+                "cte.user_id, " +
+                "cte.created_by, " +
+                "cte.votes, " +
+                "cte.tags " +
+            "FROM " +
+                "cte " +
+            "WHERE " +
+                "( " +
+                    ":questionSearchOptions.contentSearch = '' AND tag_labels @> :questionSearchOptions.tags " +
+                ") " +
+                "OR " +
+                "( " +
+                    ":questionSearchOptions.contentSearch != '' AND '{}' = :questionSearchOptions.tags AND search_body ILIKE ('%' || :questionSearchOptions.contentSearch || '%')" +
+                ") " +
+                "OR " +
+                "( " +
+                    ":questionSearchOptions.contentSearch != '' AND tag_labels @> :questionSearchOptions.tags AND search_body ILIKE ('%' || :questionSearchOptions.contentSearch || '%')" +
+                ") " +
+            "ORDER BY " +
+                "votes desc, " +
+                "created_at desc",
         defaultLimit = 50,
         maxLimit = 50)
-    Observable<Question> getQuestions(String search, CollectionOptions options);
+    Observable<Question> getQuestions(QuestionSearchOptions questionSearchOptions, CollectionOptions options);
 }

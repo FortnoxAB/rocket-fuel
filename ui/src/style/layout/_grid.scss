@@ -1,72 +1,65 @@
+$cols: 12;
+$spacing: 20px;
+
 .row {
     display: flex;
     flex-flow: wrap;
 
-    &.spacing {
-        > [class^="col-"] {
-            padding-bottom: 25px;
-
-            &:not(:first-child) {
-                padding-left: 25px;
-            }
-        }
+    &.spacing > div:not(:last-child) {
+        padding-right: $spacing;
     }
 }
 
-.hide-on-phone, .hide-on-tablet {
-    display: inherit;
+.column {
+    &.spacing > div {
+        padding-bottom: $spacing;
+    }
 }
 
-@for $i from 1 through 12 {
+@for $i from 1 through $cols {
     .col-#{$i} {
-        width: 100%/$i;
+        width: (100% / $cols) * $i;
+    }
+
+    @if($i == $cols) {
+        .row.spacing > div.col-#{$i}:not(:last-child) {
+            padding-right: 0;
+        }
     }
 }
 
 @media screen and (max-width: $break-large) {
-    @for $i from 1 through 12 {
-        @if($i % 2 != 0) {
-            .col-#{$i} {
-                width: 100%;
-            }
-            .row.spacing {
-                .col-#{$i} {
-                    padding-left: 0;
-                }
-            }
+    @for $i from 1 through $cols {
+        .col-md-#{$i} {
+            width: (100% / $cols) * $i;
         }
 
-        .col-#{$i} {
-            width: 50%;
+        @if($i == $cols) {
+            .row.spacing > div.col-md-#{$i}:not(:last-child) {
+                padding-right: 0;
+            }
         }
     }
 
-    .row.spacing {
-        [class^="col-"]:nth-child(odd) {
-            padding-left: 0;
-        }
-    }
-
-    .hide-on-tablet {
+    .hide-md {
         display: none;
     }
 }
 
-
 @media screen and (max-width: $break-small) {
-    @for $i from 1 through 12 {
-        .col-#{$i} {
-            width: 100%;
+    @for $i from 1 through $cols {
+        .col-sm-#{$i} {
+            width: (100% / $cols) * $i;
         }
 
-        .content .row.spacing {
-            .col-#{$i} {
-                padding-left: 0;
+        @if($i == $cols) {
+            .row.spacing > div.col-sm-#{$i}:not(:last-child) {
+                padding-right: 0;
             }
         }
     }
 
-    .hide-on-tablet, .hide-on-phone {
+    .hide-md, .hide-sm {
         display: none;
     }
 }

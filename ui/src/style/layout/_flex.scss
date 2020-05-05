@@ -43,6 +43,11 @@
         display: flex;
         flex-direction: column;
     }
+
+    &-wrap {
+        display: flex;
+        flex-wrap: wrap;
+    }
 }
 
 .center-vertical {

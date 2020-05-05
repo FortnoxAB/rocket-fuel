@@ -2,6 +2,7 @@ package impl;
 
 import api.Answer;
 import api.Question;
+import api.Tag;
 import api.User;
 import api.UserResource;
 import auth.JwkResource;
@@ -26,7 +27,9 @@ import se.fortnox.reactivewizard.server.ServerConfig;
 import slack.SlackRTMClient;
 import slack.SlackResource;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -135,17 +138,29 @@ public class TestSetup {
 
     @NotNull
     public static Question getQuestion(String title, String question) {
-        return getQuestion(title,question,300);
+        return getQuestion(title,question,300, null);
     }
 
     @NotNull
-    public static Question getQuestion(String title, String question, int bounty) {
+    public static Question getQuestion(String title, String question, List<String> labels) {
+        return getQuestion(title, question, 300, labels);
+    }
+
+    @NotNull
+    public static Question getQuestion(String title, String question, int bounty, List<String> labels) {
         Question questionObject = new Question();
         questionObject.setAnswerAccepted(false);
         questionObject.setBounty(bounty);
         questionObject.setTitle(title);
         questionObject.setVotes(3);
         questionObject.setQuestion(question);
+        if (labels != null) {
+            List<Tag> tags = labels
+                .stream()
+                .map(Tag::new)
+                .collect(Collectors.toList());
+            questionObject.setTags(tags);
+        }
         return questionObject;
     }
 

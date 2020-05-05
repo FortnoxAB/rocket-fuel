@@ -160,7 +160,7 @@
     <changeSet id="remove_vote_from_answer" author="rickard.blomkvist">
         <dropColumn tableName="answer" columnName="votes"/>
     </changeSet>
-    
+
     <changeSet id="migrate_to_timestamptz" author="rickard.blomkvist">
         <modifyDataType tableName="answer" columnName="created_at" newDataType="TIMESTAMP WITH TIME ZONE"/>
         <modifyDataType tableName="question" columnName="created_at" newDataType="TIMESTAMP WITH TIME ZONE"/>
@@ -204,6 +204,62 @@
 
     <changeSet id="remove_votes_from_question" author="rickard.blomkvist">
         <dropColumn tableName="question" columnName="votes"/>
+    </changeSet>
+
+    <changeSet id="tagging" author="tobias.friberg">
+        <createTable tableName="tag">
+            <column autoIncrement="true" name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="tag_pk" nullable="false"/>
+            </column>
+
+            <column name="label" type="VARCHAR">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="question_tag">
+            <column name="question_id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="tag_id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="question_id"
+                                 baseTableName="question_tag"
+                                 constraintName="question_tag_question_fk"
+                                 onDelete="CASCADE"
+                                 onUpdate="NO ACTION"
+                                 referencedColumnNames="id"
+                                 referencedTableName="question"/>
+
+        <addForeignKeyConstraint baseColumnNames="tag_id"
+                                 baseTableName="question_tag"
+                                 constraintName="question_tag_tag_fk"
+                                 onDelete="CASCADE"
+                                 onUpdate="NO ACTION"
+                                 referencedColumnNames="id"
+                                 referencedTableName="tag"/>
+    </changeSet>
+
+    <changeSet id="tag-usage-view" author="magnus.persson">
+        <createView viewName="tag_usage">
+            <![CDATA[
+                SELECT
+                    tag.id,
+                    tag.label,
+                    SUM(
+                        CASE WHEN
+                          question_id IS NOT NULL THEN 1
+                          ELSE 0
+                        END
+                    ) AS usages
+                FROM tag
+                LEFT JOIN question_tag qt ON tag.id = qt.tag_id
+                GROUP BY tag.id
+            ]]>
+        </createView>
     </changeSet>
 
 </databaseChangeLog>

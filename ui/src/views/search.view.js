@@ -10,22 +10,26 @@ class SearchView extends React.Component {
     constructor(props) {
         super(props);
 
-        let initSearchStr = '';
-
-        if (props.match.params.query) {
-            initSearchStr = props.match.params.query;
-        }
-
         this.state = {
             questions: [],
-            searchStr: initSearchStr,
+            searchStr: decodeURIComponent(props.match.params.query || ''),
             loadingSearch: false,
             searchResult: [],
             searched: false
         };
 
-        if (initSearchStr.length > 0) {
+        if (this.state.searchStr.length > 0) {
             this.search();
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const { searchStr } = this.state;
+        const decodedQueryString = decodeURIComponent(nextProps.match.params.query || '');
+        if(decodedQueryString !== searchStr) {
+            this.setState({
+                searchStr: decodedQueryString
+            }, () => this.search());
         }
     }
 
@@ -97,7 +101,7 @@ class SearchView extends React.Component {
         }
 
         const searchResult = this.state.searchResult.map((question, index) => {
-            return <QuestionRow small key={index} question={question} />;
+            return <QuestionRow key={index} question={question} />;
         });
         return (
             <div className="padded-bottom-large">

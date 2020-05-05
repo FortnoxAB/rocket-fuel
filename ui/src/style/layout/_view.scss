@@ -14,7 +14,7 @@
     > .content {
         display: flex;
         width: 90vw;
-        padding: 35px;
+        padding: 35px 0;
         max-width: 1500px;
 
         > * {
@@ -106,6 +106,10 @@
         &-large {
             padding-top: 35px;
         }
+    }
+
+    &-right {
+        padding-right: 10px;
     }
 }
 

@@ -1,4 +1,4 @@
-# Rocket Fuel ( still under development )
+# Rocket Fuel
 
 [![Build Status](https://travis-ci.com/FortnoxAB/rocket-fuel.svg?branch=master)](https://travis-ci.com/FortnoxAB/rocket-fuel)
 [![codecov](https://codecov.io/gh/FortnoxAB/rocket-fuel/branch/master/graph/badge.svg)](https://codecov.io/gh/FortnoxAB/rocket-fuel)

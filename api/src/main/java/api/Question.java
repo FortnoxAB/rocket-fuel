@@ -1,5 +1,9 @@
  package api;
 
+ import javax.validation.Valid;
+ import javax.validation.constraints.Size;
+ import java.util.List;
+
  /**
   *  Defines a question. A question is connected to the {@link User} asking it.
   *
@@ -18,6 +22,10 @@
     private boolean answerAccepted;
 
     private String slackThreadId;
+
+    @Valid
+    @Size(max=5)
+    private List<Tag> tags;
 
     public boolean isAnswerAccepted() {
         return answerAccepted;
@@ -57,5 +65,13 @@
 
      public void setTitle(String title) {
          this.title = title;
+     }
+
+     public List<Tag> getTags() {
+         return tags;
+     }
+
+     public void setTags(List<Tag> tags) {
+         this.tags = tags;
      }
  }
