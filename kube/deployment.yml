@@ -80,16 +80,6 @@ spec:
                 configMapKeyRef:
                   name: route
                   key: environment
-            - name: REDIS_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: logging
-                  key: redis.host
-            - name: REDIS_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: logging
-                  key: redis.port
             - name: DB_HOST
               valueFrom:
                 configMapKeyRef:
