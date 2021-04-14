@@ -85,6 +85,11 @@ spec:
                 configMapKeyRef:
                   name: rocket-fuel
                   key: db.host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: rocket-fuel
+                  key: db.port
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
