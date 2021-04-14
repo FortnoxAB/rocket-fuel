@@ -9,13 +9,13 @@ liquibase-database:
     user:  {{ .Env.DB_USER }}
     schema: {{ .Env.DB_SCHEMA }}
     password: {{ .Env.DB_PASSWORD }}
-    url: jdbc:postgresql://{{ .Env.DB_HOST }}/{{ .Env.DB_NAME }}?prepareThreshold=0&ApplicationName={{ .Env.HOSTNAME }}
+    url: jdbc:postgresql://{{ .Env.DB_HOST }}:{{ .Env.DB_PORT }}/{{ .Env.DB_NAME }}?prepareThreshold=0&ApplicationName={{ .Env.HOSTNAME }}
 
 database:
     user:  {{ .Env.DB_USER }}
     schema: {{ .Env.DB_SCHEMA }}
     password: {{ .Env.DB_PASSWORD }}
-    url: jdbc:postgresql://{{ .Env.DB_HOST }}/{{ .Env.DB_NAME }}?prepareThreshold=0&ApplicationName={{ .Env.HOSTNAME }}
+    url: jdbc:postgresql://{{ .Env.DB_HOST }}:{{ .Env.DB_PORT }}/{{ .Env.DB_NAME }}?prepareThreshold=0&ApplicationName={{ .Env.HOSTNAME }}
 
 applicationTokenConfig:
     secret: {{ .Env.APPLICATION_TOKEN }}
