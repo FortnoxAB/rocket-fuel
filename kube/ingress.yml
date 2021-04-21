@@ -11,7 +11,7 @@ spec:
   tls:
     - hosts:
         - fuel.fnox.se
-      secretName: fnox.se
+      secretName: fnox-se
   rules:
     - http:
         paths:
